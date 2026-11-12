@@ -18,7 +18,7 @@ import re
 import shutil
 import traceback
 from collections import Counter
-from functools import cached_property
+from functools import cached_property, partial
 from pathlib import Path
 from dataclasses import dataclass, replace
 import numpy as np
@@ -94,8 +94,11 @@ class DataBase:
 
     @property
     def version(self) -> int:
-        """Monotonically increasing mutation counter for mask changes."""
+        """Monotonically increasing mutation counter for masks and content."""
         return int(self._version)
+    def touch(self) -> None:
+        """Invalidate derived data after an in-place content edit."""
+        self._version += 1
     @property
     def mask_array(self) -> npt.NDArray[np.bool_]:
         """Boolean mask highlighting the active rows."""
@@ -310,7 +313,8 @@ class NepData:
         nmax = int(nmax)
         if nmax <= 0:
             return []
-        data_version = int(getattr(self.data, "version", 0) or 0)
+        data_version = (int(getattr(self.data, "version", 0) or 0),
+                        int(getattr(self, "_plot_coord_version", 0) or 0))
         cache = getattr(self, "_max_error_cache", None)
         if cache is not None and cache[0] == data_version and cache[1] == self.cols:
             error = cache[2]
@@ -794,25 +798,26 @@ class StructureSyncRule:
         if isinstance(self.target, str):
             return getattr(dataset, self.target)
         return self.target
-    def apply(self, result_data: "ResultData", structure_indices: Optional[np.ndarray] = None) -> None:
+    def apply(self, result_data: "ResultData", structure_indices: Optional[np.ndarray] = None) -> bool:
         """Execute the rule on ``result_data`` if the precondition passes."""
         dataset = getattr(result_data, self.dataset_attr, None)
         if dataset is None or getattr(dataset, "num", 0) == 0:
-            return
+            return False
         if not self.precondition(result_data):
-            return
+            return False
         row_idx, values = self.collector(result_data, dataset, structure_indices)
         if row_idx is None or values is None:
-            return
+            return False
         row_idx = np.asarray(row_idx, dtype=np.int64)
         if row_idx.size == 0:
-            return
+            return False
         values = np.asarray(values, dtype=self.dtype or get_storage_float_dtype())
         if values.size == 0:
-            return
+            return False
         target = self._resolve_target(dataset)
         dataset.all_data[row_idx, target] = values
         dataset._plot_coord_version = int(getattr(dataset, "_plot_coord_version", 0) or 0) + 1
+        return True
 
 
 def _sync_target_width(dataset: Any) -> int:
@@ -834,7 +839,7 @@ def collect_energy_sync(result_data: "ResultData", dataset: NepPlotData, structu
         return _empty_sync_result(target_width)
     storage_dtype = get_storage_float_dtype()
     structures = [result_data.structure.all_data[i] for i in indices]
-    values = np.array([s.per_atom_energy for s in structures], dtype=storage_dtype).reshape(-1, target_width)
+    values = np.array([s.per_atom_energy if s.has_energy else np.nan for s in structures], dtype=storage_dtype).reshape(-1, target_width)
     return indices, values
 
 
@@ -847,15 +852,15 @@ def collect_force_sync(result_data: "ResultData", dataset: NepPlotData, structur
     if indices.size == 0:
         return _empty_sync_result(target_width)
     storage_dtype = get_storage_float_dtype()
-    group_vals = dataset.group_array.all_data
-    per_atom = bool(group_vals.size and np.unique(group_vals).size != group_vals.size)
+    per_atom = dataset._has_atom_groups
     structures = [result_data.structure.all_data[i] for i in indices]
+    forces = [s.forces if s.has_forces else np.full((len(s), target_width), np.nan) for s in structures]
     if per_atom:
         row_idx = dataset.convert_index(indices)
-        values = np.vstack([s.forces for s in structures]).astype(storage_dtype, copy=False)
+        values = np.vstack(forces).astype(storage_dtype, copy=False)
     else:
         row_idx = indices
-        values = np.array([np.linalg.norm(s.forces, axis=0) for s in structures], dtype=storage_dtype)
+        values = np.array([np.linalg.norm(force, axis=0) for force in forces], dtype=storage_dtype)
     return row_idx, values
 
 
@@ -869,12 +874,8 @@ def collect_virial_sync(result_data: "ResultData", dataset: NepPlotData, structu
         return _empty_sync_result(target_width)
     storage_dtype = get_storage_float_dtype()
     structures = [result_data.structure.all_data[i] for i in indices]
-    mask = np.array([s.has_virial for s in structures], dtype=bool)
-    if not mask.any():
-        return _empty_sync_result(target_width)
-    selected_indices = indices[mask]
-    values = np.vstack([structures[i].nep_virial for i, flag in enumerate(mask) if flag]).astype(storage_dtype, copy=False)
-    return selected_indices, values
+    values = np.vstack([s.nep_virial if s.has_virial else np.full(target_width, np.nan) for s in structures]).astype(storage_dtype, copy=False)
+    return indices, values
 
 
 def collect_stress_sync(result_data: "ResultData", dataset: NepPlotData, structure_indices):
@@ -887,16 +888,12 @@ def collect_stress_sync(result_data: "ResultData", dataset: NepPlotData, structu
         return _empty_sync_result(target_width)
     storage_dtype = get_storage_float_dtype()
     structures = [result_data.structure.all_data[i] for i in indices]
-    mask = np.array([s.has_virial for s in structures], dtype=bool)
-    if not mask.any():
-        return _empty_sync_result(target_width)
-    selected_indices = indices[mask]
-    virial_values = np.vstack([structures[i].nep_virial for i, flag in enumerate(mask) if flag]).astype(storage_dtype, copy=False)
-    atoms = result_data.atoms_num_list[selected_indices].astype(storage_dtype)
-    volumes = np.array([structures[i].volume for i, flag in enumerate(mask) if flag], dtype=storage_dtype)
+    virial_values = np.vstack([s.nep_virial if s.has_virial else np.full(target_width, np.nan) for s in structures]).astype(storage_dtype, copy=False)
+    atoms = result_data.atoms_num_list[indices].astype(storage_dtype)
+    volumes = np.array([s.volume for s in structures], dtype=storage_dtype)
     coeff = np.divide(atoms, volumes, out=np.zeros_like(atoms, dtype=storage_dtype), where=volumes != 0)[:, np.newaxis]
     stress_values = virial_values * coeff * 160.21766208
-    return selected_indices, stress_values.astype(storage_dtype, copy=False)
+    return indices, stress_values.astype(storage_dtype, copy=False)
 
 
 class ResultData(DistributionAnalysisMixin, QObject):
@@ -965,6 +962,8 @@ class ResultData(DistributionAnalysisMixin, QObject):
         self._distribution_bin_lookup: dict[tuple[int, str, str, int], list[int]] = {}
         self._distribution_analysis_id: int = 0
         self._load_origin_thread: QThread | None = None
+        self._content_revision = 0
+        self._modified_reference_fields: set[str] = set()
 
     def move_to_load_thread(self, thread: QThread) -> None:
         """Move this long-lived result object to a loader and remember its owner."""
@@ -1969,11 +1968,23 @@ class ResultData(DistributionAnalysisMixin, QObject):
             field_iter = list(self._structure_sync_rules.keys())
         else:
             field_iter = list(fields)
+        if "force" in field_iter and "force_vector" not in field_iter:
+            field_iter.append("force_vector")
+        changed = False
         for name in field_iter:
             rule = self._structure_sync_rules.get(name)
             if rule is None:
                 continue
-            rule.apply(self, indices)
+            if rule.apply(self, indices):
+                changed = True
+                self._modified_reference_fields.add(name)
+        if changed:
+            self._structure_content_changed()
+
+    def _structure_content_changed(self) -> None:
+        self.structure.data.touch()
+        self._content_revision += 1
+        self.updateInfoSignal.emit()
     def write_prediction(self):
         """Create a ``nep.in`` stub when large datasets require prediction mode.
         The GUI expects a ``nep.in`` file to mark prediction runs for large
@@ -2339,14 +2350,41 @@ class ResultData(DistributionAnalysisMixin, QObject):
         indices = list(self.select_index)
         mapped = self.structure.convert_index(indices)
         return self.structure.all_data[mapped].tolist()
-    def export_selected_xyz(self, save_file_path: str | Path) -> None:
+    def prepare_export(self, scope: str, *, npy: bool = False, index: int | None = None):
+        """Freeze export contents before dispatching a background writer."""
+        all_structures = self.structure.all_data.tolist() if npy else []
+        type_map = get_type_map(all_structures) if all_structures else None
+        if scope == "all":
+            groups = ([item.copy() for item in self.structure.now_data],
+                      [item.copy() for item in self.structure.remove_data])
+            writer = self.export_model_npy if npy else self.export_model_extxyz
+            options = {"_groups": groups}
+        else:
+            if scope == "selected":
+                structures = self.get_selected_structures()
+            elif scope == "active":
+                structures = self.structure.now_data
+            elif scope == "removed":
+                structures = self.structure.remove_data
+            elif scope == "current" and npy and index is not None:
+                structures = [self.get_atoms(index)]
+            else:
+                raise ValueError(f"Unsupported export scope: {scope}")
+            writer = getattr(self, f"export_{scope}_{'npy' if npy else 'xyz'}")
+            options = {"_structures": [item.copy() for item in structures]}
+            if scope == "current":
+                options["index"] = index
+        if npy:
+            options["_type_map"] = type_map
+        return partial(writer, **options)
+
+    def export_selected_xyz(self, save_file_path: str | Path, *, _structures=None) -> None:
         """Write the currently selected structures to ``save_file_path``."""
-        indices = list(self.select_index)
         atomic_float_digits = get_export_significant_digits()
-        mapped = self.structure.convert_index(indices)
+        structures = self.get_selected_structures() if _structures is None else _structures
         write_structures_extxyz_atomic(
             save_file_path,
-            self.structure.all_data[mapped],
+            structures,
             atomic_float_digits=atomic_float_digits,
         )
         MessageManager.send_info_message(f"File exported to: {save_file_path}")
@@ -2355,18 +2393,20 @@ class ResultData(DistributionAnalysisMixin, QObject):
         self,
         save_path: str | Path,
         *,
+        _structures=None,
+        _type_map=None,
         npy_format: str = "standard",
         group_by_config_type: bool = True,
         mixed_atom_numb_pad: int | None = None,
     ) -> None:
         """Export selected structures as a DeepMD-style ``deepmd/npy`` dataset."""
-        selected = self.get_selected_structures()
+        selected = self.get_selected_structures() if _structures is None else _structures
         if not selected:
             MessageManager.send_info_message("Please select some structures first!")
             return
         target = Path(save_path).joinpath("export_selected_model")
-        all_structures = self.structure.all_data.tolist()
-        type_map = get_type_map(all_structures) if all_structures else None
+        all_structures = self.structure.all_data.tolist() if _structures is None else []
+        type_map = _type_map if _structures is not None else (get_type_map(all_structures) if all_structures else None)
         save_npy_structure(
             str(target),
             selected,
@@ -2377,11 +2417,11 @@ class ResultData(DistributionAnalysisMixin, QObject):
         )
         MessageManager.send_info_message(f"File exported to: {target}")
 
-    def export_active_xyz(self, save_file_path: str | Path) -> None:
+    def export_active_xyz(self, save_file_path: str | Path, *, _structures=None) -> None:
         """Write active (non-removed) structures to ``save_file_path``."""
         atomic_float_digits = get_export_significant_digits()
-        active = self.structure.now_data
-        if getattr(active, "size", 0) == 0:
+        active = self.structure.now_data if _structures is None else _structures
+        if len(active) == 0:
             MessageManager.send_info_message("No active structures to export.")
             return
         write_structures_extxyz_atomic(
@@ -2395,18 +2435,20 @@ class ResultData(DistributionAnalysisMixin, QObject):
         self,
         save_path: str | Path,
         *,
+        _structures=None,
+        _type_map=None,
         npy_format: str = "standard",
         group_by_config_type: bool = True,
         mixed_atom_numb_pad: int | None = None,
     ) -> None:
         """Export active (non-removed) structures as a DeepMD-style ``deepmd/npy`` dataset."""
-        active = self.structure.now_data.tolist()
+        active = self.structure.now_data.tolist() if _structures is None else _structures
         if not active:
             MessageManager.send_info_message("No active structures to export.")
             return
         target = Path(save_path).joinpath("export_active_model")
-        all_structures = self.structure.all_data.tolist()
-        type_map = get_type_map(all_structures) if all_structures else None
+        all_structures = self.structure.all_data.tolist() if _structures is None else []
+        type_map = _type_map if _structures is not None else (get_type_map(all_structures) if all_structures else None)
         save_npy_structure(
             str(target),
             active,
@@ -2417,11 +2459,11 @@ class ResultData(DistributionAnalysisMixin, QObject):
         )
         MessageManager.send_info_message(f"File exported to: {target}")
 
-    def export_removed_xyz(self, save_file_path: str | Path) -> None:
+    def export_removed_xyz(self, save_file_path: str | Path, *, _structures=None) -> None:
         """Write removed structures (if any) to ``save_file_path``."""
         atomic_float_digits = get_export_significant_digits()
-        removed = self.structure.remove_data
-        if getattr(removed, "size", 0) == 0:
+        removed = self.structure.remove_data if _structures is None else _structures
+        if len(removed) == 0:
             MessageManager.send_info_message("No removed structures to export.")
             return
         write_structures_extxyz_atomic(
@@ -2435,18 +2477,20 @@ class ResultData(DistributionAnalysisMixin, QObject):
         self,
         save_path: str | Path,
         *,
+        _structures=None,
+        _type_map=None,
         npy_format: str = "standard",
         group_by_config_type: bool = True,
         mixed_atom_numb_pad: int | None = None,
     ) -> None:
         """Export removed structures as a DeepMD-style ``deepmd/npy`` dataset."""
-        removed = self.structure.remove_data.tolist()
+        removed = self.structure.remove_data.tolist() if _structures is None else _structures
         if not removed:
             MessageManager.send_info_message("No removed structures to export.")
             return
         target = Path(save_path).joinpath("export_remove_model")
-        all_structures = self.structure.all_data.tolist()
-        type_map = get_type_map(all_structures) if all_structures else None
+        all_structures = self.structure.all_data.tolist() if _structures is None else []
+        type_map = _type_map if _structures is not None else (get_type_map(all_structures) if all_structures else None)
         save_npy_structure(
             str(target),
             removed,
@@ -2462,16 +2506,17 @@ class ResultData(DistributionAnalysisMixin, QObject):
         save_path: str | Path,
         index: int,
         *,
+        _structures=None,
+        _type_map=None,
         npy_format: str = "standard",
         group_by_config_type: bool = True,
         mixed_atom_numb_pad: int | None = None,
     ) -> None:
         """Export a single structure as DeepMD-style ``deepmd/npy`` dataset."""
-        mapped = self.structure.convert_index(index)
-        structure = self.structure.all_data[mapped][0]
+        structure = self.get_atoms(index) if _structures is None else _structures[0]
         target = Path(save_path).joinpath(f"structure_{int(index)}")
-        all_structures = self.structure.all_data.tolist()
-        type_map = get_type_map(all_structures) if all_structures else None
+        all_structures = self.structure.all_data.tolist() if _structures is None else []
+        type_map = _type_map if _structures is not None else (get_type_map(all_structures) if all_structures else None)
         save_npy_structure(
             str(target),
             [structure],
@@ -2482,19 +2527,20 @@ class ResultData(DistributionAnalysisMixin, QObject):
         )
         MessageManager.send_info_message(f"File exported to: {target}")
 
-    def export_model_extxyz(self, save_path: str | Path) -> None:
+    def export_model_extxyz(self, save_path: str | Path, *, _groups=None) -> None:
         """Export active and removed structures into ``save_path`` folder as extxyz."""
+        active, removed = (self.structure.now_data, self.structure.remove_data) if _groups is None else _groups
         atomic_float_digits = get_export_significant_digits()
         good_path = Path(save_path).joinpath("export_good_model.xyz")
         write_structures_extxyz_atomic(
             good_path,
-            self.structure.now_data,
+            active,
             atomic_float_digits=atomic_float_digits,
         )
         removed_path = Path(save_path).joinpath("export_remove_model.xyz")
         write_structures_extxyz_atomic(
             removed_path,
-            self.structure.remove_data,
+            removed,
             atomic_float_digits=atomic_float_digits,
         )
         MessageManager.send_info_message(f"File exported to: {save_path}")
@@ -2503,6 +2549,8 @@ class ResultData(DistributionAnalysisMixin, QObject):
         self,
         save_path: str | Path,
         *,
+        _groups=None,
+        _type_map=None,
         npy_format: str = "standard",
         group_by_config_type: bool = True,
         mixed_atom_numb_pad: int | None = None,
@@ -2511,13 +2559,14 @@ class ResultData(DistributionAnalysisMixin, QObject):
         target = Path(save_path)
         good_target = target / "export_good_model"
         removed_target = target / "export_remove_model"
-        all_structures = self.structure.all_data.tolist()
-        active_structures = self.structure.now_data.tolist()
-        removed_structures = self.structure.remove_data.tolist()
+        all_structures = self.structure.all_data.tolist() if _groups is None else []
+        active_structures, removed_structures = (
+            (self.structure.now_data.tolist(), self.structure.remove_data.tolist()) if _groups is None else _groups
+        )
         if not active_structures and not removed_structures:
             MessageManager.send_info_message("No structures to export.")
             return
-        type_map = get_type_map(all_structures) if all_structures else None
+        type_map = _type_map if _groups is not None else (get_type_map(all_structures) if all_structures else None)
         exports = (
             (good_target, active_structures),
             (removed_target, removed_structures),
@@ -2767,6 +2816,8 @@ class ResultData(DistributionAnalysisMixin, QObject):
             MessageManager.send_info_message("No data selected!")
             return
 
+        remove_tags = tuple(remove_tags)
+
         for structure in selected_structures:
             for new_tag, value_text in new_tag_info.items():
                 if value_text is None:
@@ -2819,8 +2870,16 @@ class ResultData(DistributionAnalysisMixin, QObject):
                 elif remove_tag in structure.atomic_properties:
                     structure.remove_atomic_properties(remove_tag)
 
+        fields = set(remove_tags) | set(new_tag_info) | set((rename_map or {}).keys()) | set((rename_map or {}).values())
+        if "forces" in fields:
+            fields.add("force")
+        if "virial" in fields:
+            fields.add("stress")
+        revision = self._content_revision
+        self.sync_structures(fields.intersection(self._structure_sync_rules), list(self.select_index))
+        if self._content_revision == revision:
+            self._structure_content_changed()
         MessageManager.send_info_message("Edit completed")
-        self.updateInfoSignal.emit()
 
     def iter_shift_energy_baseline(
         self,

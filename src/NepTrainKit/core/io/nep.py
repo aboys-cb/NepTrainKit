@@ -92,6 +92,7 @@ class NepTrainResultData(ResultData):
     STRUCTURE_SYNC_RULES = {
         'energy': StructureSyncRule('energy', 'x_cols', collect_energy_sync),
         'force': StructureSyncRule('force', 'x_cols', collect_force_sync),
+        'force_vector': StructureSyncRule('_force_vector_dataset', 'x_cols', collect_force_sync),
         'virial': StructureSyncRule('virial', 'x_cols', collect_virial_sync),
         'stress': StructureSyncRule('stress', 'x_cols', collect_stress_sync),
     }

@@ -146,7 +146,7 @@ class TestNepTrainResultData( unittest.TestCase):
             _choose_export_format=lambda: ("deepmd/npy/mixed", True, 16),
             nep_result_data=SimpleNamespace(
                 structure=SimpleNamespace(now_data=np.empty(1, dtype=object)),
-                export_active_npy=export_method,
+                prepare_export=MagicMock(return_value=export_method),
             ),
         )
         worker = MagicMock()
@@ -156,6 +156,7 @@ class TestNepTrainResultData( unittest.TestCase):
         ):
             show_nep_module.ShowNepWidget.export_active_structures(widget)
 
+        widget.nep_result_data.prepare_export.assert_called_once_with("active", npy=True)
         worker.start_work.assert_called_once_with(
             export_method,
             "/tmp/export",

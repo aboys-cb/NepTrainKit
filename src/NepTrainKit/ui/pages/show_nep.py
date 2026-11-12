@@ -145,34 +145,45 @@ _PATH_LABEL_PADDING = 12
 class _LoadCompletionRelay(QObject):
     """Run result-load completion callbacks safely on the GUI thread."""
 
-    def __init__(self, tip, result_data, callbacks, parent=None):
+    def __init__(self, tip, result_data, callbacks, parent=None, *, is_current=None, on_finished=None):
         super().__init__(parent)
         self._tip = tip
         self._result_data = result_data
         self._callbacks = tuple(callbacks)
+        self._is_current = is_current or (lambda: True)
+        self._on_finished = on_finished
 
     @Slot()
     def handle_finished(self) -> None:
         try:
-            if bool(self._result_data.load_flag):
+            current = self._is_current()
+            if current and bool(self._result_data.load_flag):
                 self._tip.setState(True)
             else:
                 # ``StateToolTip.setState(False)`` means "still running", not
                 # "failed".  Close the spinner on failed/cancelled loads; the
                 # loader has already published the actionable error message.
                 self._tip.close()
-            for callback in self._callbacks:
-                callback()
+            if current:
+                for callback in self._callbacks:
+                    callback()
         finally:
-            self._callbacks = ()
-            self._result_data = None
-            self._tip = None
-            self.deleteLater()
+            try:
+                if self._on_finished is not None:
+                    self._on_finished()
+            finally:
+                self._on_finished = None
+                self._is_current = lambda: False
+                self._callbacks = ()
+                self._result_data = None
+                self._tip = None
+                self.deleteLater()
 
     @Slot(str)
     def update_content(self, message: str) -> None:
         """Translate late-bound worker status before showing it in the tooltip."""
-        _set_loading_tip_content(self._tip, translate_runtime_message(message))
+        if self._tip is not None and self._is_current():
+            _set_loading_tip_content(self._tip, translate_runtime_message(message))
 
 
 
@@ -203,6 +214,11 @@ class ShowNepWidget(QWidget):
         # Cache for NEP result datasets keyed by NEP model path
         self._nep_result_cache: dict[Path, ResultData] = {}
         self._initial_loading = False
+        self.load_thread = None
+        self._load_relay = None
+        self._loading_data = None
+        self._pending_load = None
+        self._load_cancel_requested = False
         self._updating_nep_combo = False
         self._search_job_id = 0
         self._completer_job_id = 0
@@ -211,6 +227,7 @@ class ShowNepWidget(QWidget):
         self._worker_threads: list[QThread] = []
         self._arrow_vector_lookup_cache = {}
         self._structure_mask_version_seen: int | None = None
+        self._structure_content_version_seen = 0
         self._structure_canvas_fallback_warned = False
         self._pending_structure_index: int | None = None
         self._structure_update_scheduled = False
@@ -353,7 +370,7 @@ class ShowNepWidget(QWidget):
 
     def _is_busy(self) -> bool:
         """Return True when loading threads are running and exports should be disabled."""
-        if getattr(self, "_initial_loading", False):
+        if getattr(self, "_load_relay", None) is not None or getattr(self, "_initial_loading", False):
             return True
         try:
             if getattr(self, "load_thread", None) is not None and self.load_thread.isRunning():
@@ -462,14 +479,21 @@ class ShowNepWidget(QWidget):
         self.open_file_action.setEnabled(not busy)
         self.open_folder_action.setEnabled(not busy)
 
+        for name in ("previous_structure_button", "next_structure_button", "auto_switch_button", "struct_index_spinbox"):
+            widget = getattr(self, name, None)
+            if widget is not None:
+                widget.setEnabled(ready and active > 0 and not busy)
+        if not ready or active == 0 or busy:
+            self._stop_playback()
+
     def _on_nep_model_changed(self, index):
         """Handle NEP model file switch in the combo box."""
         # Ignore during initial setup or programmatic updates
         if getattr(self, '_updating_nep_combo', False):
             return
 
-        # Ignore if still loading initial data
-        if getattr(self, '_initial_loading', False):
+        if getattr(self, "_load_relay", None) is not None:
+            self._queue_after_load(lambda: self._on_nep_model_changed(index))
             return
 
         # Preserve current selection for both cached and reloaded paths.
@@ -641,6 +665,19 @@ class ShowNepWidget(QWidget):
             self.nep_model_combo.blockSignals(False)
             self._updating_nep_combo = False
 
+    def _select_loaded_model(self):
+        combo = getattr(self, "nep_model_combo", None)
+        model_path = getattr(self.nep_result_data, "nep_txt_path", None)
+        if combo is None or model_path is None:
+            return
+        index = next((i for i, path in enumerate(self._available_nep_files)
+                      if path.resolve() == Path(model_path).resolve()), 0)
+        blocked = combo.blockSignals(True)
+        try:
+            combo.setCurrentIndex(index)
+        finally:
+            combo.blockSignals(blocked)
+
     def _reload_with_nep_file(self, xyz_path, nep_file):
         """Reload the dataset using a specific NEP model file.
         
@@ -651,6 +688,9 @@ class ShowNepWidget(QWidget):
         nep_file : Path
             Path to the NEP model file to use.
         """
+        if getattr(self, "_load_relay", None) is not None:
+            self._queue_after_load(lambda: self._reload_with_nep_file(xyz_path, nep_file))
+            return
         if self.nep_result_data is None:
             return
         cache_outputs_override = getattr(
@@ -659,7 +699,7 @@ class ShowNepWidget(QWidget):
             None,
         )
 
-        # Snapshot reusable structures before stopping threads (fast model switch).
+        # Reuse loaded structures without re-reading the dataset.
         prefetched_structures = None
         try:
             if getattr(self.nep_result_data, "load_flag", False) and hasattr(self.nep_result_data, "structure"):
@@ -667,12 +707,10 @@ class ShowNepWidget(QWidget):
         except Exception:
             prefetched_structures = None
 
-        # Stop any ongoing loading
-        self.stop_loading()
-
         # Store current selection state
         selected_indices = list(self.nep_result_data.select_index) if hasattr(self.nep_result_data, 'select_index') else []
         reject_indices = list(getattr(self.nep_result_data, "reject_index", set()))
+        modified_fields = tuple(getattr(self.nep_result_data, "_modified_reference_fields", ()))
         
         tip = StateToolTip(self.tr("Switching NEP model"), self.tr("Please wait..."), self)
         tip.show()
@@ -700,50 +738,32 @@ class ShowNepWidget(QWidget):
             ):
                 reload_kwargs["cache_outputs"] = cache_outputs_override
             try:
-                self.nep_result_data = dataset_cls.from_path(
+                result_data = dataset_cls.from_path(
                     data_path,
                     model_type=model_type,
                     **reload_kwargs,
                 )
             except TypeError:
                 # Fallback for loaders that don't accept model_type.
-                self.nep_result_data = dataset_cls.from_path(
+                result_data = dataset_cls.from_path(
                     data_path,
                     **reload_kwargs,
                 )
-            self.nep_result_data.set_cache_outputs_override(
+            result_data.set_cache_outputs_override(
                 cache_outputs_override
             )
-            self.nep_result_data._loaded_model_hash = _model_file_digest(nep_file)
+            result_data._loaded_model_hash = _model_file_digest(nep_file)
 
-            # Start loading in a new thread
-            self.load_thread = QThread(self)
-            tip.closedSignal.connect(self.stop_loading)
-            self.nep_result_data.move_to_load_thread(self.load_thread)
-            result_data = self.nep_result_data
-            completion_relay = _LoadCompletionRelay(
-                tip,
-                result_data,
-                (
-                    self.set_dataset,
-                    lambda: self._restore_reject(reject_indices),
-                    lambda: self._restore_selection(selected_indices),
-                ),
-                self,
-            )
-            self.load_thread.finished.connect(completion_relay.handle_finished)
-
-            self.nep_result_data.loadFinishedSignal.connect(self.load_thread.quit)
-            self.nep_result_data.predictionStatusSignal.connect(
-                completion_relay.update_content
-            )
-            self.load_thread.started.connect(self.nep_result_data.load)
-            self.load_thread.start()
-            self._refresh_export_actions()
+            self._start_result_load(result_data, tip, (
+                lambda: result_data.sync_structures(modified_fields),
+                self.set_dataset,
+                lambda: self._restore_reject(reject_indices),
+                lambda: self._restore_selection(selected_indices),
+            ))
 
         except Exception as error:
             logger.debug(traceback.format_exc())
-            tip.setState(False)
+            tip.close()
             MessageManager.send_error_message(
                 self.tr("Failed to switch NEP model") + f": {error}"
             )
@@ -1170,6 +1190,7 @@ class ShowNepWidget(QWidget):
         if not self._dataset_ready():
             MessageManager.send_info_message(self.tr("NEP data has not been loaded yet!"))
             return
+        data = self.nep_result_data
         choice = self._choose_export_format()
         if choice is None:
             return
@@ -1180,14 +1201,14 @@ class ShowNepWidget(QWidget):
         thread = BackgroundTask(self, show_tip=True, title="Exporting data")
         if fmt in {"deepmd/npy", "deepmd/npy/mixed"}:
             thread.start_work(
-                self.nep_result_data.export_model_npy,
+                data.prepare_export("all", npy=True),
                 path,
                 npy_format="mixed" if fmt.endswith("/mixed") else "standard",
                 group_by_config_type=group_by_config_type,
                 mixed_atom_numb_pad=mixed_atom_numb_pad,
             )
         else:
-            thread.start_work(self.nep_result_data.export_model_extxyz, path)
+            thread.start_work(data.prepare_export("all"), path)
 
     def export_active_structures(self):
         """Export active (non-removed) structures in either XYZ or deepmd/npy format."""
@@ -1201,6 +1222,7 @@ class ShowNepWidget(QWidget):
         if active == 0:
             MessageManager.send_info_message(self.tr("No active structures to export."))
             return
+        data = self.nep_result_data
         choice = self._choose_export_format()
         if choice is None:
             return
@@ -1211,7 +1233,7 @@ class ShowNepWidget(QWidget):
             if not path:
                 return
             thread.start_work(
-                self.nep_result_data.export_active_npy,
+                data.prepare_export("active", npy=True),
                 path,
                 npy_format="mixed" if fmt.endswith("/mixed") else "standard",
                 group_by_config_type=group_by_config_type,
@@ -1228,7 +1250,7 @@ class ShowNepWidget(QWidget):
         )
         if not path:
             return
-        thread.start_work(self.nep_result_data.export_active_xyz, path)
+        thread.start_work(data.prepare_export("active"), path)
 
     def export_selected_structures(self):
         """Export the currently selected subset of structures.
@@ -1244,6 +1266,7 @@ class ShowNepWidget(QWidget):
         if len(self.nep_result_data.select_index) == 0:
             MessageManager.send_info_message(self.tr("Please select some structures first!"))
             return
+        data = self.nep_result_data
         choice = self._choose_export_format()
         if choice is None:
             return
@@ -1254,7 +1277,7 @@ class ShowNepWidget(QWidget):
                 return
             thread = BackgroundTask(self, show_tip=True, title="Exporting data")
             thread.start_work(
-                self.nep_result_data.export_selected_npy,
+                data.prepare_export("selected", npy=True),
                 path,
                 npy_format="mixed" if fmt.endswith("/mixed") else "standard",
                 group_by_config_type=group_by_config_type,
@@ -1271,7 +1294,7 @@ class ShowNepWidget(QWidget):
             if not path:
                 return
             thread = BackgroundTask(self, show_tip=True, title="Exporting data")
-            thread.start_work(self.nep_result_data.export_selected_xyz, path)
+            thread.start_work(data.prepare_export("selected"), path)
 
     def export_removed_structures(self):
         """Export removed structures in either XYZ or deepmd/npy format."""
@@ -1282,6 +1305,7 @@ class ShowNepWidget(QWidget):
         if removed == 0:
             MessageManager.send_info_message(self.tr("No removed structures to export."))
             return
+        data = self.nep_result_data
         choice = self._choose_export_format()
         if choice is None:
             return
@@ -1292,7 +1316,7 @@ class ShowNepWidget(QWidget):
                 return
             thread = BackgroundTask(self, show_tip=True, title="Exporting data")
             thread.start_work(
-                self.nep_result_data.export_removed_npy,
+                data.prepare_export("removed", npy=True),
                 path,
                 npy_format="mixed" if fmt.endswith("/mixed") else "standard",
                 group_by_config_type=group_by_config_type,
@@ -1309,7 +1333,7 @@ class ShowNepWidget(QWidget):
             if not path:
                 return
             thread = BackgroundTask(self, show_tip=True, title="Exporting data")
-            thread.start_work(self.nep_result_data.export_removed_xyz, path)
+            thread.start_work(data.prepare_export("removed"), path)
 
     def set_work_path(self, path:str):
         """Validate and load a NEP dataset from the specified path.
@@ -1366,6 +1390,7 @@ class ShowNepWidget(QWidget):
         if not self.nep_result_data.load_flag :
             self.nep_result_data=None   # pyright:ignore
             return
+        self._structure_content_version_seen = getattr(self.nep_result_data, "_content_revision", 0)
         if not hasattr(self.nep_result_data, "reject_index") or self.nep_result_data.reject_index is None:
             self.nep_result_data.reject_index = set()
         structure_count = int(self.nep_result_data.structure.all_data.shape[0])
@@ -1674,6 +1699,12 @@ class ShowNepWidget(QWidget):
             Schedules dataset loading on a worker thread.
         """
         
+        if getattr(self, "_load_relay", None) is not None:
+            self._queue_after_load(lambda: self.check_nep_result(
+                path, structures=structures, cache_outputs=cache_outputs, source_name=source_name
+            ))
+            return
+        self._stop_playback()
         self._invalidate_background_jobs()
         # Set flag to prevent model change during initial load
         self._initial_loading = True
@@ -1696,11 +1727,12 @@ class ShowNepWidget(QWidget):
         self._nep_result_cache.clear()
         
         load_error = None
+        result_data = None
         try:
             if structures is None:
-                self.nep_result_data = load_result_data(logical_path)  # type: ignore
+                result_data = load_result_data(logical_path)  # type: ignore
             else:
-                self.nep_result_data = NepTrainResultData.from_path(
+                result_data = NepTrainResultData.from_path(
                     logical_path,
                     structures=list(structures),
                     nep_txt_path=get_bundled_nep89_path(),
@@ -1708,12 +1740,12 @@ class ShowNepWidget(QWidget):
                 )
         except DumpImportCancelled:
             self._initial_loading = False
+            self._refresh_export_actions()
             MessageManager.send_info_message(self.tr("LAMMPS dump import cancelled."))
             return
         except Exception as error:
             load_error = error
             logger.debug(traceback.format_exc())
-            self.nep_result_data = None   # pyright:ignore
             MessageManager.send_error_message(
                 f"Failed to load dataset: {error}. "
                 "If official NEP .out files already exist, keep a complete set "
@@ -1721,115 +1753,114 @@ class ShowNepWidget(QWidget):
                 "dataset directory."
             )
 
-        if self.nep_result_data is None:
+        if result_data is None:
             self._initial_loading = False
+            self._refresh_export_actions()
             if load_error is None:
                 MessageManager.send_warning_message(
                     self.tr("unsupported file format")
                 )
             return
-        self.nep_result_data.set_cache_outputs_override(cache_outputs)
-        self.nep_result_data._loaded_model_hash = _model_file_digest(
-            getattr(self.nep_result_data, "nep_txt_path", None)
+        result_data.set_cache_outputs_override(cache_outputs)
+        result_data._loaded_model_hash = _model_file_digest(
+            getattr(result_data, "nep_txt_path", None)
         )
 
-        if in_memory:
-            self._set_path_label_text(self.tr("Current dataset: {name}"), name=file_name)
-            self.path_label.setUrl(QUrl())
-        else:
-            self._set_path_label_text(self.tr("Current file: {file_name}"), file_name=file_name)
-            self.path_label.setUrl(QUrl.fromLocalFile(show_path))
+        def publish_context():
+            if in_memory:
+                self._set_path_label_text(self.tr("Current dataset: {name}"), name=file_name)
+                self.path_label.setUrl(QUrl())
+            else:
+                self._set_path_label_text(self.tr("Current file: {file_name}"), file_name=file_name)
+                self.path_label.setUrl(QUrl.fromLocalFile(show_path))
         
-        # Detect and populate NEP model files for combo box
-        model_dir = show_path
-        try:
-            nep_txt_path = getattr(self.nep_result_data, "nep_txt_path", None)
-            if isinstance(nep_txt_path, Path):
-                model_dir = str(nep_txt_path.parent)
-        except Exception:
+            # Detect and populate NEP model files for combo box
             model_dir = show_path
-        self._update_nep_model_combo(model_dir)
+            try:
+                nep_txt_path = getattr(result_data, "nep_txt_path", None)
+                if isinstance(nep_txt_path, Path):
+                    model_dir = str(nep_txt_path.parent)
+            except Exception:
+                model_dir = show_path
+            self._update_nep_model_combo(model_dir)
         
-        # Set the current model in combo box without triggering change event
-        if self._available_nep_files:
-            self._updating_nep_combo = True
-            current_nep = self.nep_result_data.nep_txt_path
-            
-            # Try to match current nep file
-            matched = False
-            for idx, nep_file in enumerate(self._available_nep_files):
-                try:
-                    if nep_file.samefile(current_nep):
-                        self.nep_model_combo.setCurrentIndex(idx)
-                        matched = True
-                        break
-                except Exception:
-                    pass
-            
-            # If no match found, use the first one (default)
-            if not matched:
-                self.nep_model_combo.setCurrentIndex(0)
-            
-            self._updating_nep_combo = False
+            self._select_loaded_model()
         
-        # self.graph_widget.set_dataset(self.dataset)
-        self.load_thread=QThread(self)
+
         tip = StateToolTip(self.tr("Loading"), self.tr("Please wait patiently..."), self)
         tip.show()
-        tip.closedSignal.connect(self.stop_loading)
-        self.nep_result_data.move_to_load_thread(self.load_thread)
-        result_data = self.nep_result_data
-        completion_relay = _LoadCompletionRelay(
-            tip,
-            result_data,
-            (self.set_dataset, self._on_initial_load_complete),
-            self,
-        )
-        self.load_thread.finished.connect(completion_relay.handle_finished)
+        self._start_result_load(result_data, tip, (publish_context, self.set_dataset))
 
-        self.nep_result_data.loadFinishedSignal.connect(self.load_thread.quit)
-        self.nep_result_data.predictionStatusSignal.connect(
-            completion_relay.update_content
-        )
-        self.load_thread.started.connect(self.nep_result_data.load)
-        self.load_thread.start()
+    def _queue_after_load(self, callback):
+        self.stop_loading()
+        self._pending_load = callback
 
-        # self.nep_result_data.load()
-    
-    def _on_initial_load_complete(self):
-        """Mark initial loading as complete, enable model switching."""
-        self._initial_loading = False
+    def _start_result_load(self, result_data, tip, callbacks):
+        self._stop_playback()
+        self._invalidate_background_jobs()
+        thread = QThread(self)
+        self.load_thread = thread
+        self._loading_data = result_data
+        self._load_cancel_requested = False
+
+        def is_current():
+            closing = getattr(getattr(self.window(), "_thread_shutdown", None), "closing", False)
+            return self._load_relay is relay and not self._load_cancel_requested and not closing
+
+        def publish():
+            if result_data.load_flag:
+                self.nep_result_data = result_data
+                for callback in callbacks:
+                    callback()
+
+        relay = _LoadCompletionRelay(tip, result_data, (publish,), self,
+            is_current=is_current, on_finished=lambda: self._finish_result_load(thread, relay))
+        self._load_relay = relay
+
+        def cancel_current():
+            if self._load_relay is relay and thread.isRunning():
+                self.stop_loading()
+
+        tip.closedSignal.connect(cancel_current)
+        result_data.move_to_load_thread(thread)
+        thread.finished.connect(relay.handle_finished)
+        result_data.loadFinishedSignal.connect(thread.quit)
+        result_data.predictionStatusSignal.connect(relay.update_content)
+        thread.started.connect(result_data.load)
+        thread.start()
         self._refresh_export_actions()
+
+    def _finish_result_load(self, thread, relay):
+        if self._load_relay is not relay:
+            thread.deleteLater()
+            return
+        self._load_relay = None
+        self._loading_data = None
+        self.load_thread = None
+        self._initial_loading = False
+        thread.deleteLater()
+        pending, self._pending_load = self._pending_load, None
+        if pending is None:
+            self._select_loaded_model()
+        self._refresh_export_actions()
+        closing = getattr(getattr(self.window(), "_thread_shutdown", None), "closing", False)
+        if pending is not None and not closing:
+            pending()
 
     def stop_loading(self):
-        """Stop ongoing background loading threads safely.
-
-        Returns
-        -------
-        None
-            Attempts to cancel the worker thread and reset state.
-        """
-
+        """Request cancellation; the finished signal safely releases worker state."""
         self._invalidate_background_jobs()
-        # Request cooperative cancel for structure IO and NEP calc
-        if self.nep_result_data is not None:
-            try:
-                # propagate to both structure loader and calculator
-                if hasattr(self.nep_result_data, "request_cancel"):
-                    self.nep_result_data.request_cancel()
-                else:
-                    self.nep_result_data.nep_calc.cancel()
-            except Exception:
-                pass
-        # Politely stop the worker thread's event loop
-        try:
-            if self.load_thread is not None and self.load_thread.isRunning():
-                self.load_thread.quit()
-                self.load_thread.wait()
-        except Exception:
-            pass
+        self._stop_playback()
+        self._pending_load = None
+        self._load_cancel_requested = True
+        data = getattr(self, "_loading_data", None)
+        if data is not None:
+            data.request_cancel()
+        thread = getattr(self, "load_thread", None)
+        if thread is not None and thread.isRunning():
+            thread.requestInterruption()
+            thread.quit()
         self._refresh_export_actions()
-        #     self.nep_result_data.nep_calc_thread.stop()
 
     def _on_search_type_changed(self, search_type: SearchType) -> None:
         """Apply a cached completer dictionary for the given search type without blocking UI."""
@@ -1924,54 +1955,35 @@ class ShowNepWidget(QWidget):
         thread = run_in_thread(self, _compute, on_finished=_on_done, on_error=_on_err)
         self._track_worker_thread(thread)
 
+    def _navigation_indices(self):
+        if not self._dataset_ready() or self._is_busy():
+            return np.empty(0, dtype=np.int64)
+        data = self.nep_result_data
+        active = np.asarray(data.structure.group_array.now_data, dtype=np.int64)
+        selected = np.intersect1d(list(data.select_index), active)
+        return np.sort(selected if selected.size else active)
+
     def to_last_structure(self):
-        """Select the previous structure in the current result set.
-
-        Returns
-        -------
-        Optional[int]
-            Index of the new structure, or ``None`` if navigation failed.
-        """
-
-        if self.nep_result_data is None:
-            return None
-        current_index = self.struct_index_spinbox.value()
-        if self.nep_result_data.select_index:
-
-            sort_index = np.sort(np.array(list(self.nep_result_data.select_index)) )
-        else:
-            sort_index = np.sort(self.nep_result_data.structure.group_array.now_data, axis=0)
-        index = np.searchsorted(sort_index, current_index, side='left')
-
-        self.struct_index_spinbox.setValue(int(sort_index[index-1 if index>0 else index]))
-
-    # @timeit
+        indices = self._navigation_indices()
+        if not indices.size:
+            return
+        position = np.searchsorted(indices, self.struct_index_spinbox.value(), side="left")
+        self.struct_index_spinbox.setValue(int(indices[max(0, position - 1)]))
 
     def to_next_structure(self):
-        """Advance to the next structure respecting current selections.
-
-        Returns
-        -------
-        Optional[int]
-            Index of the new structure, or ``None`` if navigation failed.
-        """
-        if self.nep_result_data is None:
-            return None
-        current_index=self.struct_index_spinbox.value()
-        if self.nep_result_data.select_index:
-            sort_index = np.sort(np.array(list(self.nep_result_data.select_index)) )
-
-        else:
-            sort_index = np.sort(self.nep_result_data.structure.group_array.now_data, axis=0)
-        index = np.searchsorted(sort_index, current_index, side='right')
-        if index>=sort_index.shape[0]:
-            return False
-        self.struct_index_spinbox.setValue(int(sort_index[index]))
-
-        if index==sort_index.shape[0]-1:
+        """Advance once and report whether playback has reached its end."""
+        indices = self._navigation_indices()
+        position = np.searchsorted(indices, self.struct_index_spinbox.value(), side="right")
+        if position >= indices.size:
             return True
-        else:
-            return False
+        self.struct_index_spinbox.setValue(int(indices[position]))
+        return position == indices.size - 1
+
+    def _stop_playback(self):
+        button = getattr(self, "auto_switch_button", None)
+        if button is not None:
+            button.setChecked(False)
+            self.start_play()
 
     def start_play(self):
         """Toggle automatic iteration of structures in the viewer.
@@ -1981,12 +1993,13 @@ class ShowNepWidget(QWidget):
         None
             Starts or stops the play timer based on the toggle state.
         """
-        if self.auto_switch_button.isChecked():
+        if self.auto_switch_button.isChecked() and self._navigation_indices().size:
             self.auto_switch_button.setIcon(FluentIcon.PAUSE)
             self.auto_switch_button.setToolTip(self.tr("Pause structures"))
             self.auto_switch_button.setAccessibleName(self.tr("Pause structures"))
             self.play_timer.start(50)
         else:
+            self.auto_switch_button.setChecked(False)
             self.auto_switch_button.setIcon(FluentIcon.PLAY)
             self.auto_switch_button.setToolTip(self.tr("Play structures"))
             self.auto_switch_button.setAccessibleName(self.tr("Play structures"))
@@ -2001,15 +2014,14 @@ class ShowNepWidget(QWidget):
             Stops autoplay when there are no further structures.
         """
         if self.to_next_structure():
-            self.auto_switch_button.click()
+            self._stop_playback()
 
     def export_single_struct(self):
         """Backward-compatible handler used by the structure toolbar export button."""
         self.export_current_structure()
 
-    def _export_current_xyz(self, save_file_path: str, index: int) -> None:
+    def _export_current_xyz(self, save_file_path: str, atoms) -> None:
         """Write a single structure to an XYZ file (runs in background thread)."""
-        atoms = self.nep_result_data.get_atoms(index)
         atomic_float_digits = get_export_significant_digits()
         write_structures_extxyz_atomic(
             save_file_path,
@@ -2025,6 +2037,7 @@ class ShowNepWidget(QWidget):
         if not self._dataset_ready():
             MessageManager.send_info_message(self.tr("NEP data has not been loaded yet!"))
             return
+        data = self.nep_result_data
         index = int(self.struct_index_spinbox.value())
         choice = self._choose_export_format()
         if choice is None:
@@ -2036,9 +2049,8 @@ class ShowNepWidget(QWidget):
                 return
             thread = BackgroundTask(self, show_tip=True, title="Exporting data")
             thread.start_work(
-                self.nep_result_data.export_current_npy,
+                data.prepare_export("current", npy=True, index=index),
                 path,
-                index,
                 npy_format="mixed" if fmt.endswith("/mixed") else "standard",
                 group_by_config_type=group_by_config_type,
                 mixed_atom_numb_pad=mixed_atom_numb_pad,
@@ -2055,7 +2067,7 @@ class ShowNepWidget(QWidget):
         if not path:
             return
         thread = BackgroundTask(self, show_tip=True, title="Exporting data")
-        thread.start_work(self._export_current_xyz, path, index)
+        thread.start_work(self._export_current_xyz, path, data.get_atoms(index).copy())
 
     def _get_arrow_source_dataset(self, candidate_names: tuple[str, ...]):
         data = getattr(self, "nep_result_data", None)
@@ -2796,6 +2808,19 @@ class ShowNepWidget(QWidget):
         None
             Renders aggregated counts in the footer label.
         """
+        if not self._dataset_ready():
+            return
+        revision = getattr(self.nep_result_data, "_content_revision", 0)
+        if revision != getattr(self, "_structure_content_version_seen", 0):
+            self._structure_content_version_seen = revision
+            self._nep_result_cache.clear()
+            self._structure_analysis_job_id += 1
+            self._structure_analysis_cache.clear()
+            self._arrow_vector_lookup_cache.clear()
+            self._phase_evidence_dataset_id = None
+            self._phase_evidence_lookup.clear()
+            self.graph_widget.canvas.plot_nep_result(preserve_selection=True)
+            self._update_structure_filter_suggestions()
         rej = 0
         try:
             rej = len(self._active_reject_indices())

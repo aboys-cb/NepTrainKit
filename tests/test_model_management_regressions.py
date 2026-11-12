@@ -59,7 +59,8 @@ def test_explicit_dataset_load_clears_model_cache_even_in_same_folder(tmp_path, 
     path = tmp_path / "test.xyz"
     path.touch()
     viewer = SimpleNamespace(_nep_result_cache={tmp_path / "nep.txt": object()},
-        _invalidate_background_jobs=Mock(), _refresh_export_actions=Mock(), tr=lambda text: text)
+        _invalidate_background_jobs=Mock(), _refresh_export_actions=Mock(), _stop_playback=Mock(),
+        tr=lambda text: text)
     def cancel(_path):
         raise show_nep.DumpImportCancelled()
     monkeypatch.setattr(show_nep, "load_result_data", cancel)

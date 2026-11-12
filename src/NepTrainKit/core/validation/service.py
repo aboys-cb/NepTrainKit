@@ -15,7 +15,7 @@ from dataclasses import dataclass
 from importlib.metadata import PackageNotFoundError, version
 from pathlib import Path
 
-from sqlalchemy import delete, select
+from sqlalchemy import delete, select, func
 
 from NepTrainKit.core.dataset.models import (
     BenchmarkRun,
@@ -759,20 +759,48 @@ class ValidationService:
                     }
                 )
         baseline_id = suite["baseline_model_id"] if suite else None
-        if model_ids is None:
-            with self.db.session() as session:
-                set_ids = [benchmark["id"] for benchmark in sets]
-                model_ids = list(
-                    session.scalars(
-                        select(BenchmarkRun.model_id).where(BenchmarkRun.set_id.in_(set_ids)).distinct()
-                    )
-                )
+        include_compatible = model_ids is None
+        with self.db.session() as session:
+            models = {
+                row.id: _record(row) for row in session.scalars(select(ModelVersion).order_by(
+                    ModelVersion.last_seen_at.desc(), ModelVersion.id.desc()
+                ))
+            }
+            set_ids = [benchmark["id"] for benchmark in sets if benchmark["id"] not in self._temporary_sets]
+            if include_compatible:
+                model_ids = list(session.scalars(select(BenchmarkRun.model_id).where(
+                    BenchmarkRun.set_id.in_(set_ids)
+                ).distinct()))
+            ranked = select(
+                BenchmarkRun.id,
+                func.row_number().over(
+                    partition_by=(func.coalesce(ModelVersion.content_hash, ModelVersion.id),
+                                  BenchmarkRun.set_id, BenchmarkRun.protocol_version),
+                    order_by=BenchmarkRun.created_at.desc(),
+                ).label("rank"),
+            ).join(ModelVersion, BenchmarkRun.model_id == ModelVersion.id).where(
+                BenchmarkRun.set_id.in_(set_ids)
+            ).subquery()
+            records = [_record(row) for row in session.scalars(select(BenchmarkRun).join(
+                ranked, BenchmarkRun.id == ranked.c.id
+            ).where(ranked.c.rank == 1))]
+        latest = {}
+        for run in records:
+            model = models[run["model_id"]]
+            identity = model["content_hash"] or model["id"]
+            latest.setdefault((identity, run["set_id"], run["protocol_version"]), run)
+        if include_compatible:
             # Show compatible snapshots before their first run, including newly opened models.
             model_ids.extend(
-                model["id"] for model in self.models()
-                if not sets or any(set(benchmark["elements"]) <= set(model["elements"] or ()) for benchmark in sets)
+                model["id"] for model in models.values()
+                if model["content_hash"] and (
+                    not sets or any(set(benchmark["elements"]) <= set(model["elements"] or ()) for benchmark in sets)
+                )
             )
         model_ids = list(dict.fromkeys([*(model_ids or [])] + ([baseline_id] if baseline_id else [])))
+        for model_id in model_ids:
+            if model_id not in models:
+                raise ValueError(f"Unknown model version: {model_id}")
 
         def cells_for(model_id):
             runs = {}
@@ -780,7 +808,13 @@ class ValidationService:
             for column in columns:
                 key = column["set_id"]
                 if key not in runs:
-                    runs[key] = self.latest_run(model_id, key, protocol_version=column["protocol_version"])
+                    version = column["protocol_version"]
+                    if key in self._temporary_sets:
+                        run = self._temporary_runs.get((model_id, key))
+                        runs[key] = run if run and run["protocol_version"] == version else None
+                    else:
+                        model = models[model_id]
+                        runs[key] = latest.get((model["content_hash"] or model_id, key, version))
                     run = runs[key]
                     if run and run["status"] == "succeeded" and not _finite_metrics(run["metrics"]):
                         # Old libraries may contain successful runs with NaN/Inf metrics.
@@ -803,7 +837,7 @@ class ValidationService:
         project_names = {project["id"]: project["name"] for project in self.projects()}
         rows = []
         for model_id in model_ids:
-            model = self.get_model(model_id)
+            model = models[model_id]
             cells = cells_for(model_id) if model_id != baseline_id else baseline_cells
             for index, cell in enumerate(cells):
                 cell = dict(cell)
@@ -854,6 +888,8 @@ class ValidationService:
 
         Starred models, baselines and manually captured models are never removed.
         """
+        from NepTrainKit.core.dataset.services import preserve_shared_model_runs
+
         cutoff = _now() - dt.timedelta(days=older_than_days)
         with self.db.session() as session:
             baselines = set(
@@ -873,6 +909,7 @@ class ValidationService:
                 if row.id not in baselines and not row.children
             ]
             stale_ids = [row.id for row in stale]
+            transfers = preserve_shared_model_runs(session, stale_ids, dry_run=dry_run)
             keep_models = set(
                 session.scalars(
                     select(ModelVersion.content_hash).where(
@@ -886,7 +923,9 @@ class ValidationService:
             )
             keep_results = set(
                 session.scalars(
-                    select(BenchmarkRun.result_path).where(BenchmarkRun.model_id.not_in(stale_ids))
+                    select(BenchmarkRun.result_path).where(
+                        BenchmarkRun.model_id.not_in(set(stale_ids) - transfers.keys())
+                    )
                 )
             )
             if not dry_run and stale_ids:

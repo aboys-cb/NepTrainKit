@@ -1320,9 +1320,6 @@ class ModelInfoMessageBox(MessageBoxBase):
         self.energy_spinBox = LineEdit(rmseCard)
         self.force_spinBox = LineEdit(rmseCard)
         self.virial_spinBox = LineEdit(rmseCard)
-        self.energy_spinBox.setText("0")
-        self.force_spinBox.setText("0")
-        self.virial_spinBox.setText("0")
 
         validator = QDoubleValidator(bottom=-1e12, top=1e12, decimals=2)
         for w in (self.energy_spinBox, self.force_spinBox, self.virial_spinBox):
@@ -1442,10 +1439,7 @@ class ModelInfoMessageBox(MessageBoxBase):
                 MessageManager.send_message_box(
                     self.tr("No 'train.xyz' training data file found in the specified path. This file is required to compute training error metrics; please make sure you know what you are doing.")
                 )
-                # data_size=0
-                energy = 0
-                force = 0
-                virial = 0
+                return
             else:
                 metric_specs = (
                     (
@@ -1498,14 +1492,10 @@ class ModelInfoMessageBox(MessageBoxBase):
 
                 return
 
-            self.force_spinBox.setText(str(round(force, 2)))
-            self.energy_spinBox.setText(str(round(energy, 2)))
-            self.virial_spinBox.setText(str(round(virial, 2)))
-
     def get_dict(self):
         path = Path(self.train_path_edit.text())
         data_file = path.joinpath("train.xyz")
-        data_size = get_xyz_nframe(data_file)
+        data_size = get_xyz_nframe(data_file) if data_file.is_file() else None
         return dict(
             # project_id=self.,
             name=self.model_name_edit.text().strip(),

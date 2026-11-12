@@ -22,6 +22,7 @@ from NepTrainKit.core import MessageManager
 from NepTrainKit.core.dataset import DatasetManager
 from NepTrainKit.core.dataset.services import ProjectItem, ModelItem
 from NepTrainKit.core.types import ModelTypeIcon
+from NepTrainKit.ui.messages import translate_runtime_error
 from NepTrainKit.ui.widgets import TreeModel, TreeItem, TagDelegate
 from NepTrainKit.ui.widgets import ModelInfoMessageBox, AdvancedModelSearchDialog, TagManageDialog
 
@@ -322,8 +323,17 @@ class ModelItemWidget(QWidget, DatasetManager):
             return
         box = ModelInfoMessageBox(self._parent)
         index = self._current_index()
+        excluded = set()
+        if modify and index.isValid():
+            pending = [self.model_item_dict[index.internalPointer().data(0)]]
+            while pending:
+                model = pending.pop()
+                excluded.add(model.model_id)
+                pending.extend(model.children)
         box.parent_combox.addItem(self.tr("Top model"), userData=None)
         for model in self.model_item_dict.values():
+            if model.model_id in excluded:
+                continue
             box.parent_combox.addItem(
                 f"{model.model_id}-{model.name}",
                 userData=model.model_id,
@@ -366,13 +376,15 @@ class ModelItemWidget(QWidget, DatasetManager):
             return
 
         data = box.get_dict()
-        data["project_id"] = self.project.project_id
+        data["project_id"] = current_model.project_id if modify else self.project.project_id
+        if modify and "data_size" in data and data["data_size"] is None:
+            data["data_size"] = current_model.data_size
 
         if modify:
             try:
                 saved = self.model_service.modify_model(current_model.model_id, **data)
             except (OSError, ValueError) as error:
-                MessageManager.send_error_message(str(error))
+                MessageManager.send_error_message(translate_runtime_error(error))
                 return
             self.load_models_by_project(self.project)
             self.modelsChanged.emit(saved.id)

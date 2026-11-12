@@ -8,18 +8,47 @@ from typing import Iterable
 from dataclasses import dataclass, field
 
 from loguru import logger
-from sqlalchemy import select, func, distinct
+from sqlalchemy import select, func, distinct, case, update
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import aliased
 
 from .database import Database
 from .models import (
 
-    Tag,ModelVersionTag,
+    Tag,ModelVersionTag, BenchmarkRun,
     Project,
     ModelVersion,
 )
 from NepTrainKit.core.utils import read_nep_in, read_nep_out_file, get_rmse, get_xyz_nframe
+
+
+def _descendant_ids(session, model, roots):
+    descendants = select(model.id).where(model.id.in_(roots)).cte(recursive=True)
+    descendants = descendants.union(select(model.id).where(model.parent_id == descendants.c.id))
+    return set(session.scalars(select(descendants.c.id)))
+
+
+def preserve_shared_model_runs(session, removed_ids, *, dry_run=False):
+    """Transfer shared run ownership before model/project cascades remove its owner."""
+    if not removed_ids:
+        return {}
+    removed = dict(session.execute(
+        select(ModelVersion.id, ModelVersion.content_hash).where(ModelVersion.id.in_(removed_ids))
+    ).all())
+    survivors = {}
+    for model_id, digest in session.execute(
+        select(ModelVersion.id, ModelVersion.content_hash).where(
+            ModelVersion.id.not_in(removed_ids),
+            ModelVersion.content_hash.in_([value for value in removed.values() if value]),
+        ).order_by(ModelVersion.project_id.is_(None), ModelVersion.id)
+    ):
+        survivors.setdefault(digest, model_id)
+    transfers = {model_id: survivors[digest] for model_id, digest in removed.items() if digest in survivors}
+    if transfers and not dry_run:
+        session.execute(update(BenchmarkRun).where(BenchmarkRun.model_id.in_(transfers)).values(
+            model_id=case(transfers, value=BenchmarkRun.model_id)
+        ))
+    return transfers
 
 
 @dataclass
@@ -181,6 +210,10 @@ class ProjectService:
     def remove_project(self, project_id: int) -> Project|None:
         """Delete a project by id."""
         with self.db.session() as session:
+            project_ids = _descendant_ids(session, Project, [project_id])
+            roots = list(session.scalars(select(ModelVersion.id).where(ModelVersion.project_id.in_(project_ids))))
+            removed_ids = _descendant_ids(session, ModelVersion, roots)
+            preserve_shared_model_runs(session, removed_ids)
             session.query(Project).filter_by(id=project_id).delete()
 
 
@@ -263,7 +296,7 @@ class ModelService:
 
             # Tag filter: match any of the provided tags
             if names_any:
-                q = q.join(mv.tags).filter(tg.name.in_(names_any)).distinct()
+                q = q.filter(mv.tags.any(tg.name.in_(names_any)))
 
             # Tag filter: require all provided tags
             if names_all:
@@ -449,6 +482,11 @@ class ModelService:
             project = session.get(Project, project_id)
             if project is None:
                 raise ValueError(f"Project {project} not found")
+            if parent_id is not None:
+                if id is not None and id == parent_id:
+                    raise ValueError("A model cannot be its own ancestor.")
+                if session.get(ModelVersion, parent_id) is None:
+                    raise ValueError(f"ModelVersion {parent_id} not found")
 
             # if parent_id is None:
             #     parent_id = project.active_model_version_id
@@ -528,6 +566,17 @@ class ModelService:
                             kwargs["name"] = original.name[:70] + " · 新版本"
                     else:
                         mv.source_path = draft.source_path
+            if mv is original:
+                ancestor_id = kwargs.get("parent_id", original.parent_id)
+                seen = {original.id}
+                while ancestor_id is not None:
+                    if ancestor_id in seen:
+                        raise ValueError("A model cannot be its own ancestor.")
+                    seen.add(ancestor_id)
+                    ancestor = session.get(ModelVersion, ancestor_id)
+                    if ancestor is None:
+                        raise ValueError(f"ModelVersion {ancestor_id} not found")
+                    ancestor_id = ancestor.parent_id
             tags = kwargs.pop("tags", None)
             if tags is not None:
                 # This helper flushes rather than committing a partial model edit.
@@ -540,6 +589,8 @@ class ModelService:
 
     def remove_model(self, model_id: int) :
         with self.db.session() as session:
+            removed_ids = _descendant_ids(session, ModelVersion, [model_id])
+            preserve_shared_model_runs(session, removed_ids)
             session.query(ModelVersion).filter_by(id=model_id).delete()
             session.commit()
 

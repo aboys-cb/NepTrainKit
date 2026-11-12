@@ -301,6 +301,7 @@ RUNTIME_ERROR_TEMPLATES = (
     ('RuntimeMessage', 'Non-physical structure scanning requires the native audit extension.'),
     ('RuntimeMessage', 'Project {project} not found'),
     ('RuntimeMessage', 'A project cannot be its own ancestor.'),
+    ('RuntimeMessage', 'A model cannot be its own ancestor.'),
     ('RuntimeMessage', 'Provided species length does not match counts in XDATCAR'),
     ('RuntimeMessage', 'Raw structure descriptors are required for physics-aware recommendations.'),
     ('RuntimeMessage', 'Raw structure descriptors do not align with the active dataset.'),

@@ -45,6 +45,7 @@ from NepTrainKit.core.io.lammps_dump import DumpImportCancelled
 from NepTrainKit.core.precision import get_export_significant_digits
 from NepTrainKit.core.structure import write_structures_extxyz_atomic
 from NepTrainKit.core.structure_inspection import inspect_structure
+from NepTrainKit.core.validation.library import sha256_file
 from NepTrainKit.core.types import Brushes, CanvasMode, SearchType
 from NepTrainKit.paths import get_bundled_nep89_path
 from NepTrainKit.ui.canvas.canvas_factory import (
@@ -67,6 +68,13 @@ _ARROW_FORCE_ERROR = "__ntk_force_error"
 _ARROW_DFT_MFORCE = "__ntk_dft_mforce"
 _ARROW_ML_MFORCE = "__ntk_ml_mforce"
 _ARROW_MFORCE_ERROR = "__ntk_mforce_error"
+
+
+def _model_file_digest(path):
+    try:
+        return sha256_file(path) if path is not None else None
+    except OSError:
+        return None
 
 _ARROW_VECTOR_LABELS = {
     _ARROW_DFT_FORCE: "DFT force",
@@ -194,7 +202,6 @@ class ShowNepWidget(QWidget):
         self.nep_result_data=None  # pyright:ignore
         # Cache for NEP result datasets keyed by NEP model path
         self._nep_result_cache: dict[Path, ResultData] = {}
-        self._nep_cache_dir: Path | None = None
         self._initial_loading = False
         self._updating_nep_combo = False
         self._search_job_id = 0
@@ -478,13 +485,17 @@ class ShowNepWidget(QWidget):
             nep_file = self._available_nep_files[index]
             key = nep_file.resolve()
             cached = self._nep_result_cache.get(key)
-            if cached is not None:
+            digest = _model_file_digest(nep_file)
+            if (cached is not None and digest
+                    and getattr(cached, "_loaded_model_hash", None) == digest
+                    and getattr(cached, "data_xyz_path", None) == getattr(self.nep_result_data, "data_xyz_path", None)):
                 # Reuse cached result without reloading
                 self.stop_loading()
                 self.nep_result_data = cached
                 self.set_dataset()
                 self._restore_selection(selected_indices)
                 return
+            self._nep_result_cache.pop(key, None)
 
         if not hasattr(self, 'nep_result_data') or self.nep_result_data is None:
             return
@@ -498,7 +509,9 @@ class ShowNepWidget(QWidget):
         # Check if the selected file is already loaded
         if hasattr(self.nep_result_data, 'nep_txt_path'):
             try:
-                if selected_nep_file.samefile(self.nep_result_data.nep_txt_path):
+                if (selected_nep_file.samefile(self.nep_result_data.nep_txt_path)
+                        and getattr(self.nep_result_data, "_loaded_model_hash", None)
+                        == _model_file_digest(selected_nep_file)):
                     return  # Already using this model
             except Exception:
                 pass
@@ -701,6 +714,7 @@ class ShowNepWidget(QWidget):
             self.nep_result_data.set_cache_outputs_override(
                 cache_outputs_override
             )
+            self.nep_result_data._loaded_model_hash = _model_file_digest(nep_file)
 
             # Start loading in a new thread
             self.load_thread = QThread(self)
@@ -1377,9 +1391,12 @@ class ShowNepWidget(QWidget):
             self.nep_result_data.updateInfoSignal.connect(self.update_dataset_info)
             self.nep_result_data._info_connected = True
         self.nep_result_data.updateInfoSignal.emit()
-        # Cache current dataset by its NEP model path for fast switching
+        # Keep the identity of the weights actually opened by the calculator.
+        info = getattr(getattr(self.nep_result_data, "nep_calc", None), "model_info", None)
+        digest = getattr(info, "sha256", None) or getattr(self.nep_result_data, "_loaded_model_hash", None)
+        self.nep_result_data._loaded_model_hash = digest
         nep_path = getattr(self.nep_result_data, "nep_txt_path", None)
-        if isinstance(nep_path, Path):
+        if isinstance(nep_path, Path) and digest and digest == _model_file_digest(nep_path):
             try:
                 self._nep_result_cache[nep_path.resolve()] = self.nep_result_data
             except Exception:
@@ -1402,7 +1419,7 @@ class ShowNepWidget(QWidget):
         self._validation_library_changed = False
         data = self.nep_result_data
         model_path = getattr(data, "nep_txt_path", None)
-        if data is None or model_path is None or not Path(model_path).is_file():
+        if data is None or model_path is None:
             self.refresh_validation_chip()
             return
         try:
@@ -1410,8 +1427,13 @@ class ShowNepWidget(QWidget):
             from NepTrainKit.core.validation.service import ModelDraft
 
             service = ValidationService()
-            self._validation_draft = ModelDraft.from_file(model_path)
-            record = service.find_model_by_hash(self._validation_draft.content_hash)
+            digest = getattr(data, "_loaded_model_hash", None)
+            if Path(model_path).is_file():
+                draft = ModelDraft.from_file(model_path)
+                if digest is None or draft.content_hash == digest:
+                    self._validation_draft = draft
+                    digest = draft.content_hash
+            record = service.find_model_by_hash(digest) if digest else None
             self._validation_model_id = record["id"] if record else None
             self._validation_library_root = service.library.root
         except Exception:
@@ -1670,20 +1692,8 @@ class ShowNepWidget(QWidget):
             else os.path.dirname(logical_path)
         )
 
-        # Reset model cache when switching to a different working directory.
-        if in_memory:
-            resolved_dir = None
-        else:
-            try:
-                resolved_dir = Path(show_path).resolve()
-            except Exception:
-                resolved_dir = None
-        if resolved_dir is not None and resolved_dir != getattr(self, "_nep_cache_dir", None):
-            self._nep_result_cache.clear()
-            self._nep_cache_dir = resolved_dir
-        elif in_memory:
-            self._nep_result_cache.clear()
-            self._nep_cache_dir = None
+        # Each explicit load starts a new dataset, even in the same directory.
+        self._nep_result_cache.clear()
         
         load_error = None
         try:
@@ -1719,6 +1729,9 @@ class ShowNepWidget(QWidget):
                 )
             return
         self.nep_result_data.set_cache_outputs_override(cache_outputs)
+        self.nep_result_data._loaded_model_hash = _model_file_digest(
+            getattr(self.nep_result_data, "nep_txt_path", None)
+        )
 
         if in_memory:
             self._set_path_label_text(self.tr("Current dataset: {name}"), name=file_name)

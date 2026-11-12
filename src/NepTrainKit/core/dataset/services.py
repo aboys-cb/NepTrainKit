@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import datetime
+from contextlib import nullcontext
 from pathlib import Path
 
 from typing import Iterable
@@ -175,13 +176,15 @@ class ProjectService:
             return None
         return projects[0]
 
-    def create_project(self,  name: str, notes: str = "", parent_id: int = None   ) -> Project|None:
+    def create_project(self, name: str, notes: str = "", parent_id: int = None, *, _session=None) -> Project|None:
         """Create a project record and return the ORM instance."""
         try:
-            with self.db.session() as session:
+            with (self.db.session() if _session is None else nullcontext(_session)) as session:
                 family = Project(name=name, notes=notes,parent_id=parent_id )
                 session.add(family)
-                session.commit()
+                session.flush()
+                if _session is None:
+                    session.commit()
                 return family
         except Exception as e:
             logger.error(e)
@@ -209,10 +212,13 @@ class ProjectService:
 
     def remove_project(self, project_id: int) -> Project|None:
         """Delete a project by id."""
-        with self.db.session() as session:
+        with self.db.write_session() as session:
             project_ids = _descendant_ids(session, Project, [project_id])
-            roots = list(session.scalars(select(ModelVersion.id).where(ModelVersion.project_id.in_(project_ids))))
-            removed_ids = _descendant_ids(session, ModelVersion, roots)
+            removed_ids = set(session.scalars(select(ModelVersion.id).where(ModelVersion.project_id.in_(project_ids))))
+            # Lineage is not ownership: a different project's derived version survives.
+            session.execute(update(ModelVersion).where(
+                ModelVersion.parent_id.in_(removed_ids), ModelVersion.id.not_in(removed_ids),
+            ).values(parent_id=None))
             preserve_shared_model_runs(session, removed_ids)
             session.query(Project).filter_by(id=project_id).delete()
 
@@ -473,10 +479,11 @@ class ModelService:
                     tags:list[str] | None = None,
                     notes: str = "",
                     parent_id: int | None = None,
-                    id:int|None = None
+                    id:int|None = None,
+                    *, _session=None,
                     ) -> ModelVersion:
 
-        with self.db.session() as session:
+        with (self.db.session() if _session is None else nullcontext(_session)) as session:
             tag_objs = self._get_or_create_tags_simple(tags or [],session)
 
             project = session.get(Project, project_id)
@@ -524,11 +531,12 @@ class ModelService:
             #     payload_json=json.dumps({"path": path}),
             # )
             # session.add(event)
-            session.commit()
+            if _session is None:
+                session.commit()
             return version
     def modify_model(self, model_id: int, **kwargs) -> ModelVersion:
         """Edit metadata; different model bytes create a new immutable version."""
-        with self.db.session() as session:
+        with self.db.write_session() as session:
             original = session.get(ModelVersion, model_id)
             if original is None:
                 raise ValueError(f"ModelVersion {model_id} not found")

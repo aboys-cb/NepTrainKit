@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import sqlite3
+from contextlib import contextmanager
 from pathlib import Path
 
 from sqlalchemy import create_engine,event
@@ -176,10 +177,23 @@ class Database:
             # Let the GUI and the command line read while the other writes.
             dbapi_conn.execute("PRAGMA busy_timeout=5000;")
         Base.metadata.create_all(self.engine)
-        with self.engine.begin() as conn:
-            conn.exec_driver_sql(f"PRAGMA user_version={SCHEMA_VERSION}")
+        if self.first:
+            with self.engine.begin() as conn:
+                conn.exec_driver_sql(f"PRAGMA user_version={SCHEMA_VERSION}")
         self.Session = sessionmaker(bind=self.engine, expire_on_commit=False, future=True)
 
     def session(self):
         """Create a new SQLAlchemy session."""
         return self.Session()
+
+    @contextmanager
+    def write_session(self):
+        """Serialize file publication/registration and garbage collection across processes."""
+        with self.Session() as session:
+            session.connection().exec_driver_sql("BEGIN IMMEDIATE")
+            try:
+                yield session
+                session.commit()
+            except BaseException:
+                session.rollback()
+                raise

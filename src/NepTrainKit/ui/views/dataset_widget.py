@@ -225,6 +225,7 @@ class ModelItemWidget(QWidget, DatasetManager):
         """Open the tag management dialog and refresh tag data on close."""
         dlg = TagManageDialog(self.tag_service, self._parent)
         dlg.exec_()
+        self.load_models_by_project(self.project)
 
     def _build_tree(self, model: ModelItem, parent: TreeItem) -> TreeItem:
         """Convert a ModelItem into a TreeItem and attach it to the parent.

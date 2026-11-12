@@ -172,7 +172,7 @@ class DataManagerWidget(QWidget):
             if updated is None:
                 self.data_item_widget.load_models_by_project(None)
             else:
-                self.data_item_widget.project = updated
+                self.data_item_widget.load_models_by_project(updated)
         if self.library_widget._run_task is None:
             self.library_widget.refresh()
             reason = getattr(self.library_widget, "_unavailable_models", {}).get(model_id)

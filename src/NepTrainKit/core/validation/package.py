@@ -215,7 +215,7 @@ def import_package(service, preview: PackagePreview, *, name: str, project_name=
     manifest = preview.manifest
     if manifest["models"]:
         project_name = _text(project_name.strip(), "project name", 200)
-    with service.db.session() as session, zipfile.ZipFile(io.BytesIO(preview.data)) as archive:
+    with service.db.write_session() as session, zipfile.ZipFile(io.BytesIO(preview.data)) as archive:
         models, project = {}, None
         if manifest["models"]:
             project = session.scalar(select(Project).where(Project.name == project_name))

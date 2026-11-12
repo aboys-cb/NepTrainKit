@@ -566,14 +566,14 @@ class BenchmarkImportDialog(MessageBoxBase):
         if Path(values["path"]).expanduser().read_bytes() != self._loaded_bytes:
             self._invalidate_file()
             raise ValueError(self.tr("The reference file changed. Load it again and review the new curve."))
-        kwargs = dict(name=values["name"], provenance=values["provenance"], protocol=values["protocol"])
+        kwargs = dict(name=values["name"], provenance=values["provenance"], protocol=values["protocol"],
+                      expected_hash=sha256_bytes(self._loaded_bytes))
         grouped = values["protocol"] == "eos" and bool(self.group_field_combo.currentData())
         if grouped:
             kwargs.pop("protocol")
             kwargs.update(
                 group_field=self.group_field_combo.currentData(),
                 group_names=[group["key"] for group in self.eos_groups if group["include"]],
-                expected_hash=sha256_bytes(self._loaded_bytes),
             )
         importer = service.import_eos_groups if grouped else service.import_set
         try:

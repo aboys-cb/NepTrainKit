@@ -243,3 +243,15 @@ msgstr "On first launch, the legacy `mlpman.db` is **copied** into the library d
 
 msgid "库目录只复制体积小、结果依赖的文件（`nep.txt`、验证集）。训练集等大文件只记录路径和 指纹；文件被移动或修改后会标记出来，不会自动复制你的训练数据。"
 msgstr "The library copies only small files needed to reproduce results (`nep.txt` and benchmark sets). Large files such as training datasets are tracked by path and fingerprint. Moved or modified files are flagged; training data is not copied automatically."
+
+#: ../../source/module/data-management.md:61 14c4e9e3fabd4e8193ed2d789b509a37:None
+msgid "删除项目只删除该项目及其子项目拥有的模型。其他项目的派生版本会保留，并解除指向已删版本的父关系；指向这些保留版本的基准选择和评估记录不受影响。修改项目归属或标签后，当前列表会自动刷新。"
+msgstr "Deleting a project removes only the models owned by that project and its subprojects. Derived versions owned by other projects are retained and detached from deleted parent versions. Baseline selections and evaluation records pointing to those retained versions are preserved. The current list refreshes automatically after project moves or tag changes."
+
+#: ../../source/module/data-management.md:63 62f8ba46dd8544309673c38a76c9df88:None
+msgid "验证集导入会核对已确认预览的文件内容。大文件确认期间文件发生变化时，需要重新加载预览。新建验证方案及其成员、目录批量导入各自作为完整事务提交，失败时数据库记录整体回滚，不留下阻止重试的空方案或部分目录。"
+msgstr "Reference imports verify that the file contents match the confirmed preview. Reload the preview if the file changes while you confirm a large copy. Creating a validation suite with its members and importing a catalog each use a single transaction. A failure rolls back all database records for that operation, leaving no empty suite or partial catalog that would prevent a retry."
+
+#: ../../source/module/data-management.md:85 f9d5c0c4dfa541438fcb00ac354b2ce0:None
+msgid "库清理与快照、评估结果的发布和登记会协调执行，避免把正在登记的文件误删为孤立文件。"
+msgstr "Library cleanup is coordinated with the publication and registration of snapshots and evaluation results, so files being registered are not mistaken for orphaned files and deleted."

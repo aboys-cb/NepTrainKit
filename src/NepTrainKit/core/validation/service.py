@@ -183,11 +183,11 @@ class ValidationService:
         path = Path(draft.source_path)
         data = draft.data
         kind, elements = parse_model_header(data)
-        digest = self.library.put_bytes(data)
         dataset_ref = {}
         if dataset_path and Path(dataset_path).is_file():
             dataset_ref = FileRef.of(dataset_path).to_dict()
-        with self.db.session() as session:
+        with self.db.write_session() as session:
+            digest = self.library.put_bytes(data)
             if project_id is not None and session.get(Project, project_id) is None:
                 raise ValueError(f"Project {project_id} not found")
             target_project = None if temporary else (project_id or self._inbox_project_id(session))
@@ -283,7 +283,7 @@ class ValidationService:
         a project entry, with a reason it cannot yet appear in validation.
         """
         unavailable = {}
-        with self.db.session() as session:
+        with self.db.write_session() as session:
             rows = session.scalars(select(ModelVersion).where(
                 ModelVersion.content_hash.is_(None), ModelVersion.project_id.is_not(None)
             )).all()
@@ -343,11 +343,12 @@ class ValidationService:
         protocol: str | None = None,
         max_bytes: int = DEFAULT_MAX_SET_BYTES,
         allow_large: bool = False,
+        expected_hash: str | None = None,
     ) -> dict:
         """Seal an EXTXYZ with optional provenance; never infer that labels are DFT."""
         return self._import_sets(
             path, name=name, provenance=provenance, protocol=protocol,
-            max_bytes=max_bytes, allow_large=allow_large,
+            max_bytes=max_bytes, allow_large=allow_large, expected_hash=expected_hash,
         )[0]
 
     def import_eos_groups(
@@ -409,10 +410,10 @@ class ValidationService:
             summary["warnings"] = [issue.message for issue in issues if issue.level == "warning"]
             elements = sorted({symbol for atoms in subset for symbol in atoms.get_chemical_symbols()})
             prepared.append((set_name, summary, elements, selection))
-        object_hash = self.library.put_bytes(data)
         source_ref = FileRef.of(path).to_dict()
         clean_provenance = {key: value for key, value in sorted(provenance.items()) if value not in ("", None)}
-        with self.db.session() as session:
+        with self.db.write_session() as session:
+            object_hash = self.library.put_bytes(data)
             records = []
             for set_name, summary, elements, selection in prepared:
                 identity = [object_hash, chosen.kind, chosen.version, clean_provenance]
@@ -511,7 +512,7 @@ class ValidationService:
         if suite_id not in self._temporary_suites or not name.strip():
             raise ValueError("请选择临时诊断方案并填写新名称。")
         records = self.suite_sets(suite_id)
-        with self.db.session() as session:
+        with self.db.write_session() as session:
             if session.scalars(select(BenchmarkSuite).where(BenchmarkSuite.name == name.strip())).first():
                 raise ValueError("已有同名方案，请使用新名称。")
             baseline_id = self._temporary_suites[suite_id]["baseline_model_id"]
@@ -545,30 +546,29 @@ class ValidationService:
 
     # -- suites ---------------------------------------------------------------
     def create_suite(self, name: str, set_ids: Iterable[str] = (), *, notes: str = "") -> dict:
-        with self.db.session() as session:
+        with self.db.write_session() as session:
             suite = BenchmarkSuite(name=name.strip(), notes=notes)
             session.add(suite)
             session.flush()
-            suite_id = suite.id
-            session.commit()
-        self.add_to_suite(suite_id, set_ids)
-        return self.get_suite(suite_id)
+            self._add_to_suite(session, suite.id, set_ids)
+            return _record(suite)
 
     def add_to_suite(self, suite_id: int, set_ids: Iterable[str]) -> None:
-        with self.db.session() as session:
-            existing = {
-                row.set_id: row
-                for row in session.scalars(select(BenchmarkSuiteSet).where(BenchmarkSuiteSet.suite_id == suite_id))
-            }
-            position = len(existing)
-            for set_id in set_ids:
-                if set_id in existing:
-                    continue
-                if session.get(BenchmarkSet, set_id) is None:
-                    raise ValueError(f"Unknown benchmark set: {set_id}")
-                session.add(BenchmarkSuiteSet(suite_id=suite_id, set_id=set_id, position=position))
-                position += 1
-            session.commit()
+        with self.db.write_session() as session:
+            if session.get(BenchmarkSuite, suite_id) is None:
+                raise ValueError(f"Unknown benchmark suite: {suite_id}")
+            self._add_to_suite(session, suite_id, set_ids)
+
+    def _add_to_suite(self, session, suite_id, set_ids):
+        existing = set(session.scalars(select(BenchmarkSuiteSet.set_id).where(BenchmarkSuiteSet.suite_id == suite_id)))
+        position = len(existing)
+        for set_id in dict.fromkeys(set_ids):
+            if set_id in existing:
+                continue
+            if session.get(BenchmarkSet, set_id) is None:
+                raise ValueError(f"Unknown benchmark set: {set_id}")
+            session.add(BenchmarkSuiteSet(suite_id=suite_id, set_id=set_id, position=position))
+            position += 1
 
     def get_suite(self, suite_id: int) -> dict:
         if suite_id in self._temporary_suites:
@@ -681,8 +681,6 @@ class ValidationService:
                 result = {"details": evaluation.details, "warnings": evaluation.warnings}
                 if set_id in self._temporary_sets:
                     self._temporary_results[run_id] = result
-                else:
-                    result_path = self.library.write_result(run_id, result)
                 status = "succeeded"
             except Exception as exc:
                 from .protocols.diagnostic import UnsupportedDiagnostic
@@ -699,7 +697,12 @@ class ValidationService:
                        elapsed_seconds=time.monotonic() - start)
             self._temporary_runs[(model_id, set_id)] = run
             return dict(run)
-        with self.db.session() as session:
+        with self.db.write_session() as session:
+            if status == "succeeded":
+                try:
+                    result_path = self.library.write_result(run_id, result)
+                except Exception as exc:
+                    status, error = "failed", str(exc) or type(exc).__name__
             row = BenchmarkRun(
                 id=run_id,
                 model_id=model_id,
@@ -891,7 +894,7 @@ class ValidationService:
         from NepTrainKit.core.dataset.services import preserve_shared_model_runs
 
         cutoff = _now() - dt.timedelta(days=older_than_days)
-        with self.db.session() as session:
+        with self.db.write_session() as session:
             baselines = set(
                 session.scalars(
                     select(BenchmarkSuite.baseline_model_id).where(BenchmarkSuite.baseline_model_id.is_not(None))
@@ -933,23 +936,30 @@ class ValidationService:
                 for row in stale:
                     session.delete(row)
                 session.commit()
-        keep = keep_models | keep_sets
-        orphan_objects = [(digest, path) for digest, path in self.library.iter_objects() if digest not in keep]
-        orphan_results = [
-            path
-            for path in self.library.results_dir.glob("*.json")
-            if f"results/{path.name}" not in keep_results
-        ]
-        freed = sum(path.stat().st_size for _, path in orphan_objects) + sum(p.stat().st_size for p in orphan_results)
-        if not dry_run:
-            for digest, _ in orphan_objects:
-                self.library.delete_object(digest)
-            for path in orphan_results:
-                path.unlink(missing_ok=True)
-        return {
-            "models": len(stale_ids),
-            "objects": len(orphan_objects),
-            "results": len(orphan_results),
-            "bytes": freed,
-            "dry_run": dry_run,
-        }
+        with self.db.write_session() as session:
+            # Recheck after pruning: another publisher may have committed in between.
+            keep = keep_models | keep_sets
+            if not dry_run:
+                keep.update(session.scalars(select(ModelVersion.content_hash)))
+                keep.update(session.scalars(select(BenchmarkSet.object_hash)))
+                keep.update(session.scalars(select(StorageRef.content_hash).where(StorageRef.scheme == "cas://")))
+                keep_results.update(session.scalars(select(BenchmarkRun.result_path)))
+            orphan_objects = [(digest, path) for digest, path in self.library.iter_objects() if digest not in keep]
+            orphan_results = [
+                path
+                for path in self.library.results_dir.glob("*.json")
+                if f"results/{path.name}" not in keep_results
+            ]
+            freed = sum(path.stat().st_size for _, path in orphan_objects) + sum(p.stat().st_size for p in orphan_results)
+            if not dry_run:
+                for digest, _ in orphan_objects:
+                    self.library.delete_object(digest)
+                for path in orphan_results:
+                    path.unlink(missing_ok=True)
+            return {
+                "models": len(stale_ids),
+                "objects": len(orphan_objects),
+                "results": len(orphan_results),
+                "bytes": freed,
+                "dry_run": dry_run,
+            }

@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 import math
 import warnings
+from copy import deepcopy
 from dataclasses import dataclass
 from itertools import combinations
 from typing import Literal, Mapping
@@ -20,6 +21,7 @@ from NepTrainKit.core.structure import get_clusters, process_organic_clusters
 
 from .errors import CardOperationError
 from .geometry import wrapped_positions as fast_wrapped_positions
+from .labels import invalidate_changed_labels
 from .operation import StructureOperation
 from .sampling import derived_structure_seed
 
@@ -157,6 +159,7 @@ class BainPathOperation(StructureOperation):
             "outputs_per_input": len(values) * len(volume_values),
         }
 
+    @invalidate_changed_labels
     def run_structure(self, structure, params: BainPathParams) -> list:
         axis_map = {"x": 0, "y": 1, "z": 2}
         axis = str(params.axis).lower()
@@ -305,6 +308,7 @@ class CellStrainOperation(StructureOperation):
                 expanded.append(vector)
         return cls._unique_vectors(expanded)
 
+    @invalidate_changed_labels
     def run_structure(self, structure, params: CellStrainParams) -> list:
         summary = self.sampling_summary(params)
         cell = np.asarray(structure.get_cell(), dtype=float)
@@ -352,6 +356,7 @@ class CellScalingParams:
 class CellScalingOperation(StructureOperation):
     """Generate stochastic lattice perturbations without Qt widget state."""
 
+    @invalidate_changed_labels
     def run_structure(self, structure, params: CellScalingParams) -> list:
         structure_list = []
         max_num = int(params.max_num)
@@ -495,6 +500,7 @@ class ShearMatrixOperation(StructureOperation):
             "outputs_per_input": len(xy_values) * len(yz_values) * len(xz_values),
         }
 
+    @invalidate_changed_labels
     def run_structure(self, structure, params: ShearMatrixParams) -> list:
         summary = self.sampling_summary(params)
         cell = np.asarray(structure.get_cell(), dtype=float)
@@ -580,6 +586,7 @@ class ShearAngleOperation(StructureOperation):
             "outputs_per_input": len(alpha_values) * len(beta_values) * len(gamma_values),
         }
 
+    @invalidate_changed_labels
     def run_structure(self, structure, params: ShearAngleParams) -> list:
         summary = self.sampling_summary(params)
         reference_cell = np.asarray(structure.get_cell(), dtype=float)
@@ -714,6 +721,7 @@ class PerturbOperation(StructureOperation):
         """Wrap Cartesian positions through fractional coordinates without ASE's per-call solve."""
         return fast_wrapped_positions(structure, positions)
 
+    @invalidate_changed_labels
     def run_structure(self, structure, params: PerturbParams) -> list:
         structure_list = []
         n_atoms = len(structure)
@@ -844,6 +852,7 @@ class SuperCellOperation(StructureOperation):
 
     MAX_ENUMERATED_OUTPUTS = 1000
 
+    @invalidate_changed_labels
     def run_structure(self, structure, params: SuperCellParams) -> list:
         expansion_factors = self.plan_factors(structure, params)
         return [self._make_supercell_or_copy(structure, factors) for factors in expansion_factors]
@@ -1148,7 +1157,7 @@ class SuperCellOperation(StructureOperation):
 
     def _make_supercell(self, structure, na: int, nb: int, nc: int):
         supercell = make_supercell(structure, np.diag([na, nb, nc]), order="atom-major")
-        supercell.info["Config_type"] = structure.info.get("Config_type", "")
+        supercell.info = deepcopy(structure.info)
         self._preserve_ordered_alloy_provenance(structure, supercell)
         append_config_tag(supercell, f"SC({na}x{nb}x{nc})")
         return supercell

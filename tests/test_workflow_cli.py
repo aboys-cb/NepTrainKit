@@ -377,7 +377,7 @@ class TestGroupAndFork:
         run = load_workflow(_workflow(fork))
         seed = _si2()
         result = run.run([seed])
-        assert [len(a) for a in result.final()] == ([12, 8] if merge else [8])
+        assert [len(a) for a in result.final()] == ([12, 8] if merge else [])
         assert [len(item.structures[0]) for item in result.card_outputs[:-1]] == [4, 12, 8]
         assert [stage.card_class for stage in run.plan.stages()] == [
             "SuperCellCard", "SuperCellCard", "SuperCellCard", "WorkflowFork"

@@ -800,3 +800,6 @@ msgstr ""
 #~ "processing instead of a disk round "
 #~ "trip."
 
+#: ../../source/workflows/run-workflow-from-cli.md:176 9328907842af4090948f0cdcb71a9ac7:None
+msgid "未显式合并的永久分叉必须是流程的最后一个节点，其 `result.final()` 为空，因为它没有共同输出。各分支结果仍可按执行序号通过 `result.outputs(index=...)` 读取；需要连接共享下游时，先在分叉中启用 Merge。分叉内各分支接收同一输入，分支内部按卡片次序传递结果。"
+msgstr "A permanent fork without an explicit merge must be the last workflow node. Its `result.final()` is empty because the branches have no shared output. Read individual branch results by execution index with `result.outputs(index=...)`. Enable Merge on the fork before connecting a shared downstream card. All branches receive the same input, and cards within each branch pass their results to the next card in order."

@@ -18,6 +18,7 @@ from NepTrainKit.core.config_type import append_config_tag
 
 from .errors import CardOperationError
 from .geometry import wrapped_positions
+from .labels import invalidate_changed_labels
 from .operation import StructureOperation
 from .sampling import derived_structure_seed
 
@@ -329,6 +330,7 @@ class RandomVacancyOperation(StructureOperation):
             "overlapping_candidates": overlap,
         }
 
+    @invalidate_changed_labels
     def run_structure(self, structure, params: RandomVacancyParams) -> list:
         max_structures = int(params.max_structures)
         if max_structures <= 0:
@@ -596,6 +598,7 @@ class VacancyDefectOperation(StructureOperation):
         structure_list.append(new_structure)
         return True
 
+    @invalidate_changed_labels
     def run_structure(self, structure, params: VacancyDefectParams) -> list:
         settings = self._validated_settings(structure, params)
         n_atoms = settings["n_atoms"]
@@ -683,6 +686,7 @@ class StackingFaultParams:
 class StackingFaultOperation(StructureOperation):
     """Generate displaced structures across a stacking-fault plane."""
 
+    @invalidate_changed_labels
     def run_structure(self, structure, params: StackingFaultParams) -> list:
         if len(params.hkl) != 3:
             raise CardOperationError(
@@ -863,6 +867,7 @@ class StrictGSFEPathOperation(StructureOperation):
             "layer_count": layer_count,
         }
 
+    @invalidate_changed_labels
     def run_structure(self, structure, params: StrictGSFEPathParams) -> list:
         settings = self._validated_settings(structure, params)
         hkl = settings["hkl"]
@@ -1055,6 +1060,7 @@ class RandomSlabPlan:
 class RandomSlabOperation(StructureOperation):
     """Construct slabs across explicit Miller planes and geometry ranges."""
 
+    @invalidate_changed_labels
     def run_structure(self, structure, params: RandomSlabParams) -> list:
         plan = self.plan(structure, params)
         outputs = []
@@ -1464,6 +1470,7 @@ class InsertDefectOperation(StructureOperation):
             )
         }
 
+    @invalidate_changed_labels
     def run_structure(self, structure, params: InsertDefectParams) -> list:
         settings = self._validated_settings(structure, params)
         mode = settings["mode"]

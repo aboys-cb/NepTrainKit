@@ -253,7 +253,7 @@ def test_compact_interface_xyz_keeps_labels_and_arrays_across_real_export_paths(
     workflow = tmp_path / "workflow.xyz"
     handoff = tmp_path / "handoff.xyz"
     card.write_result_dataset(direct)
-    widget._export_file(str(workflow), [card])
+    widget._export_file(str(workflow), [card.result_dataset])
     with handoff.open("w", encoding="utf-8") as handle:
         for output in outputs:
             ase_atoms_to_structure(output).write(handle)

@@ -6,6 +6,9 @@ from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import MagicMock, patch
 
+from ase import Atoms
+from ase.io import read
+
 from PySide6.QtCore import QTranslator
 from PySide6.QtWidgets import QApplication
 
@@ -78,42 +81,33 @@ class TestMakeDataExportScope(unittest.TestCase):
         self.assertEqual(cards, [completed])
 
     def test_writer_preserves_explicit_card_order_and_append_mode(self):
-        first = _card("first")
-        final = _card("final")
         with tempfile.TemporaryDirectory() as tmp_dir:
             path = Path(tmp_dir) / "dataset.xyz"
-
-            MakeDataWidget._export_file(None, str(path), [first, final])
-
-            self.assertEqual(path.read_text(), "first:False\nfinal:True\n")
+            MakeDataWidget._export_file(None, str(path), [[Atoms("H")], [Atoms("He")]])
+            self.assertEqual([a.get_chemical_formula() for a in read(path, index=":")], ["H", "He"])
 
     def test_writer_replaces_existing_file_only_after_success(self):
-        first = _card("first")
         with tempfile.TemporaryDirectory() as tmp_dir:
             path = Path(tmp_dir) / "dataset.xyz"
             path.write_text("old dataset\n", encoding="utf-8")
 
-            MakeDataWidget._export_file(None, str(path), [first])
+            MakeDataWidget._export_file(None, str(path), [[Atoms("H")]])
 
-            self.assertEqual(path.read_text(encoding="utf-8"), "first:False\n")
+            self.assertEqual(read(path).get_chemical_formula(), "H")
             self.assertEqual(list(path.parent.glob(f".{path.name}.*.tmp")), [])
 
     def test_writer_preserves_existing_file_when_card_export_fails(self):
-        failing = _card("failing")
-
-        def fail_after_partial_write(file, *, append):
+        def fail_after_partial_write(file, dataset, *, append):
             file.write("partial dataset\n")
             raise RuntimeError("synthetic export failure")
 
-        failing.write_result_dataset.side_effect = fail_after_partial_write
         with tempfile.TemporaryDirectory() as tmp_dir:
             path = Path(tmp_dir) / "dataset.xyz"
             path.write_text("old dataset\n", encoding="utf-8")
 
-            with self.assertRaisesRegex(
-                RuntimeError, "synthetic export failure"
-            ):
-                MakeDataWidget._export_file(None, str(path), [failing])
+            with patch("NepTrainKit.ui.pages.makedata.write_card_dataset", side_effect=fail_after_partial_write):
+                with self.assertRaisesRegex(RuntimeError, "synthetic export failure"):
+                    MakeDataWidget._export_file(None, str(path), [[Atoms("H")]])
 
             self.assertEqual(path.read_text(encoding="utf-8"), "old dataset\n")
             self.assertEqual(list(path.parent.glob(f".{path.name}.*.tmp")), [])
@@ -166,6 +160,7 @@ class TestMakeDataExportScope(unittest.TestCase):
         card = MakeDataCard(widget)
         structures = [object(), object()]
         card.result_dataset = structures
+        card.run_outcome = "succeeded"
         card.set_output_available(True)
         widget._connect_card_output_actions(card)
         requested = []

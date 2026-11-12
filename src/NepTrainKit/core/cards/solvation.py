@@ -22,6 +22,7 @@ from .geometry import (
     minimum_image_delta as exact_minimum_image_delta,
     wrapped_positions as wrap_structure_positions,
 )
+from .labels import invalidate_changed_labels
 from .operation import StructureOperation
 from .structure import OrganicMolConfigPBCOperation, OrganicMolConfigPBCParams
 
@@ -531,6 +532,7 @@ class LocalSolvationOperation(StructureOperation):
             "periodic": bool(np.any(np.asarray(structure.pbc, dtype=bool))),
         }
 
+    @invalidate_changed_labels
     def run_structure(self, structure, params: LocalSolvationParams) -> list[Atoms]:
         settings = self._validated_settings(structure, params)
         outputs = []
@@ -952,6 +954,7 @@ class SolventBoxFillOperation(StructureOperation):
             ),
         }
 
+    @invalidate_changed_labels
     def run_structure(self, structure, params: SolventBoxFillParams) -> list[Atoms]:
         settings = self._validated_settings(structure, params)
 

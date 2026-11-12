@@ -262,9 +262,8 @@ class CardSpec:
         if self.is_container:
             if self.kind == "fork":
                 return any(
-                    child.requires_input()
+                    next((child.requires_input() for child in branch if child.enabled), False)
                     for branch in self.branches
-                    for child in branch if child.enabled
                 )
             return any(child.requires_input() for child in self.children if child.enabled)
         return self.kind != "generator"
@@ -399,7 +398,7 @@ class WorkflowRun:
 
     def requires_input(self) -> bool:
         """Report whether the workflow needs an input dataset."""
-        return any(spec.requires_input() for spec in self.plan.cards if spec.enabled)
+        return next((spec.requires_input() for spec in self.plan.cards if spec.enabled), False)
 
     def run(self, structures: Iterable[Any] | None = None) -> WorkflowResult:
         """Execute the workflow and return every stage output.
@@ -478,10 +477,14 @@ def _parse_document(document: Any) -> WorkflowPlan:
     if not isinstance(cards, list) or not cards:
         raise WorkflowError("workflow JSON does not contain any cards")
 
+    parsed = tuple(_parse_card(entry) for entry in cards)
+    enabled = [spec for spec in parsed if spec.enabled]
+    if any(spec.kind == "fork" and not spec.merge_enabled for spec in enabled[:-1]):
+        raise WorkflowError("A permanent fork without Merge must be the final workflow node. Insert an explicit Merge before adding a shared downstream card.")
     return WorkflowPlan(
         schema=int(workflow.get("workflow_schema", 2)),
         software_version=str(workflow.get("software_version", "")),
-        cards=tuple(_parse_card(entry) for entry in cards),
+        cards=parsed,
     )
 
 
@@ -655,18 +658,16 @@ def _run_fork(
         branch_outputs.append(terminal)
 
     if not spec.merge_enabled:
-        # Keep the fork's own record equal to the last branch, matching the
-        # desktop behaviour where an unmerged fork has no shared downstream.
-        terminal = branch_outputs[-1] if branch_outputs else []
+        # Independent terminal outputs remain accessible in their stage records.
         outputs.append(
             CardOutput(
                 index=len(outputs) + 1,
                 card_class=spec.card_class,
-                structures=list(terminal),
+                structures=[],
                 input_count=len(incoming),
             )
         )
-        return list(terminal)
+        return []
 
     merged: list[Any] = []
     for produced in branch_outputs:

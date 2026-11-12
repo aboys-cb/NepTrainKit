@@ -2,6 +2,7 @@
 
 import inspect
 import json
+from copy import deepcopy
 from pathlib import Path
 from typing import Any
 
@@ -35,6 +36,18 @@ from NepTrainKit.ui.threads import BackgroundTask, DataProcessingThread, FilterP
 from .card_metadata import CardMetadataDialog, localized_card_description
 from .compact_form import CategoryTag, StatusBadge, StatusDot
 from .label import ProcessLabel
+
+
+def snapshot_card_dataset(dataset):
+    """Copy arrays and nested info without retaining a live ASE calculator."""
+    return deepcopy([atoms.copy() for atoms in dataset])
+
+
+def write_card_dataset(file, dataset, **kwargs):
+    """Write ASE structures atomically without reading mutable widget state."""
+    exported = [prepare_magnetic_extxyz_export(atoms) for atoms in dataset]
+    with atomic_text_output(file, append=kwargs.get("append", False)) as handle:
+        ase_write(handle, exported, format="extxyz", **kwargs)
 
 
 class HeaderCardWidget(SimpleCardWidget):
@@ -972,16 +985,12 @@ class MakeDataCard(MakeDataCardWidget):
         **kwargs
             Additional keyword arguments forwarded to `ase.io.write`.
         """
-        export_dataset = [
-            prepare_magnetic_extxyz_export(atoms)
-            for atoms in self.result_dataset
-        ]
-        with atomic_text_output(file, append=kwargs.get("append", False)) as handle:
-            ase_write(handle, export_dataset, format="extxyz", **kwargs)
+        write_card_dataset(file, self.result_dataset, **kwargs)
 
     def export_data(self):
         """Prompt the user for an export path and dump results if available."""
-        if self.dataset is not None:
+        if self.run_outcome == "succeeded" and not self._results_invalidated and self.result_dataset:
+            snapshot = snapshot_card_dataset(self.result_dataset)
             path = call_path_dialog(
                 self,
                 self.tr("Choose a file save location"),
@@ -992,7 +1001,7 @@ class MakeDataCard(MakeDataCardWidget):
             if not path:
                 return
             thread = BackgroundTask(self, show_tip=True, title=self.tr("Exporting data"))
-            thread.start_work(self.write_result_dataset, path)
+            thread.start_work(write_card_dataset, path, snapshot)
 
     def process_structure(self, structure):
         """Transform a single structure and return derived results.

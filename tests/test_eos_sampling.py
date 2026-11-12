@@ -80,7 +80,7 @@ def test_nonorthogonal_geometry_labels_and_atomic_export(tmp_path):
     card = editor.workspace_card_widget.cards[0]
     assert _wait_until(lambda: card.run_outcome == "succeeded")
     path = tmp_path / "candidates.xyz"
-    editor._export_file(path, [card])
+    editor._export_file(path, [card.result_dataset])
     editor.close()
     saved = read(path, ":")
     assert len(saved) == 8
@@ -186,7 +186,7 @@ def test_range_fields_and_card_parameters_are_bidirectionally_linked(tmp_path):
     assert card.run_outcome == "succeeded"
     np.testing.assert_allclose([a.get_volume() / len(a) for a in card.result_dataset], panel.volumes)
     out = tmp_path / "card.xyz"
-    editor._export_file(out, [card])
+    editor._export_file(out, [card.result_dataset])
     assert all(a.calc is None for a in read(out, ":"))
     panel.count.setValue(9)
     assert card.result_dataset == []

@@ -32,6 +32,7 @@ from NepTrainKit.core.config_type import append_config_tag, stable_config_id
 
 from .errors import CardOperationError
 from .geometry import scaled_positions
+from .labels import clear_reference_labels, invalidate_changed_labels
 from .operation import GeneratorOperation, StructureOperation
 
 
@@ -41,32 +42,10 @@ def _invalidate_species_change_labels(
     clear_species_initialization: bool = False,
 ) -> None:
     """Drop reference data that no longer describes changed chemical species."""
-    atoms.calc = None
-    for key in (
-        "energy",
-        "free_energy",
-        "virial",
-        "stress",
-        "dipole",
-        "magmom",
-    ):
-        atoms.info.pop(key, None)
-    array_keys = [
-        "forces",
-        "force",
-        "force_mag",
-        "mforce",
-        "energies",
-        "atomic_energy",
-        "magmoms",
-        "charges",
-        "bec",
-        "born_effective_charges",
-    ]
+    clear_reference_labels(atoms)
     if clear_species_initialization:
-        array_keys.extend(("spin", "initial_magmoms", "initial_charges"))
-    for key in array_keys:
-        atoms.arrays.pop(key, None)
+        for key in ("spin", "initial_magmoms", "initial_charges"):
+            atoms.arrays.pop(key, None)
 
 
 def _as_list(value: Any) -> list:
@@ -523,6 +502,7 @@ class RandomDopingOperation(StructureOperation):
             prepared.append((label, rule, target, dopants, requested_groups))
         return prepared
 
+    @invalidate_changed_labels
     def run_structure(self, structure, params: RandomDopingParams) -> list:
         summary = self.sampling_summary(structure, params)
         structure_list = []
@@ -977,6 +957,7 @@ class CompositionSweepOperation(StructureOperation):
             "budget_mode": mode,
         }
 
+    @invalidate_changed_labels
     def run_structure(self, structure, params: CompositionSweepParams) -> list:
         summary = self.sampling_summary(params)
         out = []
@@ -1661,6 +1642,7 @@ class FiniteCellAlloyOccupancyOperation(StructureOperation):
             ),
         )
 
+    @invalidate_changed_labels
     def run_structure(self, structure, params: FiniteCellAlloyOccupancyParams) -> list:
         base_seed = int(params.seed) if params.use_seed else None
         if base_seed is not None and base_seed < 0:
@@ -2264,6 +2246,7 @@ class CompositionGradientOperation(StructureOperation):
             )
         return summary
 
+    @invalidate_changed_labels
     def run_structure(self, structure, params: CompositionGradientParams) -> list:
         summary = self.sampling_summary(params, structure)
         elements = summary["elements"]
@@ -2481,6 +2464,7 @@ class RandomOccupancyOperation(StructureOperation):
             "seed": seed,
         }
 
+    @invalidate_changed_labels
     def run_structure(self, structure, params: RandomOccupancyParams) -> list:
         summary = self.sampling_summary(structure, params)
         target = summary["target"]
@@ -3147,6 +3131,7 @@ class ConditionalReplaceOperation(StructureOperation):
             )
         return summary
 
+    @invalidate_changed_labels
     def run_structure(self, structure, params: ConditionalReplaceParams) -> list:
         summary = self.selection_summary(params, structure)
         target = str(summary["target"])
@@ -3278,6 +3263,7 @@ class InterfaceLayerMixParams:
 class InterfaceLayerMixOperation(StructureOperation):
     """Swap atom species between near-interface layers of a bilayer."""
 
+    @invalidate_changed_labels
     def run_structure(self, structure, params: InterfaceLayerMixParams) -> list:
         resolved = self._resolve(structure, params)
         c_schedule, pair_counts = self._validated_schedule(params, resolved)

@@ -30,6 +30,7 @@ from NepTrainKit.core.torsion_guard_pbc import (
 
 from .geometry import scaled_positions, wrapped_positions as fast_wrapped_positions
 from .errors import CardOperationError
+from .labels import invalidate_changed_labels
 from .operation import GeneratorOperation, StructureOperation
 from .sampling import derived_structure_seed
 
@@ -462,6 +463,7 @@ class LayerCopyOperation(StructureOperation):
             "wrap": normalized.wrap,
         }
 
+    @invalidate_changed_labels
     def run_structure(self, structure, params: LayerCopyParams) -> list:
         settings = self._validated_settings(structure, params)
         normalized = settings["params"]
@@ -549,6 +551,7 @@ class VibrationModePerturbOperation(StructureOperation):
     def wrapped_positions(structure, positions: np.ndarray) -> np.ndarray:
         return fast_wrapped_positions(structure, positions)
 
+    @invalidate_changed_labels
     def run_structure(self, structure, params: VibrationModePerturbParams) -> list:
         amplitude = float(params.amplitude)
         if not np.isfinite(amplitude) or amplitude <= 0.0:
@@ -680,6 +683,7 @@ class GroupLabelParams:
 class GroupLabelOperation(StructureOperation):
     """Detect atomic planes normal to ``(hkl)`` and label them A/B in order."""
 
+    @invalidate_changed_labels
     def run_structure(self, structure, params: GroupLabelParams) -> list:
         a_label, b_label = self._validated_labels(params.group_a, params.group_b)
         if (not params.overwrite) and "group" in structure.arrays:
@@ -1177,6 +1181,7 @@ class OrganicMolConfigPBCOperation(StructureOperation):
             gaussian_sigma=settings["gaussian_sigma"],
         )
 
+    @invalidate_changed_labels
     def run_structure(self, structure, params: OrganicMolConfigPBCParams) -> list:
         settings = self._validated_settings(structure, params)
         tg_params = TorsionGuardParams(
@@ -1268,6 +1273,7 @@ class RandomPackingPlan:
 class RandomPackingOperation(StructureOperation):
     """Randomly repack atoms in the input cell under explicit distance constraints."""
 
+    @invalidate_changed_labels
     def run_structure(self, structure, params: RandomPackingParams) -> list:
         plan = self.plan(structure, params)
         n_structures = plan.structures

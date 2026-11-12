@@ -63,7 +63,6 @@ def test_card_header_export_failure_preserves_original(exporter, tmp_path, monke
             handle.write("partial frame")
             raise OSError("disk full")
         monkeypatch.setattr("NepTrainKit.ui.widgets.card_widget.ase_write", fail_write)
-        monkeypatch.setattr("NepTrainKit.ui.views._card.workflow_fork.ase_write", fail_write)
     with pytest.raises(OSError):
         exporter.write_result_dataset(path, append=append)
     assert path.read_bytes() == before
@@ -106,18 +105,22 @@ def test_card_export_appends_to_paths_and_supplied_workflow_streams(exporter, tm
     assert [a.get_chemical_formula() for a in read(path, ":")] == ["Fe", "Fe"]
 
 
-def test_group_failure_after_one_child_preserves_original(tmp_path, monkeypatch):
+def test_group_failure_after_one_frame_preserves_original(tmp_path, monkeypatch):
     group = CardGroup()
     for symbol in ("H", "He"):
         child = MakeDataCard()
         child.result_dataset = [Atoms(symbol)]
         group.add_card(child)
+    group.result_dataset = [atoms for child in group.card_list for atoms in child.result_dataset]
     path = tmp_path / "group.xyz"
     path.write_bytes(b"previous dataset\n")
-    def fail_second(handle, **kwargs):
+    from NepTrainKit.ui.widgets import card_widget
+    original_write = card_widget.ase_write
+    def fail_second(handle, dataset, **kwargs):
+        original_write(handle, dataset[:1], **kwargs)
         handle.write("partial second frame")
-        raise OSError("second child failed")
-    monkeypatch.setattr(group.card_list[1], "write_result_dataset", fail_second)
+        raise OSError("second frame failed")
+    monkeypatch.setattr(card_widget, "ase_write", fail_second)
     with pytest.raises(OSError):
         group.write_result_dataset(path)
     assert path.read_bytes() == b"previous dataset\n"

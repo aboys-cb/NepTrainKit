@@ -15,10 +15,10 @@ from qfluentwidgets import CaptionLabel, StrongBodyLabel
 from shiboken6 import isValid
 
 from NepTrainKit.core import CardManager, MessageManager
-from NepTrainKit.core.io.atomic import atomic_text_output
 from NepTrainKit.ui.dialogs import call_path_dialog
 from NepTrainKit.ui.threads import BackgroundTask
 from NepTrainKit.ui.widgets import FilterDataCard, MakeDataCard, MakeDataCardWidget
+from NepTrainKit.ui.widgets.card_widget import snapshot_card_dataset, write_card_dataset
 from NepTrainKit import palette
 
 
@@ -310,7 +310,7 @@ class CardGroup(MakeDataCardWidget):
         return list(self._cards)
     @property
     def requires_input_dataset(self):
-        return any([getattr(card, "requires_input_dataset", True)  for card in self.card_list])
+        return any(getattr(card, "requires_input_dataset", True) for card in self.card_list if card.check_state)
 
     def show_card_setting(self):
         """Collapse the composite as one workflow step without changing children."""
@@ -332,6 +332,7 @@ class CardGroup(MakeDataCardWidget):
         """
         self.dataset =dataset
         self.result_dataset=[]
+        self._results_invalidated = False
         self._merged_count = None
         self._post_filter_applied = False
         self.run_outcome = "idle"
@@ -923,18 +924,11 @@ class CardGroup(MakeDataCardWidget):
             self._finish_branches()
 
     def write_result_dataset(self, file,**kwargs):
-        with atomic_text_output(file, append=kwargs.get("append", False)) as handle:
-            if self.filter_card and isValid(self.filter_card) and self.filter_card.check_state:
-                self.filter_card.write_result_dataset(handle, **kwargs)
-                return
-            enabled = [card for card in self.card_list if card.check_state]
-            for index, card in enumerate(enabled):
-                options = dict(kwargs)
-                options["append"] = kwargs.get("append", False) if index == 0 else True
-                card.write_result_dataset(handle, **options)
+        write_card_dataset(file, self.result_dataset, **kwargs)
 
     def export_data(self):
-        if self.dataset is not None:
+        if self.run_outcome == "succeeded" and not getattr(self, "_results_invalidated", False) and self.result_dataset:
+            snapshot = snapshot_card_dataset(self.result_dataset)
             path = call_path_dialog(
                 self,
                 self.tr("Choose a file save location"),
@@ -948,7 +942,7 @@ class CardGroup(MakeDataCardWidget):
                 show_tip=True,
                 title=self.tr("Exporting data"),
             )
-            thread.start_work(self.write_result_dataset, path)
+            thread.start_work(write_card_dataset, path, snapshot)
     def to_dict(self):
         data_dict = super().to_dict()
 

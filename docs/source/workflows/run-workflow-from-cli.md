@@ -173,6 +173,8 @@ if run.requires_input():
 
 `WorkflowResult` 保留每一级的输出，不是只有最后一级：
 
+未显式合并的永久分叉必须是流程的最后一个节点，其 `result.final()` 为空，因为它没有共同输出。各分支结果仍可按执行序号通过 `result.outputs(index=...)` 读取；需要连接共享下游时，先在分叉中启用 Merge。分叉内各分支接收同一输入，分支内部按卡片次序传递结果。
+
 ```python
 result = run.run(read("input.xyz", index=":"))
 

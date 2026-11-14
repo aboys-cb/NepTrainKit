@@ -19,6 +19,7 @@ from .base import (
 from .efv import EnergyForceVirialProtocol
 from .eos import EquationOfStateProtocol
 from .diagnostic import DiagnosticProtocol
+from .response import ReferenceResponseProtocol
 
 _REGISTRY: dict[str, ValidationProtocol] = {}
 
@@ -30,7 +31,9 @@ def register(protocol: ValidationProtocol) -> ValidationProtocol:
     return protocol
 
 
-def get_protocol(kind: str) -> ValidationProtocol:
+def get_protocol(kind: str, *, analysis=None) -> ValidationProtocol:
+    if kind == 'response':
+        return ReferenceResponseProtocol(analysis)
     try:
         return _REGISTRY[kind]
     except KeyError:
@@ -50,6 +53,11 @@ def detect_protocol(frames) -> list[tuple[float, ValidationProtocol]]:
 register(EnergyForceVirialProtocol())
 register(EquationOfStateProtocol())
 register(DiagnosticProtocol())
+register(ReferenceResponseProtocol())
+
+
+def protocol_for_set(benchmark):
+    return get_protocol(benchmark['protocol'], analysis=(benchmark.get('source_ref') or {}).get('analysis'))
 
 __all__ = [
     "FIXED_GEOMETRY",

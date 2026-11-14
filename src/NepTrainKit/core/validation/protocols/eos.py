@@ -60,7 +60,8 @@ def _volume_scan(frames):
 
 class EquationOfStateProtocol(ValidationProtocol):
     kind = "eos"
-    version = 1
+    version = 2
+    supports_spin = True
     title = "Equation of state"
     metrics = (
         Metric("shape_rmse", "Curve RMSE (offset removed)", "meV/atom", headline=True),
@@ -91,12 +92,19 @@ class EquationOfStateProtocol(ValidationProtocol):
             errors.append(f"EOS needs at least {MIN_POINTS} labelled volume points.")
             return errors
         symbols = frames[0].get_chemical_symbols()
+        from NepTrainKit.core.magnetism import existing_moment_vectors
+        moments = existing_moment_vectors(frames[0], lift_scalar=True)
         for atoms in frames:
             if not len(atoms) or atoms.get_chemical_symbols() != symbols:
                 errors.append("EOS frames must have identical atom counts and species order.")
                 break
             if not atoms.pbc.all() or not np.isfinite(atoms.cell.array).all() or not np.isfinite(atoms.positions).all():
                 errors.append("EOS requires finite, fully periodic bulk structures.")
+                break
+            other = existing_moment_vectors(atoms, lift_scalar=True)
+            if ((moments is None) != (other is None)
+                    or (moments is not None and (moments.shape != other.shape or not np.allclose(moments, other, rtol=0, atol=1e-7)))):
+                errors.append("EOS requires the same input magnetic order and moment magnitudes at every volume.")
                 break
         if not errors:
             _, volumes = _volume_scan(frames)

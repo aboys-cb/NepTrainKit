@@ -175,9 +175,10 @@ def reference_labels(frames: Sequence[Atoms]) -> ReferenceLabels:
 def unlabelled_copies(frames: Sequence[Atoms]) -> list[Atoms]:
     """Return copies without reference calculators, so labels never reach the model."""
     copies = []
+    from NepTrainKit.core.cards.labels import clear_reference_labels
     for atoms in frames:
         clone = atoms.copy()
-        clone.calc = None
+        clear_reference_labels(clone)
         copies.append(clone)
     return copies
 

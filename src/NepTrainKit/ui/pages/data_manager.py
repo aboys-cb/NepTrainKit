@@ -2,8 +2,6 @@
 # -*- coding: utf-8 -*-
 # @Time    : 2025/8/27 17:18
 # @email    : 1747193328@qq.com
-import os
-
 from PySide6.QtCore import Qt, Signal
 from PySide6.QtGui import QAction, QIcon
 from PySide6.QtWidgets import QWidget, QGridLayout, QHBoxLayout, QApplication, QSplitter, QStackedWidget
@@ -13,9 +11,20 @@ from NepTrainKit.core import MessageManager
 from NepTrainKit.core.dataset.seed import seed_nep_data_git
 from NepTrainKit.core.dataset.services import ModelService, ProjectService, TagService
 from NepTrainKit.core.validation.library import get_library
+from NepTrainKit.core.validation.service import ValidationService, find_model_files
 
 from NepTrainKit.ui.views import ModelItemWidget, ProjectWidget
-from NepTrainKit.ui.views.model_library import ModelLibraryWidget
+from NepTrainKit.ui.views.validation_workspace import ValidationWorkspace
+from NepTrainKit.ui.widgets.validation_dialogs import ImportModelDialog
+
+
+def _dropped_models(mime_data):
+    if not mime_data.hasUrls():
+        return []
+    return list(dict.fromkeys(
+        model for url in mime_data.urls() if url.isLocalFile()
+        for model in find_model_files(url.toLocalFile())
+    ))
 
 
 class DataManagerWidget(QWidget):
@@ -63,7 +72,7 @@ class DataManagerWidget(QWidget):
     def _sync_toolbar_actions(self, *_args):
         active = self.isVisible() and self.stack.currentWidget() is self.library_widget
         for menu_name, actions in (
-            ("load_menu", (self.library_widget.diagnostic_action, self.library_widget.edit_diagnostic_action, self.library_widget.import_action, self.library_widget.import_package_action,)),
+            ("load_menu", (self.library_widget.diagnostic_action, self.library_widget.edit_diagnostic_action, self.library_widget.import_action, self.library_widget.import_files_action, self.library_widget.import_folder_action, self.library_widget.import_package_action,)),
             ("save_menu", (self.library_widget.save_action, self.library_widget.star_action, self.library_widget.save_plan_action, self.library_widget.export_package_action)),
         ):
             menu = getattr(self._parent, menu_name, None)
@@ -85,54 +94,47 @@ class DataManagerWidget(QWidget):
         self._sync_toolbar_actions()
 
     def dragEnterEvent(self, event):
-        """Accept one or more local model directories.
-
-        Parameters
-        ----------
-        event : QDragEnterEvent
-            Drag event forwarded by Qt.
-
-        Returns
-        -------
-        None
-            This handler updates the event acceptance state.
-        """
-        urls = event.mimeData().urls() if event.mimeData().hasUrls() else []
-        if any(url.isLocalFile() and os.path.isdir(url.toLocalFile()) for url in urls):
+        """Accept TXT files or folders containing recognisable NEP model headers."""
+        if _dropped_models(event.mimeData()):
             event.acceptProposedAction()
         else:
             event.ignore()
 
     def dropEvent(self, event):
-        """Open model creation with the first dropped directory prefilled.
-
-        Parameters
-        ----------
-        event : QDropEvent
-            Drop event containing file URLs.
-
-        Returns
-        -------
-        None
-            This handler opens the existing model editor for the selected project.
-        """
-        paths = [
-            url.toLocalFile()
-            for url in event.mimeData().urls()
-            if url.isLocalFile() and os.path.isdir(url.toLocalFile())
-        ]
+        """Review the detected file, then save its bytes as a model snapshot."""
+        paths = _dropped_models(event.mimeData())
         if not paths:
             event.ignore()
             return
-        if getattr(self.data_item_widget, "project", None) is None:
-            MessageManager.send_info_message(
-                self.tr("Select a project before dropping a model folder")
-            )
-            event.ignore()
-            return
-        self.show_projects()
-        self.data_item_widget.create_model(initial_path=paths[0])
         event.acceptProposedAction()
+        self._import_models(paths)
+
+    def import_model_path(self, path):
+        paths = find_model_files(path)
+        if not paths:
+            MessageManager.send_error_message(self.tr("No valid NEP model header was found in this path."))
+            return
+        self._import_models(paths)
+
+    def _import_models(self, paths):
+        self.show_projects()
+        project = self.data_item_widget.project
+        service = ValidationService(get_library())
+        dialog = ImportModelDialog(self.window(), service, paths, project_name=project.name if project else "")
+        try:
+            if not dialog.exec():
+                return
+            record = dialog.save_model(dialog.draft)
+        except (OSError, ValueError) as error:
+            MessageManager.send_error_message(self.tr("Import failed: {error}").format(error=error))
+            return
+        finally:
+            dialog.deleteLater()
+        self.show_projects()
+        project = self.project_service.get_project_by_id(record["project_id"])
+        self.data_item_widget.load_models_by_project(project)
+        self._on_registry_changed(record["id"])
+        MessageManager.send_success_message(self.tr("Model imported: {name}").format(name=record["name"]))
 
     def show_projects(self):
         """Switch to the project registry tab."""
@@ -210,6 +212,7 @@ class DataManagerWidget(QWidget):
 
 
         self.project_widget.projectChangedSignal.connect(self.data_item_widget.load_models_by_project)
+        self.data_item_widget.importRequested.connect(self.import_model_path)
 
         self.splitter.addWidget(self.project_widget)
         self.splitter.addWidget(self.data_item_widget)
@@ -221,7 +224,7 @@ class DataManagerWidget(QWidget):
         # self.splitter.setStretchFactor(2, 2)
 
 
-        self.library_widget = ModelLibraryWidget(self)
+        self.library_widget = ValidationWorkspace(self)
         self.data_item_widget.modelsChanged.connect(self._on_registry_changed)
         self.project_widget.projectsChanged.connect(self._on_registry_changed)
         self.stack = QStackedWidget(self)
@@ -243,6 +246,7 @@ class DataManagerWidget(QWidget):
         self.stack.currentChanged.connect(self._sync_toolbar_actions)
         self.library_widget.toolbarContextChanged.connect(self.toolbarActionsChanged)
         for action in (self.library_widget.import_action, self.library_widget.save_action,
+                       self.library_widget.import_files_action, self.library_widget.import_folder_action,
                        self.library_widget.star_action, self.library_widget.import_package_action,
                        self.library_widget.export_package_action, self.library_widget.diagnostic_action, self.library_widget.edit_diagnostic_action, self.library_widget.save_plan_action):
             action.changed.connect(self.toolbarActionsChanged)

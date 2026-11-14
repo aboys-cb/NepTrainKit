@@ -12,7 +12,7 @@ from .models import Base
 
 # Bump together with a new entry in ``_MIGRATIONS``. Migrations are frozen SQL:
 # never edit one that has shipped, add a new step instead.
-SCHEMA_VERSION = 2
+SCHEMA_VERSION = 3
 
 
 def _columns(conn: sqlite3.Connection, table: str) -> set[str]:
@@ -127,7 +127,23 @@ def _migrate_2_temporary_models(conn: sqlite3.Connection) -> None:
         """)
 
 
-_MIGRATIONS = {1: _migrate_1_model_snapshots, 2: _migrate_2_temporary_models}
+def _migrate_3_validation_groups(conn: sqlite3.Connection) -> None:
+    _execute_all(conn, """
+        CREATE TABLE IF NOT EXISTS benchmark_suite_groups (
+            id INTEGER NOT NULL PRIMARY KEY,
+            suite_id INTEGER NOT NULL REFERENCES benchmark_suites(id) ON DELETE CASCADE,
+            name VARCHAR(200) NOT NULL,
+            position INTEGER NOT NULL
+        );
+        CREATE INDEX IF NOT EXISTS ix_benchmark_suite_groups_suite_id ON benchmark_suite_groups(suite_id);
+    """)
+    columns = _columns(conn, "benchmark_suite_sets")
+    if columns and "group_id" not in columns:
+        conn.execute("ALTER TABLE benchmark_suite_sets ADD COLUMN group_id INTEGER REFERENCES benchmark_suite_groups(id) ON DELETE SET NULL")
+        conn.execute("ALTER TABLE benchmark_suite_sets ADD COLUMN display_name TEXT NOT NULL DEFAULT ''")
+
+
+_MIGRATIONS = {1: _migrate_1_model_snapshots, 2: _migrate_2_temporary_models, 3: _migrate_3_validation_groups}
 
 
 def migrate(path: str | Path) -> None:

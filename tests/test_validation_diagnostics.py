@@ -707,3 +707,22 @@ def test_editor_reports_preference_write_failure_without_losing_inputs(seed, mon
     widget.rows['volume'][1].setValue(-13)
     assert 'remembered automatically' in widget.parameters_hint.text()
     widget.close()
+
+
+def test_diagnostic_subplots_also_default_to_wheel_scrolling(service, seed):
+    from PySide6.QtWidgets import QApplication
+    from NepTrainKit.ui.views.model_library import RunDetailPanel
+    from test_validation_ui import _wheel_over_plot
+    suite = service.create_diagnostic_plan('wheel', [(seed, DiagnosticSpec())], temporary=True)
+    benchmark, = service.suite_sets(suite['id'])
+    panel = RunDetailPanel(); panel.resize(1060, 600)
+    panel.show_groups([(f'G{i}', benchmark, []) for i in range(8)])
+    panel.show(); QApplication.processEvents()
+    assert panel.wheel_zoom_checkbox.isVisible() and not panel.wheel_zoom_checkbox.isChecked()
+    scroll = panel.grid_scroll.verticalScrollBar(); scroll.setValue(50)
+    plot = panel.eos_plots[0]
+    before = plot.viewRange()
+    _wheel_over_plot(plot)
+    np.testing.assert_allclose(plot.viewRange(), before)
+    assert scroll.value() > 50
+    panel.close(); panel.deleteLater()

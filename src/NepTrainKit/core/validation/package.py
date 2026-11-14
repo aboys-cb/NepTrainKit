@@ -15,7 +15,7 @@ import zipfile
 
 from sqlalchemy import select
 
-from NepTrainKit.core.dataset.models import BenchmarkSet, BenchmarkSuite, BenchmarkSuiteSet, ModelVersion, Project
+from NepTrainKit.core.dataset.models import BenchmarkSet, BenchmarkSuite, BenchmarkSuiteSet, BenchmarkSuiteGroup, ModelVersion, Project
 from .library import sha256_bytes
 from .protocols import get_protocol, read_frames
 from .service import parse_model_header
@@ -65,7 +65,7 @@ def build_package(service, suite_id: int, model_ids=()) -> PackagePreview:
     suite = service.get_suite(suite_id)
     refs, models, objects = [], [], {}
     baseline = None
-    for row in service.suite_sets(suite_id):
+    for row in service.suite_items(suite_id):
         if row["protocol"] == "diagnostic":
             raise ValueError("无参考诊断方案暂不支持 v1 分享包，请先保存到本地；旧参考验证方案仍可分享。")
         data = service.library.open_object(row["object_hash"]).read_bytes()
@@ -76,7 +76,8 @@ def build_package(service, suite_id: int, model_ids=()) -> PackagePreview:
         objects[digest] = data
         refs.append(dict(name=row["name"], protocol=row["protocol"],
                          protocol_version=row["protocol_version"], object=digest,
-                         provenance=row["provenance"],
+                         provenance=row["provenance"], topic=row.get("group_name", ""),
+                         analysis=row["source_ref"].get("analysis"),
                          group={k: group[k] for k in ("field", "value")} if group else None))
     for model_id in dict.fromkeys(model_ids):
         row = service.get_model(model_id)
@@ -166,11 +167,15 @@ def _inspect_checked(data):
             _text(row["name"], "reference name")
             if row["protocol"] == "diagnostic":
                 raise ValueError("v1 分享包不支持无参考诊断协议。")
-            protocol = get_protocol(row["protocol"])
-            if row["protocol_version"] != protocol.version:
+            protocol = get_protocol(row["protocol"], analysis=row.get("analysis"))
+            if row["protocol_version"] != protocol.version and not (
+                protocol.kind in ("efv", "eos") and row["protocol_version"] == 1 and protocol.version == 2
+            ):
                 raise ValueError(f"Unsupported protocol version: {protocol.kind} {row['protocol_version']}")
             if not isinstance(row.get("provenance", {}), dict):
                 raise ValueError("Invalid reference metadata.")
+            if row.get("topic"):
+                _text(row["topic"], "topic name", 200)
             group = row.get("group")
             if group is not None:
                 _text(group["field"], "group field")
@@ -243,6 +248,7 @@ def import_package(service, preview: PackagePreview, *, name: str, project_name=
         session.add(suite)
         session.flush()
         added = set()
+        topics = {}
         for position, (row, checked) in enumerate(zip(manifest["references"], preview.references)):
             digest = row["object"]
             service.library.put_bytes(archive.read(f"objects/{digest}"))
@@ -250,15 +256,21 @@ def import_package(service, preview: PackagePreview, *, name: str, project_name=
             benchmark = session.get(BenchmarkSet, identity)
             if benchmark is None:
                 reference = {}
+                if row.get("analysis") is not None:
+                    reference["analysis"] = row["analysis"]
                 if row.get("group"):
                     reference["eos_group"] = dict(row["group"], indices=list(range(checked["frame_count"])))
                 benchmark = BenchmarkSet(id=identity, name=row["name"], protocol=row["protocol"],
-                    protocol_version=row["protocol_version"], object_hash=digest, source_ref=reference,
+                    protocol_version=get_protocol(row["protocol"]).version, object_hash=digest, source_ref=reference,
                     provenance=row.get("provenance", {}), summary=checked["summary"], elements=checked["elements"])
                 session.add(benchmark)
                 session.flush()
             if identity not in added:
-                session.add(BenchmarkSuiteSet(suite_id=suite.id, set_id=identity, position=position))
+                topic = row.get("topic", "")
+                if topic and topic not in topics:
+                    group = BenchmarkSuiteGroup(suite_id=suite.id, name=topic, position=len(topics))
+                    session.add(group); session.flush(); topics[topic] = group.id
+                session.add(BenchmarkSuiteSet(suite_id=suite.id, set_id=identity, position=position, group_id=topics.get(topic)))
                 added.add(identity)
         suite_id = suite.id
         session.commit()

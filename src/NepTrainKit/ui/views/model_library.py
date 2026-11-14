@@ -4,9 +4,9 @@ from __future__ import annotations
 
 import re
 
-from PySide6.QtCore import QAbstractTableModel, QModelIndex, QSize, Qt, Signal
+from PySide6.QtCore import QAbstractTableModel, QEvent, QModelIndex, QSize, Qt, Signal
 from PySide6.QtGui import QColor, QFont, QIcon, QPainter, QPixmap
-from PySide6.QtWidgets import QAbstractItemView, QFileDialog, QFrame, QGridLayout, QHBoxLayout, QHeaderView, QScrollArea, QSplitter, QVBoxLayout, QWidget
+from PySide6.QtWidgets import QApplication, QAbstractItemView, QFileDialog, QFrame, QGridLayout, QHBoxLayout, QHeaderView, QScrollArea, QSplitter, QVBoxLayout, QWidget
 from qfluentwidgets import (
     Action,
     BodyLabel,
@@ -31,7 +31,7 @@ from NepTrainKit.config import Config
 from NepTrainKit.core import MessageManager
 from NepTrainKit.core.validation import SetRejectedError, SetTooLargeError, ValidationService
 from NepTrainKit.core.validation.service import ModelDraft, parse_model_header
-from NepTrainKit.core.validation.protocols import get_protocol
+from NepTrainKit.core.validation.protocols import get_protocol, protocol_for_set
 from NepTrainKit.ui.messages import translate_runtime_message
 from NepTrainKit.ui.threads import BackgroundTask
 from NepTrainKit.ui.widgets import GetStrMessageBox
@@ -103,7 +103,10 @@ class ScorecardTableModel(QAbstractTableModel):
                 "b0_error": self.tr("B₀ error"),
                 "energy_rmse": self.tr("Energy RMSE"),
                 "force_rmse": self.tr("Force RMSE"),
+                "mforce_rmse": self.tr("Magnetic force RMSE"),
                 "virial_rmse": self.tr("Virial RMSE"),
+                "response_rmse": self.tr("Response RMSE"),
+                "max_response_error": self.tr("Max response error"),
             }
             label = labels.get(column.get("metric"), column["label"])
             return f"{column['set_name']}\n{label}{unit}"
@@ -176,6 +179,7 @@ class GroupMetricsTableModel(QAbstractTableModel):
         self.model_row = -1
         self.metric_columns = []
         self.kind = "eos"
+        self._metric_keys = ("shape_rmse", "v0_error", "b0_error")
 
     def set_groups(self, benchmarks, model_row, kind):
         self.beginResetModel()
@@ -183,6 +187,14 @@ class GroupMetricsTableModel(QAbstractTableModel):
         self.model_row = model_row
         self.kind = kind
         keys = {"eos": ("shape_rmse", "v0_error", "b0_error"), "diagnostic": ("energy_span", "check_failures")}.get(kind, ("energy_rmse", "force_rmse"))
+        if kind == "efv" and any(
+            item.get("summary", {}).get("label_counts", {}).get("mforce", {}).get("components", 0)
+            for item in self.benchmarks
+        ):
+            keys += ("mforce_rmse",)
+        if kind == "response" and self.benchmarks:
+            keys = tuple(metric.key for metric in protocol_for_set(self.benchmarks[0]).headline_metrics())
+        self._metric_keys = keys
         self.metric_columns = [
             [next((i + 1 for i, col in enumerate(self.scorecard._columns)
                    if col["set_id"] == benchmark["id"] and col["metric"] == key), -1) for key in keys]
@@ -194,13 +206,18 @@ class GroupMetricsTableModel(QAbstractTableModel):
         return 0 if parent.isValid() else len(self.benchmarks)
 
     def columnCount(self, parent=QModelIndex()):
-        return 0 if parent.isValid() else (5 if self.kind == "eos" else 4)
+        return 0 if parent.isValid() else len(self._metric_keys) + 2
 
     def headerData(self, section, orientation, role=Qt.ItemDataRole.DisplayRole):
         if orientation != Qt.Orientation.Horizontal or role != Qt.ItemDataRole.DisplayRole:
             return None
         metrics = [self.tr("Curve RMSE\n(meV/atom)"), self.tr("V₀ error (%)"), self.tr("B₀ error (%)")] if self.kind == "eos" else [
             self.tr("Energy RMSE\n(meV/atom)"), self.tr("Force RMSE\n(meV/Å)")]
+        if "mforce_rmse" in self._metric_keys:
+            metrics.append(self.tr("Magnetic force RMSE\n(meV/μB)"))
+        if self.kind == "response":
+            protocol = protocol_for_set(self.benchmarks[0]) if self.benchmarks else get_protocol("response")
+            return [self.tr("Reference group"), *[self.tr(metric.label) + "\n(" + metric.unit + ")" for metric in protocol.headline_metrics()], self.tr("Status")][section]
         if self.kind == "diagnostic":
             return ["诊断实验", "能量跨度 (meV/atom)", "检查异常数", "运行状态"][section]
         return [self.tr("Reference group"), *metrics, self.tr("Status")][section]
@@ -315,6 +332,9 @@ class RunDetailPanel(QWidget):
         from NepTrainKit.ui.widgets.diagnostic_plot import set_response_metric
         self.diagnostic_mode.currentIndexChanged.connect(lambda *_: set_response_metric(self))
         header.addWidget(self.diagnostic_mode)
+        self.wheel_zoom_checkbox = CheckBox(self.tr("Wheel zoom"), self)
+        self.wheel_zoom_checkbox.setToolTip(self.tr("Off: scroll the chart list. On: use the wheel to zoom the chart under the pointer."))
+        header.addWidget(self.wheel_zoom_checkbox)
         header.addWidget(self.relative_checkbox)
         header.addWidget(self.offset_checkbox)
         layout.addLayout(header)
@@ -355,7 +375,7 @@ class RunDetailPanel(QWidget):
         """``entries`` are ``(model id, label, run or None, run details)`` in overlay order."""
         self._args = (benchmark, entries)
         self._total_groups = 1 if benchmark else 0
-        self._groups = [("G1", benchmark, entries)] if benchmark and benchmark["protocol"] in ("eos", "diagnostic") else None
+        self._groups = [("G1", benchmark, entries)] if benchmark and benchmark["protocol"] in ("eos", "diagnostic", "response") else None
         self._redraw()
 
     def show_groups(self, groups, *, total_groups=None):
@@ -370,11 +390,16 @@ class RunDetailPanel(QWidget):
         self._diagnostic_charts = []
         diagnostic = bool(groups and groups[0][1]["protocol"] == "diagnostic")
         self.diagnostic_mode.setVisible(diagnostic)
+        self.wheel_zoom_checkbox.setVisible(bool(self._groups))
         self._rebuild_legend(groups)
         self.relative_checkbox.setVisible(self._groups is not None)
         self.grid_scroll.setVisible(self._groups is not None)
         self.plot.setVisible(self._groups is None)
         if self._groups is not None:
+            if self._groups and self._groups[0][1]["protocol"] == "response":
+                from NepTrainKit.ui.widgets.reference_response_plot import redraw_reference_responses
+                redraw_reference_responses(self)
+                return
             if self._groups and self._groups[0][1]["protocol"] == "diagnostic":
                 from NepTrainKit.ui.widgets.diagnostic_plot import redraw_diagnostics
                 redraw_diagnostics(self)
@@ -389,7 +414,7 @@ class RunDetailPanel(QWidget):
             self.title_label.setText(self.tr("Click a cell to see its details"))
             self.info_label.setText("")
             return
-        protocol = get_protocol(benchmark["protocol"])
+        protocol = protocol_for_set(benchmark)
         provenance = benchmark.get("provenance") or {}
         source = provenance.get("source_kind")
         source = {"Demo": self.tr("Demo"), "Other": self.tr("Other")}.get(source, source)
@@ -425,7 +450,34 @@ class RunDetailPanel(QWidget):
                     .format(name=name, status=status, error=translate_runtime_message(run["error"]))
                     .rstrip()
                 )
+            elif _details.get("label_counts"):
+                counts = _details["label_counts"]
+                notes.append(self.tr("RMSE E/F/V/MF: {values}").format(values=" / ".join(
+                    "—" if run["metrics"].get(key + "_rmse") is None
+                    else f'{run["metrics"][key + "_rmse"]:.6g}'
+                    for key in ("energy", "force", "virial", "mforce")
+                )))
+                notes.append(self.tr(
+                    "{name}: valid labels — E {energy} structures; F {force} atoms; "
+                    "V {virial} structures; MF {mforce} atoms."
+                ).format(name=name, energy=counts["energy"]["structures"], force=counts["force"]["atoms"],
+                         virial=counts["virial"]["structures"], mforce=counts["mforce"]["atoms"]))
+                notes.append(self.tr("Compared components E/F/V/MF: {counts}").format(
+                    counts=" / ".join(str(counts[key]["evaluated_components"])
+                                       for key in ("energy", "force", "virial", "mforce"))))
+                scope = _details.get("evaluation_scope", {})
+                source = _details.get("prediction_source", {}).get("kind")
+                notes.append(self.tr("Model {model} · data {data} · {frames} frames / {atoms} atoms · {source}").format(
+                    model=_details.get("model_sha256", "")[:12], data=_details.get("dataset_sha256", "")[:12],
+                    frames=len(scope.get("frame_indices", [])), atoms=sum(scope.get("atom_counts", [])),
+                    source=self.tr("Verified cache") if source == "verified_cache" else self.tr("Saved predictions") if source == "prediction_cache" else self.tr("Recalculated")))
+                notes.extend(translate_runtime_message(warning) for warning in _details.get("warnings", []))
         self.info_label.setText("\n".join(notes))
+        self.info_label.setToolTip("\n".join(
+            self.tr("{name}\nModel SHA-256: {model}\nDataset SHA-256: {data}").format(
+                name=name, model=details.get("model_sha256", ""), data=details.get("dataset_sha256", "")
+            ) for _, name, run, details in entries if run and details.get("model_sha256")
+        ))
         renderer = {"efv": self._plot_efv}.get(protocol.kind)
         if renderer is not None:
             renderer(benchmark, [(key, name, details) for key, name, run, details in entries if run and run["status"] == "succeeded" and details])
@@ -525,20 +577,45 @@ class RunDetailPanel(QWidget):
     def resizeEvent(self, event):
         super().resizeEvent(event)
         # Native macOS checkbox size hints can undercount translated text.
-        for checkbox in (self.relative_checkbox, self.offset_checkbox):
+        for checkbox in (self.relative_checkbox, self.offset_checkbox, self.wheel_zoom_checkbox):
             checkbox.setMinimumWidth(checkbox.fontMetrics().horizontalAdvance(checkbox.text()) + 40)
         self._layout_cards()
 
+    def _configure_subplot(self, plot):
+        plot.viewport().installEventFilter(self)
+        plot.getViewBox().state["wheelScaleFactor"] = -0.03
+
+    def eventFilter(self, obj, event):
+        if event.type() == QEvent.Type.Wheel and not self.wheel_zoom_checkbox.isChecked():
+            # A graphics view consumes wheel events before the surrounding scroll area.
+            pixels = event.pixelDelta()
+            if not pixels.isNull():
+                self.grid_scroll.verticalScrollBar().setValue(self.grid_scroll.verticalScrollBar().value() - pixels.y())
+                self.grid_scroll.horizontalScrollBar().setValue(self.grid_scroll.horizontalScrollBar().value() - pixels.x())
+                event.accept()
+            else:
+                QApplication.sendEvent(self.grid_scroll.viewport(), event)
+            return True
+        return super().eventFilter(obj, event)
+
     def _layout_cards(self):
         limit = 2 if self._groups and self._groups[0][1]["protocol"] == "diagnostic" else 3
-        columns = min(limit, max(1, (self.width() - 30) // 360), max(1, len(self.eos_cards)))
+        columns = min(limit, max(1, (self.width() - 30) // 360))
+        if limit == 2:
+            columns = min(columns, max(1, len(self.eos_cards)))
+        else:
+            width = min(460, max(1, (self.width() - 30 - 14 * (columns - 1)) // columns))
+            for card in self.eos_cards:
+                card.setFixedWidth(width)
         if columns == self._grid_columns:
             return
         self._grid_columns = columns
         while self.grid_layout.count():
             self.grid_layout.takeAt(0)
         for index, card in enumerate(self.eos_cards):
-            self.grid_layout.addWidget(card, index // columns, index % columns)
+            self.grid_layout.addWidget(card, index // columns, index % columns,
+                                       Qt.AlignmentFlag.AlignTop if limit == 2 else
+                                       Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignLeft)
         for column in range(3):
             self.grid_layout.setColumnStretch(column, 1 if column < columns else 0)
 
@@ -601,7 +678,7 @@ class RunDetailPanel(QWidget):
             focus = TransparentToolButton((FluentIcon.ZOOM_OUT if focused else FluentIcon.ZOOM_IN).colored(
                 palette.PLOT_LOADED_OVERLAY, palette.PLOT_LOADED_OVERLAY), card)
             focus.setObjectName("toggleEosGroupFocus")
-            focus.setToolTip(self.tr("Back to all groups") if focused else self.tr("Enlarge this group"))
+            focus.setToolTip(self.tr("Back to all groups") if focused else self.tr("Focus this group"))
             focus.setAccessibleName(focus.toolTip())
             if focused:
                 focus.clicked.connect(lambda _checked=False: self.allGroupsRequested.emit())
@@ -634,10 +711,13 @@ class RunDetailPanel(QWidget):
                     status.append(self.tr("{name}: unavailable").format(name=name))
             caption = CaptionLabel(" · ".join(status), card)
             caption.setWordWrap(True)
+            caption.setMaximumHeight(caption.fontMetrics().lineSpacing() * 2)
             caption.setStyleSheet(f"color: {palette.TEXT_SECONDARY};")
-            caption.setToolTip(benchmark["name"] + "\n" + "\n".join(translate_runtime_message(w) for w in warnings))
+            caption.setToolTip(benchmark["name"] + "\n" + " · ".join(status) + "\n"
+                               + "\n".join(translate_runtime_message(w) for w in warnings))
             card_layout.addWidget(caption)
             plot = self._pg.PlotWidget(card)
+            self._configure_subplot(plot)
             reset.clicked.connect(lambda _checked=False, target=plot: self._reset_plot_view(target))
             plot.showGrid(x=True, y=True, alpha=0.12)
             for axis_name in ("left", "bottom"):
@@ -666,7 +746,8 @@ class RunDetailPanel(QWidget):
                                   pen=self._series_pen(key), name=name, antialias=True)
                 self._register_curve(key, curve)
             card_layout.addWidget(plot, 1)
-            card.setMinimumHeight(290 if len(self._groups) > 1 else 390)
+            card.setFixedHeight(300)
+            card.setMaximumWidth(460)
             self.eos_cards.append(card)
             self.eos_plots.append(plot)
         self._layout_cards()
@@ -738,6 +819,10 @@ class ModelLibraryWidget(QWidget):
         self.save_plan_action.triggered.connect(self.save_diagnostic_plan)
         self.import_action = Action(QIcon(':/images/src/images/open.svg'), self.tr("Import reference dataset"), self)
         self.import_action.setToolTip(self.tr("Import reference dataset"))
+        self.import_files_action = Action(FluentIcon.FOLDER, self.tr("Import multiple reference files…"), self)
+        self.import_folder_action = Action(FluentIcon.FOLDER, self.tr("Import reference folder…"), self)
+        self.import_files_action.triggered.connect(lambda: self.import_reference_batch())
+        self.import_folder_action.triggered.connect(lambda: self.import_reference_batch(folder=True))
         self.import_package_action = Action(FluentIcon.DOWNLOAD.icon(color=palette.ACCENT), self.tr("Import validation sharing package…"), self)
         self.export_package_action = Action(FluentIcon.SHARE.icon(color=palette.ACCENT), self.tr("Export validation sharing package…"), self)
         self.import_package_action.triggered.connect(lambda: self.import_validation_package())
@@ -760,6 +845,19 @@ class ModelLibraryWidget(QWidget):
         self.run_menu.addAction(self.run_current_action)
         self.run_menu.addSeparator()
         self.run_menu.addAction(self.run_all_action)
+        self.recalculate_action = Action(FluentIcon.SYNC, self.tr("Recalculate selected models"), self)
+        self.recalculate_action.triggered.connect(
+            lambda: self._run_validation(self.selected_model_ids(), force=True)
+        )
+        self.output_cache_action = Action(FluentIcon.FOLDER, self.tr("Import .out cache for accuracy datasets…"), self)
+        self.output_cache_action.setToolTip(self.tr(
+            "Only verified outputs are reused. Missing or mismatched provenance triggers a fresh evaluation; "
+            "source files are kept."
+        ))
+        self.output_cache_action.triggered.connect(self.import_output_cache)
+        self.run_menu.addSeparator()
+        self.run_menu.addAction(self.recalculate_action)
+        self.run_menu.addAction(self.output_cache_action)
         self.run_selected_button.setFlyout(self.run_menu)
         self.scope_combo = ComboBox(self)
         for label, scope in (("当前性质 · 全部组", "property"), ("当前性质 · 选中组", "selection"), ("整个方案 · 所有性质", "suite")):
@@ -817,7 +915,7 @@ class ModelLibraryWidget(QWidget):
         controls.addLayout(actions)
         self.property_combo = ComboBox(self)
         self.property_combo.currentIndexChanged.connect(lambda *_: self._load_groups())
-        self.group_hint = CaptionLabel(self.tr("Each group has independent axes. Enlarge a chart or select rows in the error details to focus."), self)
+        self.group_hint = CaptionLabel(self.tr("Each group has independent axes. Focus a chart or select rows in the error details."), self)
         self.group_hint.hide()
         self.all_groups_button = TransparentPushButton(self.tr("Show all groups"), self)
         self.all_groups_button.clicked.connect(self._select_all_groups)
@@ -1045,7 +1143,7 @@ class ModelLibraryWidget(QWidget):
         self.property_combo.blockSignals(True)
         self.property_combo.clear()
         for kind in kinds:
-            self.property_combo.addItem({"eos": "EOS", "diagnostic": "无参考诊断"}.get(kind, self.tr("Energy / force / virial")), userData=kind)
+            self.property_combo.addItem({"eos": "EOS", "diagnostic": "无参考诊断", "response": self.tr("Reference response analysis")}.get(kind, self.tr("Energy / force / virial")), userData=kind)
         previous_index = self.property_combo.findData(previous_kind)
         if previous_index >= 0:
             self.property_combo.setCurrentIndex(previous_index)
@@ -1108,7 +1206,7 @@ class ModelLibraryWidget(QWidget):
         self._on_selection_changed()
         self.scorecardChanged.emit()
 
-    def open_scorecard(self, suite_id: int | None, model_id: int | None = None, *, draft: ModelDraft | None = None) -> None:
+    def open_scorecard(self, suite_id: int | None, model_id: int | None = None, *, draft: ModelDraft | None = None, show_curves: bool = True) -> None:
         """Show ``suite_id`` (``None``: the last used suite) with ``model_id`` selected."""
         if self._run_task is not None:
             MessageManager.send_info_message("验证正在运行，请完成或停止后再切换方案与势版本。")
@@ -1125,7 +1223,13 @@ class ModelLibraryWidget(QWidget):
                     set(item["elements"]) <= elements for item in service.suite_sets(suite["id"])
                 )), None)
         # Explicit viewer/history handoffs request a preview; plain navigation does not.
-        self._expand_curves()
+        if show_curves:
+            self._expand_curves()
+        else:
+            self.curves_button.blockSignals(True)
+            self.curves_button.setChecked(False)
+            self.curves_button.blockSignals(False)
+            self._sync_curve_visibility()
         self.refresh(suite_id, model_id)
 
     # -- selection and details --------------------------------------------------
@@ -1213,7 +1317,7 @@ class ModelLibraryWidget(QWidget):
         selection = self.table.selectionModel()
         selection.blockSignals(True)
         self.metrics_model.set_groups(benchmarks, self.model.row_of_model(self.model_combo.currentData()), kind)
-        if kind in ("eos", "diagnostic"):
+        if kind in ("eos", "diagnostic", "response"):
             self.table.setSelectionMode(QAbstractItemView.SelectionMode.ExtendedSelection)
             if selected and selected < {b["id"] for b in benchmarks}:
                 from PySide6.QtCore import QItemSelectionModel
@@ -1227,7 +1331,7 @@ class ModelLibraryWidget(QWidget):
             if benchmarks:
                 self.table.selectRow(next((i for i, b in enumerate(benchmarks) if b["id"] in selected), 0))
         selection.blockSignals(False)
-        self.all_groups_button.setVisible(kind in ("eos", "diagnostic"))
+        self.all_groups_button.setVisible(kind in ("eos", "diagnostic", "response"))
         self.metrics_button.setText("响应与运行详情" if kind == "diagnostic" else self.tr("Error details"))
         self._update_run_scope()
         if update_detail:
@@ -1251,6 +1355,8 @@ class ModelLibraryWidget(QWidget):
         self._sync_save_context()
         self.diagnostic_action.setEnabled(self._run_task is None and not editing)
         self.import_action.setEnabled(self._run_task is None and not editing)
+        self.import_files_action.setEnabled(self._run_task is None and not editing)
+        self.import_folder_action.setEnabled(self._run_task is None and not editing)
         self.import_package_action.setEnabled(self._run_task is None and not editing)
         self.curves_button.setEnabled(bool(self._benchmarks))
         self.export_package_action.setEnabled(has_suite and not diagnostic and bool(self.metrics_model.benchmarks) and self._run_task is None)
@@ -1292,7 +1398,7 @@ class ModelLibraryWidget(QWidget):
             for row in rows:
                 column = self.model.first_column_of_set(benchmark["id"])
                 cell = row["cells"][column - 1] if column > 0 else None
-                run = service.latest_run(row["model_id"], benchmark["id"], protocol_version=get_protocol(benchmark["protocol"]).version) if row["model_id"] else None
+                run = service.latest_run(row["model_id"], benchmark["id"], protocol_version=protocol_for_set(benchmark).version) if row["model_id"] else None
                 if cell and cell["status"] == "missing":
                     run = None
                 elif run is not None and cell and run["status"] != cell["status"]:
@@ -1300,14 +1406,15 @@ class ModelLibraryWidget(QWidget):
                 details = {}
                 if run is not None and run["status"] == "succeeded":
                     try:
-                        details = service.run_details(run).get("details", {})
+                        result = service.run_details(run)
+                        details = dict(result.get("details", {}), warnings=result.get("warnings", []))
                     except OSError:
                         pass
                 entries.append((row["model_id"], self._model_label(self.model.row_of_model(row["model_id"])), run, details))
             groups.append((f"G{index + 1}", benchmark, entries))
         if not groups:
             self.detail.show_runs(None, [])
-        elif self.metrics_model.kind in ("eos", "diagnostic"):
+        elif self.metrics_model.kind in ("eos", "diagnostic", "response"):
             self.detail.show_groups(groups, total_groups=len(benchmarks))
         elif groups:
             self.detail.show_runs(groups[0][1], groups[0][2])
@@ -1529,6 +1636,32 @@ class ModelLibraryWidget(QWidget):
         except (ValueError, OSError) as error:
             MessageManager.send_error_message(str(error))
 
+    def import_reference_batch(self, *, folder=False):
+        from pathlib import Path
+        from NepTrainKit.ui.widgets.reference_batch import ReferenceBatchDialog
+        if folder:
+            directory = QFileDialog.getExistingDirectory(self, self.tr("Select reference dataset folder"))
+            paths = sorted(p for p in Path(directory).rglob('*') if p.suffix.lower() in ('.xyz', '.extxyz') and p.is_file()) if directory else []
+        else:
+            paths, _ = QFileDialog.getOpenFileNames(self, self.tr("Select reference datasets"), '', 'EXTXYZ (*.xyz *.extxyz)')
+        if not paths:
+            return None
+        dialog = ReferenceBatchDialog(self, self.service(), paths, suite_name=self.suite_combo.currentText(), group_by_directory=folder)
+        if not dialog.exec():
+            return None
+        try:
+            try:
+                records = dialog.import_into()
+            except SetTooLargeError as error:
+                if not self._confirm_large_copy(error):
+                    return None
+                records = dialog.import_into(allow_large=True)
+        except (OSError, ValueError, SetRejectedError) as error:
+            MessageManager.send_error_message(str(error)); return None
+        suite = next(s for s in self.service().suites() if s['name'] == dialog.suite.text().strip())
+        self.refresh(suite['id'])
+        return records
+
     def import_benchmark(self) -> list[dict] | None:
         """Import one or more reference datasets and return their records."""
         service = self.service()
@@ -1572,6 +1705,9 @@ class ModelLibraryWidget(QWidget):
         self.run_selected_button.setEnabled(bool(jobs) if idle else True)
         self.run_current_action.setEnabled(idle and any(job[0] == self.model_combo.currentData() for job in all_jobs))
         self.run_all_action.setEnabled(idle and bool(all_jobs))
+        self.recalculate_action.setEnabled(idle and bool(jobs))
+        accuracy_ids = {item["id"] for item in benchmarks if item["protocol"] == "efv"}
+        self.output_cache_action.setEnabled(idle and any(set_id in accuracy_ids for _, set_id in jobs))
         self.run_all_action.setText(self.tr("Validate every compatible model in the library ({runs} runs, other projects included)").format(runs=len(all_jobs)))
         self.scope_combo.setEnabled(idle)
         self.refresh_button.setEnabled(idle)
@@ -1634,7 +1770,18 @@ class ModelLibraryWidget(QWidget):
         if self._failed_context == (self._library_root, self.current_suite_id()):
             return self._run_validation(jobs=list(self._failed_jobs))
 
-    def _run_validation(self, model_ids=None, *, jobs=None):
+    def import_output_cache(self):
+        """Import verified outputs for the selected models and accuracy datasets."""
+        accuracy_ids = {item["id"] for item in self.selected_benchmarks() if item["protocol"] == "efv"}
+        jobs = [job for job in self.run_jobs(model_ids=self.selected_model_ids()) if job[1] in accuracy_ids]
+        if not jobs:
+            return None
+        folder = QFileDialog.getExistingDirectory(self, self.tr("Select official .out cache folder"))
+        if folder:
+            return self._run_validation(jobs=jobs, cache_directory=folder)
+        return None
+
+    def _run_validation(self, model_ids=None, *, jobs=None, force=False, cache_directory=None):
         if self._run_task is not None or self.current_suite_id() is None:
             return None
         service = self._view_service()
@@ -1664,10 +1811,15 @@ class ModelLibraryWidget(QWidget):
         self._run_label = f"{self.suite_combo.currentText()} · {len({m for m, _ in jobs})} 个势 × {len({s for _, s in jobs})} 项实验"
 
         def evaluate_all():
+            options = {}
+            if force:
+                options["force"] = True
+            if cache_directory is not None:
+                options["cache_directory"] = cache_directory
             for model_id, set_id in jobs:
                 if task.isInterruptionRequested():
                     break
-                run = service.evaluate(model_id, set_id)
+                run = service.evaluate(model_id, set_id, **options)
                 self._run_records.append(((model_id, set_id), run))
                 yield run
 

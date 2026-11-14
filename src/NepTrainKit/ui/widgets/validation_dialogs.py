@@ -7,8 +7,8 @@ import os
 from pathlib import Path
 from html import escape
 
-from PySide6.QtCore import QEvent, Qt
-from PySide6.QtWidgets import QAbstractItemView, QBoxLayout, QFileDialog, QFormLayout, QHeaderView, QHBoxLayout, QLayout, QTableWidgetItem, QVBoxLayout, QWidget
+from PySide6.QtCore import QEvent, Qt, Slot
+from PySide6.QtWidgets import QApplication, QAbstractItemView, QBoxLayout, QFileDialog, QFormLayout, QHeaderView, QHBoxLayout, QLayout, QTableWidgetItem, QVBoxLayout, QWidget
 from qfluentwidgets import (
     BodyLabel,
     CaptionLabel,
@@ -31,8 +31,11 @@ from NepTrainKit.core.validation import Library, SetTooLargeError, ValidationSer
 from NepTrainKit.core.validation.library import ENV_VAR, CONFIG_LIBRARY_PATH, CONFIG_SECTION, sha256_bytes
 from NepTrainKit.core.validation.grouping import eos_frame_groups, eos_group_fields
 from NepTrainKit.core.validation.protocols import Issue, get_protocol, read_frames
+from NepTrainKit.core.validation.service import INBOX_PROJECT, ModelDraft, parse_model_header
+from NepTrainKit.core.prediction_cache import find_output_groups, inspect_output_groups
 from NepTrainKit.ui.dialogs import call_path_dialog
 from NepTrainKit.ui.messages import translate_runtime_message
+from NepTrainKit.ui.threads import BackgroundTask
 
 
 class SaveModelDialog(MessageBoxBase):
@@ -41,7 +44,9 @@ class SaveModelDialog(MessageBoxBase):
     def __init__(self, parent, service, name: str):
         super().__init__(parent)
         self.service = service
-        self.viewLayout.addWidget(SubtitleLabel(self.tr("Save model to project"), self))
+        self._initial_library_root = service.library.root
+        self.title_label = SubtitleLabel(self.tr("Save model to project"), self)
+        self.viewLayout.addWidget(self.title_label)
         self.location_label = BodyLabel(self.tr("Library: {path}").format(path=service.library.root), self)
         self.location_label.setWordWrap(True)
         location_row = QHBoxLayout()
@@ -97,17 +102,188 @@ class SaveModelDialog(MessageBoxBase):
         project = self.project_combo.text().strip()
         self.yesButton.setEnabled(bool(project and len(project) <= 200 and self.name_edit.text().strip()))
 
+    def save_model(self, draft):
+        """Save the reviewed bytes and persist the selected destination."""
+        record = self.service.save_model(draft, project_name=self.project_combo.text(), name=self.name_edit.text())
+        if self.service.library.root != self._initial_library_root:
+            Config.set(CONFIG_SECTION, CONFIG_LIBRARY_PATH, str(self.service.library.root))
+        Config.set("validation", "last_save_project", self.project_combo.text().strip())
+        record["library_root"] = str(self.service.library.root)
+        return record
+
+
+class ImportModelDialog(SaveModelDialog):
+    """Review recognised model files in one prefilled import dialog."""
+
+    def __init__(self, parent, service, paths, *, project_name=""):
+        self.draft = None
+        self._output_task = None
+        self._output_busy = False
+        self._output_generation = 0
+        self._pending_output_scan = None
+        self._output_summaries = {}
+        super().__init__(parent, service, "")
+        self.title_label.setText(self.tr("Import NEP model"))
+        self.yesButton.setText(self.tr("Import"))
+        self.project_combo.setText(project_name or self.project_combo.text() or INBOX_PROJECT)
+        self.model_combo = ComboBox(self)
+        self.model_combo.setAccessibleName(self.tr("Model file"))
+        for path in paths:
+            self.model_combo.addItem(Path(path).name, userData=str(path))
+        self.model_combo.setVisible(len(paths) > 1)
+        if len(paths) > 1:
+            self.model_combo.setCurrentIndex(-1)
+        self.model_details = BodyLabel(self)
+        self.model_details.setWordWrap(True)
+        self.viewLayout.insertWidget(1, self.model_combo)
+        self.viewLayout.insertWidget(2, self.model_details)
+        self.output_box = QWidget(self)
+        output_layout = QVBoxLayout(self.output_box)
+        output_layout.setContentsMargins(0, 0, 0, 0)
+        output_layout.addWidget(BodyLabel(self.tr("RMSE from existing outputs"), self.output_box))
+        self.output_combo = ComboBox(self.output_box)
+        output_layout.addWidget(self.output_combo)
+        self.output_fields = {}
+        form = QFormLayout()
+        for key, label in (("energy", self.tr("Energy (meV/atom)")), ("force", self.tr("Force (meV/Å)")),
+                           ("virial", self.tr("Virial (meV/atom)")), ("mforce", self.tr("Magnetic force (meV/μB)"))):
+            field = LineEdit(self.output_box)
+            field.setReadOnly(True)
+            self.output_fields[key] = field
+            form.addRow(BodyLabel(label, self.output_box), field)
+        output_layout.addLayout(form)
+        self.output_status = CaptionLabel(self.output_box)
+        self.output_status.setWordWrap(True)
+        self.output_status.setMaximumHeight(self.output_status.fontMetrics().lineSpacing() * 3)
+        output_layout.addWidget(self.output_status)
+        self.viewLayout.addWidget(self.output_box)
+        self.output_combo.currentIndexChanged.connect(self._show_output_summary)
+        self.model_combo.currentIndexChanged.connect(self._select_model)
+        self._select_model()
+
+    def _select_model(self, *_args):
+        self.draft = None
+        if self.model_combo.currentIndex() < 0:
+            self.model_details.setText(self.tr("Choose one of the recognised model files."))
+            self._request_output_scan()
+            self._validate()
+            return
+        try:
+            draft = ModelDraft.from_file(self.model_combo.currentData())
+            kind, elements = parse_model_header(draft.data)
+        except (OSError, ValueError, TypeError) as error:
+            self.model_details.setText(self.tr("Cannot read model: {error}").format(error=error))
+        else:
+            self.draft = draft
+            self.name_edit.setText(draft.name)
+            self.model_details.setText(self.tr("File: {path}\nType: {kind} · Elements: {elements}").format(
+                path=draft.source_path, kind=kind, elements=", ".join(elements),
+            ))
+        self._request_output_scan()
+        self._validate()
+
+    def _request_output_scan(self):
+        self._output_generation += 1
+        self._output_summaries = {}
+        self.output_combo.clear()
+        for field in self.output_fields.values():
+            field.setText("—")
+        try:
+            groups = find_output_groups(Path(self.draft.source_path).parent) if self.draft else {}
+        except OSError:
+            groups = {}
+        self.output_box.setVisible(bool(groups))
+        self._output_busy = bool(groups)
+        self._pending_output_scan = (self._output_generation, groups, self.draft.content_hash) if groups else None
+        if self._output_task is not None:
+            self._output_task.stop_work()
+        elif groups:
+            self._start_output_scan()
+
+    def _start_output_scan(self):
+        generation, groups, digest = self._pending_output_scan
+        self._pending_output_scan = None
+        self.output_status.setText(self.tr("Reading existing outputs in the background; no model prediction is run."))
+        task = BackgroundTask(QApplication.instance(), show_tip=False)
+        task.scan_generation = generation
+        self._output_task = task
+        task.succeeded.connect(self._apply_output_scan)
+        task.failed.connect(self._output_scan_failed)
+        task.finished.connect(self._output_scan_finished)
+        task.finished.connect(task.deleteLater)
+        self.destroyed.connect(task.stop_work)
+        task.start_work(inspect_output_groups, groups, digest, task.isInterruptionRequested)
+
+    @Slot(object)
+    def _apply_output_scan(self, summaries):
+        if self.sender().scan_generation != self._output_generation:
+            return
+        self._output_busy = False
+        self._output_summaries = summaries
+        self.output_combo.blockSignals(True)
+        for name in sorted(summaries, key=lambda name: (name != "train", name != "test", name)):
+            label = self.tr("Training outputs") if name == "train" else self.tr("Test outputs") if name == "test" else name
+            self.output_combo.addItem(label, userData=name)
+        self.output_combo.blockSignals(False)
+        self._show_output_summary()
+        self._validate()
+
+    @Slot(str)
+    def _output_scan_failed(self, error):
+        if self.sender().scan_generation == self._output_generation:
+            self._output_busy = False
+            self.output_status.setText(self.tr("Cannot read existing outputs: {error}").format(error=error))
+            self._validate()
+
+    @Slot()
+    def _output_scan_finished(self):
+        self._output_task = None
+        if self._pending_output_scan is not None:
+            self._start_output_scan()
+
+    def _show_output_summary(self, *_args):
+        summary = self._output_summaries.get(self.output_combo.currentData(), {})
+        for key, field in self.output_fields.items():
+            value = summary.get("metrics", {}).get(key + "_rmse")
+            field.setText("—" if value is None else f"{value:.6g}")
+        if not summary:
+            return
+        if summary["status"] == "verified":
+            text = self.tr("Model, dataset and output hashes verified. Existing outputs were read without prediction.")
+        elif summary["status"] == "mismatch":
+            text = self.tr("Outputs do not match this model or dataset. Import will save weights only.")
+        else:
+            text = self.tr("Historical output precision: its association with this model is unverified; this is not a validation record.")
+        reasons = [summary.get("reason", ""), *summary.get("errors", {}).values()]
+        text = "\n".join([text, *[translate_runtime_message(reason) for reason in reasons if reason]])
+        self.output_status.setText(text)
+        self.output_status.setToolTip(text)
+
+    def save_model(self, draft):
+        record = super().save_model(draft)
+        summary = self._output_summaries.get(self.output_combo.currentData(), {})
+        if summary.get("status") in {"verified", "unverified"} and any(
+            value is not None for value in summary.get("metrics", {}).values()
+        ):
+            record.update(self.service.save_imported_accuracy(record["id"], summary))
+        return record
+
+    def done(self, result):
+        self._pending_output_scan = None
+        if self._output_task is not None:
+            self._output_task.stop_work()
+        super().done(result)
+
+    def _validate(self, *_args):
+        super()._validate()
+        self.yesButton.setEnabled(self.yesButton.isEnabled() and self.draft is not None and not self._output_busy)
+
 
 def save_model_to_project(parent, service, draft, *, name=None):
     dialog = SaveModelDialog(parent, service, name or draft.name)
     if not dialog.exec():
         return None
-    record = dialog.service.save_model(draft, project_name=dialog.project_combo.text(), name=dialog.name_edit.text())
-    if dialog.service.library.root != service.library.root:
-        Config.set(CONFIG_SECTION, CONFIG_LIBRARY_PATH, str(dialog.service.library.root))
-    Config.set("validation", "last_save_project", dialog.project_combo.text().strip())
-    record["library_root"] = str(dialog.service.library.root)
-    return record
+    return dialog.save_model(draft)
 
 
 class BenchmarkImportDialog(MessageBoxBase):
@@ -157,13 +333,11 @@ class BenchmarkImportDialog(MessageBoxBase):
         self.protocol_combo.addItem(self.tr("Select validation type…"), userData=None)
         self.protocol_combo.addItem(self.tr("EOS · Energy–volume curve"), userData="eos")
         self.protocol_combo.addItem(self.tr("Energy / force / virial errors"), userData="efv")
+        self.protocol_combo.addItem(self.tr("Reference response · scans / differences / combinations"), userData="response")
         fields.addWidget(self.protocol_combo)
         self.requirements_label = CaptionLabel(self)
         self.requirements_label.setWordWrap(True)
         fields.addWidget(self.requirements_label)
-        unavailable = CaptionLabel(self.tr("Phonons, elastic constants and spin properties are not supported yet."), self)
-        unavailable.setWordWrap(True)
-        fields.addWidget(unavailable)
         fields.addWidget(BodyLabel(self.tr("2 · Load reference structures"), self))
 
         file_row = QWidget(self)
@@ -199,6 +373,10 @@ class BenchmarkImportDialog(MessageBoxBase):
         form.addRow(self.group_hint)
         form.addRow(BodyLabel(self.tr("Name"), self), self.name_edit)
         fields.addLayout(form)
+        from .reference_analysis import ReferenceAnalysisEditor
+        self.analysis_editor = ReferenceAnalysisEditor(self)
+        fields.addWidget(self.analysis_editor)
+        self.analysis_editor.hide()
         fields.addWidget(BodyLabel(self.tr("3 · Add to a fixed validation plan"), self))
         fields.addWidget(self.suite_combo)
         plan_hint = CaptionLabel(self.tr("Future model versions reuse this reference dataset. Importing does not change the baseline model."), self)
@@ -249,6 +427,7 @@ class BenchmarkImportDialog(MessageBoxBase):
         self.preview_plot = pg.PlotWidget(self)
         self.preview_legend = self.preview_plot.addLegend(offset=(-10, 10))
         self.preview_plot.setMinimumHeight(260)
+        self.preview_plot.viewport().installEventFilter(self)
         self.preview_plot.showGrid(x=True, y=True, alpha=0.2)
         preview.addWidget(self.preview_plot, 1)
 
@@ -275,6 +454,7 @@ class BenchmarkImportDialog(MessageBoxBase):
         self.path_edit.textChanged.connect(self._invalidate_file)
         self.suite_combo.textChanged.connect(self._validate)
         self.group_field_combo.currentIndexChanged.connect(self._check_protocol)
+        self.analysis_editor.changed.connect(self._check_protocol)
         self.group_table.currentCellChanged.connect(self._update_preview)
         self.group_table.itemChanged.connect(self._include_group)
         self.overlay_groups.stateChanged.connect(self._update_preview)
@@ -300,6 +480,13 @@ class BenchmarkImportDialog(MessageBoxBase):
         self.widget.setFixedSize(width, height)
 
     def eventFilter(self, obj, event):
+        if event.type() == QEvent.Type.Wheel and obj is self.preview_plot.viewport():
+            pixels = event.pixelDelta()
+            if pixels.isNull():
+                QApplication.sendEvent(self.body_scroll.viewport(), event)
+            else:
+                bar = self.body_scroll.verticalScrollBar(); bar.setValue(bar.value() - pixels.y())
+            return True
         if obj is self.parentWidget() and event.type() == QEvent.Type.Resize and hasattr(self, "body_scroll"):
             self._fit_to_parent()
         return super().eventFilter(obj, event)
@@ -333,11 +520,15 @@ class BenchmarkImportDialog(MessageBoxBase):
                 if not self.name_edit.text().strip():
                     self.name_edit.setText(Path(path).stem)
         self._populate_group_fields()
+        self.analysis_editor.set_frames(self.frames)
         self._check_protocol()
 
     def current_protocol(self):
         kind = self.protocol_combo.currentData()
-        return get_protocol(kind) if kind else None
+        try:
+            return get_protocol(kind, analysis=self.analysis_editor.settings() if kind == "response" else None) if kind else None
+        except (ValueError, TypeError):
+            return None
 
     def _invalidate_file(self, *_args):
         self.frames, self._loaded_bytes, self._read_error = None, None, ""
@@ -360,15 +551,22 @@ class BenchmarkImportDialog(MessageBoxBase):
         self.group_field_label.setVisible(kind == "eos")
         self.group_field_combo.setVisible(kind == "eos")
         self.group_hint.setVisible(kind == "eos")
+        self.analysis_editor.setVisible(kind == "response")
         if kind == "eos":
+            self.group_table.setHorizontalHeaderLabels([self.tr("Import / group"), self.tr("Frames"), self.tr("Volume (Å³/atom)"), self.tr("Status")])
             text = self.tr(
                 'Each EOS group needs at least 5 distinct volume points from one phase / magnetic branch.\n'
                 "Input: each structure's total energy in eV. Do not divide by the atom count beforehand.\n"
                 'Comparison: E/N (eV/atom) and V/N (Å³/atom), normalized automatically.\n'
-                'Fixed periodic reference structures; ordinary NEP models only.'
+                'Fixed periodic reference structures; keep input magnetic order and moment magnitudes fixed.'
             )
         elif kind == "efv":
-            text = self.tr("Labelled EXTXYZ structures with total energies; force and virial labels are optional. This compares prediction errors, not derived material properties.")
+            text = self.tr(
+                "Choose a dataset independently of the model. Energy, force, virial and magnetic-force labels "
+                "are counted separately; at least one labelled quantity is required."
+            )
+        elif kind == "response":
+            text = self.tr("Compare fixed reference structures using metadata groups, scan coordinates and signed state combinations. Review matching and exclusions before saving.")
         else:
             text = self.tr("Choose what to validate first. The file will not select a validation type for you.")
         self.requirements_label.setText(text)
@@ -455,8 +653,10 @@ class BenchmarkImportDialog(MessageBoxBase):
         self.reference_summary = None
         protocol = self.current_protocol()
         is_eos = protocol is not None and protocol.kind == "eos"
-        self.preview_plot.setVisible(is_eos)
-        self._preview_layout.setStretch(self._preview_layout.count() - 1, 0 if is_eos else 1)
+        is_response = protocol is not None and protocol.kind == "response"
+        self.preview_plot.setVisible(is_eos or is_response)
+        self.preview_plot.setMaximumHeight(320 if is_response else 16777215)
+        self._preview_layout.setStretch(self._preview_layout.count() - 1, 0 if is_eos or is_response else 1)
         self.preview_summary.setText(self.tr("Load a reference file to inspect its data before saving."))
         self.preview_title.setText(self.tr("Reference curve") if is_eos else self.tr("Reference data preview"))
         group = None
@@ -492,18 +692,58 @@ class BenchmarkImportDialog(MessageBoxBase):
                 text += "\n" + self.tr("Reference fit: V₀ = {v0:.3f} Å³/atom · B₀ = {b0:.2f} GPa").format(v0=fit["v0"], b0=fit["b0_gpa"])
             else:
                 text += "\n" + self.tr("Fit unavailable: compare the E–V curve only; V₀/B₀ will not be compared.")
+        elif protocol.kind == "response":
+            import pyqtgraph as pg
+            self.preview_title.setText(self.tr("Reference response preview"))
+            self.preview_plot.setLabel("bottom", summary["x_label"] if protocol.spec.mode == "scan" else self.tr("State / combination"))
+            self.preview_plot.setLabel("left", summary["unit"])
+            self.group_table.blockSignals(True)
+            self.group_table.setHorizontalHeaderLabels([self.tr("Reference group"), self.tr("Frames"), self.tr("Response points"), self.tr("Status")])
+            self.group_table.setRowCount(len(summary['series']) + len(summary['excluded']))
+            for row, group in enumerate(summary['series'] + summary['excluded']):
+                values = [group.get('name', group.get('group')), len(group.get('frame_indices', group.get('indices', []))),
+                          len(group.get('indices', [])) if 'name' in group else '—', group.get('reason', self.tr('Checks passed'))]
+                for column, value in enumerate(values):
+                    item = QTableWidgetItem(str(value)); item.setToolTip(str(value)); self.group_table.setItem(row, column, item)
+            self.group_table.blockSignals(False); self.group_table.show()
+            combined = protocol.spec.mode in ('four_state', 'cross', 'combination')
+            groups = [dict(name=self.tr('Reference'), indices=list(range(len(summary['rows']))))] if combined else summary['series']
+            for index, series in enumerate(groups):
+                rows = [summary['rows'][i] for i in series['indices']]
+                selected = [i for i in series['indices'] if summary['reference'][i] is not None]
+                x = [summary['rows'][i]['x'] for i in selected]
+                if combined or not all(isinstance(value, (int, float)) for value in x):
+                    x = list(range(1, len(selected)+1))
+                self.preview_plot.plot(x, [summary['reference'][i] for i in selected],
+                                       pen=None if combined or protocol.spec.second_axis else pg.mkPen((index, max(1, len(groups))), width=2),
+                                       symbol="o", symbolSize=6, name=series['name'] if len(groups) <= 4 else None)
+            roles = {'unknown': self.tr('Not declared'), 'training': self.tr('Training regression'),
+                     'development': self.tr('Development validation'), 'validation': self.tr('Validation (user declared)')}
+            text = self.tr("{groups} complete groups · {points} response points · {excluded} excluded groups\nRole: {role} · {unit}").format(
+                groups=len(summary["series"]), points=len(summary["rows"]), excluded=len(summary["excluded"]),
+                role=roles[protocol.spec.role], unit=summary["unit"])
         else:
-            text = self.tr("{count} structures · {atoms} atoms\nEnergy labels available. Forces: {forces}; virials: {virials}.").format(
+            counts = summary["label_counts"]
+            text = self.tr(
+                "{count} structures · {atoms} atoms\nValid labels: E {energy} structures; F {forces} atoms; "
+                "V {virials} structures; MF {mforces} atoms."
+            ).format(
                 count=summary["frames"], atoms=summary["atoms"],
-                forces=self.tr("Yes") if summary["has_forces"] else self.tr("No"),
-                virials=self.tr("Yes") if summary["has_virials"] else self.tr("No"))
+                energy=counts["energy"]["structures"], forces=counts["force"]["atoms"],
+                virials=counts["virial"]["structures"], mforces=counts["mforce"]["atoms"])
         self.preview_summary.setText(text)
 
     # -- validation -----------------------------------------------------------
     def validation_errors(self) -> list[str]:
         errors = []
         if self.current_protocol() is None:
-            errors.append(self.tr("Choose a validation type first."))
+            if self.protocol_combo.currentData() == "response":
+                try:
+                    get_protocol("response", analysis=self.analysis_editor.settings())
+                except (ValueError, TypeError) as error:
+                    errors.append(translate_runtime_message(str(error)))
+            else:
+                errors.append(self.tr("Choose a validation type first."))
         if not self.path_edit.text().strip():
             errors.append(self.tr("Choose a reference file."))
         elif self._read_error:
@@ -549,7 +789,7 @@ class BenchmarkImportDialog(MessageBoxBase):
             "path": self.path_edit.text().strip(),
             "name": self.name_edit.text().strip(),
             "protocol": protocol.kind if protocol is not None else None,
-            "provenance": {"notes": self.notes_edit.text().strip()} if self.notes_edit.text().strip() else {},
+            "provenance": dict(getattr(self, "provenance_extra", {}), **({"notes": self.notes_edit.text().strip()} if self.notes_edit.text().strip() else {})),
             "suite": self.suite_combo.text().strip(),
         }
 
@@ -568,6 +808,8 @@ class BenchmarkImportDialog(MessageBoxBase):
             raise ValueError(self.tr("The reference file changed. Load it again and review the new curve."))
         kwargs = dict(name=values["name"], provenance=values["provenance"], protocol=values["protocol"],
                       expected_hash=sha256_bytes(self._loaded_bytes))
+        if values["protocol"] == "response":
+            kwargs["analysis"] = self.analysis_editor.settings()
         grouped = values["protocol"] == "eos" and bool(self.group_field_combo.currentData())
         if grouped:
             kwargs.pop("protocol")

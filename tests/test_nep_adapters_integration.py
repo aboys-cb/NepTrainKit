@@ -281,6 +281,12 @@ def test_result_writes_official_outputs_and_prediction_manifest(
     }
     assert record["chunk_max_atoms"] == 500
     assert record["dataset"]["structures"] == len(result.atoms_num_list)
+    for output in record["outputs"]:
+        assert output["sha256"] == result._sha256(tmp_path / output["name"])
+    force_path = tmp_path / "force_train.out"
+    content = force_path.read_bytes()
+    force_path.write_bytes(content.replace(b"0", b"1", 1))
+    assert result._should_recalculate({"prediction": "1"}) is True
 
 
 def test_transient_result_keeps_predictions_in_memory_without_cache_files(

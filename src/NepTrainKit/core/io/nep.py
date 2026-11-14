@@ -3,7 +3,6 @@
 """Core NEP result data loaders and helpers."""
 import traceback
 import json
-import hashlib
 from loguru import logger
 from pathlib import Path
 from typing import Any
@@ -20,6 +19,7 @@ from NepTrainKit.core.adapter_api import (
 from NepTrainKit.core import MessageManager
 from NepTrainKit.core.calculator import NepCalculator
 from NepTrainKit.core.structure import Structure
+from NepTrainKit.core.prediction_cache import prediction_record_error, sha256_file
 from NepTrainKit.core.precision import get_storage_float_dtype
 from NepTrainKit.paths import as_path
 from NepTrainKit.paths import get_bundled_nep89_path
@@ -357,6 +357,14 @@ class NepTrainResultData(ResultData):
         if not isinstance(record, dict):
             return None
 
+        output_error = prediction_record_error(
+            record, model_hash=None, dataset_hash=self._sha256(self.data_xyz_path),
+            structures=len(self.atoms_num_list), atoms=int(np.sum(self.atoms_num_list)),
+            directory=self.prediction_meta_path.parent,
+        )
+        if output_error:
+            return output_error
+
         dataset_record = record.get("dataset", {})
         recorded_dataset_hash = dataset_record.get("sha256")
         if recorded_dataset_hash and recorded_dataset_hash != self._sha256(
@@ -556,6 +564,8 @@ class NepTrainResultData(ResultData):
                 )
             record = metadata.get("predictions", {}).get(self.data_xyz_path.name)
         if all(existing):
+            if record is not None and self._prediction_manifest_alignment_error() is not None:
+                return True
             if record is None or getattr(self, "nep_calc", None) is None:
                 return False
             expected_model = self.nep_calc.model_info.sha256
@@ -726,11 +736,7 @@ class NepTrainResultData(ResultData):
 
     @staticmethod
     def _sha256(path: Path) -> str:
-        digest = hashlib.sha256()
-        with path.open("rb") as handle:
-            for block in iter(lambda: handle.read(1024 * 1024), b""):
-                digest.update(block)
-        return digest.hexdigest()
+        return sha256_file(path)
 
     def _write_prediction_meta(self) -> None:
         if not self.cache_outputs_enabled():
@@ -768,7 +774,7 @@ class NepTrainResultData(ResultData):
             },
             "chunk_max_atoms": self.nep_calc.chunk_max_atoms,
             "outputs": [
-                {"name": path.name, "size": path.stat().st_size}
+                {"name": path.name, "size": path.stat().st_size, "sha256": self._sha256(path)}
                 for path in output_paths
                 if path.exists()
             ],

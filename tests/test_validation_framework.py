@@ -547,7 +547,7 @@ def test_unsupported_models_are_reported_not_evaluated(make_service, tmp_path):
     spin.write_text("nep4_spin 2 Te Pb\n")
     eos = _import(service, tmp_path, eos_frames(), "eos")
     assert "element" in service.evaluate(service.capture_model(other)["id"], eos["id"])["error"]
-    assert service.evaluate(service.capture_model(spin)["id"], eos["id"])["status"] == "unsupported"
+    assert service.evaluate(service.capture_model(spin)["id"], eos["id"])["status"] == "succeeded"
     assert service.matching_sets(service.capture_model(other)["id"]) == []
 
 

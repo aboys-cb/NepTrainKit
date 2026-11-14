@@ -72,6 +72,7 @@ def main(argv: list[str] | None = None) -> int:
     imported.add_argument("--name", required=True)
     imported.add_argument("--source", required=True, choices=("DFT", "Other", "Demo"))
     imported.add_argument("--protocol", help="force a protocol instead of auto-detecting")
+    imported.add_argument("--analysis", help="JSON recipe for the reference response protocol")
     imported.add_argument("--note", default="", help="physical / calculation conditions")
     imported.add_argument("--allow-large", action="store_true")
 
@@ -113,7 +114,9 @@ def main(argv: list[str] | None = None) -> int:
     elif args.command == "import":
         provenance = {"source_kind": args.source, "conditions": args.note}
         output = service.import_set(
-            args.file, name=args.name, provenance=provenance, protocol=args.protocol, allow_large=args.allow_large
+            args.file, name=args.name, provenance=provenance,
+            protocol=args.protocol or ("response" if args.analysis else None), allow_large=args.allow_large,
+            analysis=json.loads(Path(args.analysis).read_text()) if args.analysis else None,
         )
     elif args.command == "suite":
         if args.suite_command == "create":

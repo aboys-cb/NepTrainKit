@@ -10,6 +10,56 @@
       ],
       "review": "technical",
       "reason": "中文句子已完整；余下为 E/N、V/N、eV/atom 等物理量与单位记号，以及 EOS、NEP 等专有名词，须保持原样。"
+    },
+    {
+      "path": "src/NepTrainKit/translations/neptrainkit_zh_CN.ts",
+      "source": "prediction.meta.json has invalid {section} metadata",
+      "context": "RuntimeMessage",
+      "rendered": [
+        "prediction.meta.json 中的 {section} 信息无效"
+      ],
+      "review": "technical",
+      "reason": "prediction.meta.json 是实际缓存来源文件名，中文句子完整，文件名须保持原样。"
+    },
+    {
+      "path": "src/NepTrainKit/translations/neptrainkit_zh_CN.ts",
+      "source": "prediction.meta.json has invalid output metadata",
+      "context": "RuntimeMessage",
+      "rendered": [
+        "prediction.meta.json 中的输出信息无效"
+      ],
+      "review": "technical",
+      "reason": "prediction.meta.json 是实际缓存来源文件名，中文句子完整，文件名须保持原样。"
+    },
+    {
+      "path": "src/NepTrainKit/translations/neptrainkit_zh_CN.ts",
+      "source": "prediction.meta.json has an invalid output filename",
+      "context": "RuntimeMessage",
+      "rendered": [
+        "prediction.meta.json 中的输出文件名无效"
+      ],
+      "review": "technical",
+      "reason": "prediction.meta.json 是实际缓存来源文件名，中文句子完整，文件名须保持原样。"
+    },
+    {
+      "path": "src/NepTrainKit/translations/neptrainkit_zh_CN.ts",
+      "source": "prediction.meta.json output hash does not match {name}",
+      "context": "RuntimeMessage",
+      "rendered": [
+        "prediction.meta.json 中 {name} 的输出哈希不匹配"
+      ],
+      "review": "technical",
+      "reason": "prediction.meta.json 是实际缓存来源文件名，中文句子完整，文件名须保持原样。"
+    },
+    {
+      "path": "src/NepTrainKit/translations/neptrainkit_zh_CN.ts",
+      "source": "Each EOS group needs at least 5 distinct volume points from one phase / magnetic branch.\nInput: each structure's total energy in eV. Do not divide by the atom count beforehand.\nComparison: E/N (eV/atom) and V/N (Å³/atom), normalized automatically.\nFixed periodic reference structures; keep input magnetic order and moment magnitudes fixed.",
+      "context": "BenchmarkImportDialog",
+      "rendered": [
+        "每组 EOS 至少需要 5 个不同体积点，属于同一相 / 磁态分支。\n输入：每个结构的总能量（eV），请勿提前除以原子数。\n比较：程序自动按原子数 N 归一化，使用 E/N（eV/atom）和 V/N（Å³/atom）。\n使用固定周期参考构型，支持普通 NEP 和自旋模型；输入磁序和磁矩模长须保持不变。"
+      ],
+      "review": "technical",
+      "reason": "中文句子完整；E/N、V/N、eV/atom、EOS、NEP 为物理量、单位及模型名称，保留原样。"
     }
   ]
 }

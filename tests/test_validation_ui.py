@@ -1380,3 +1380,82 @@ def test_eos_focus_button_returns_to_grid_and_reset_fits_visible_curves(scored, 
     widget.open_scorecard(single["id"], scored.new["id"])
     assert widget.detail.eos_cards[0].findChild(TransparentToolButton, "toggleEosGroupFocus").isHidden()
     widget.deleteLater()
+
+
+@pytest.mark.parametrize('width', [1151, 1600])
+def test_single_eos_keeps_compact_card_without_vertical_scroll(make_service, tmp_path, width):
+    service = make_service()
+    reference = _import(service, tmp_path, eos_frames(), 'single')
+    suite = service.create_suite('One EOS', [reference['id']])
+    widget = ModelLibraryWidget(service=service)
+    widget.resize(width, 700)
+    widget.open_scorecard(suite['id']); widget.show()
+    for _ in range(4):
+        QApplication.processEvents()
+    card, = widget.detail.eos_cards
+    assert card.height() == 300
+    assert 200 < card.width() <= 460
+    assert card.width() < widget.detail.width() * .6
+    assert widget.detail.grid_scroll.verticalScrollBar().maximum() == 0
+    widget.close(); widget.deleteLater()
+
+
+def _wheel_over_plot(plot, *, axis=False, pixels=False):
+    from PySide6.QtCore import QPoint, QPointF
+    from PySide6.QtGui import QWheelEvent
+    target = plot.getAxis('left') if axis else plot.getViewBox()
+    position = plot.mapFromScene(target.sceneBoundingRect().center())
+    event = QWheelEvent(QPointF(position), QPointF(plot.viewport().mapToGlobal(position)),
+                        QPoint(0, -30) if pixels else QPoint(),
+                        QPoint() if pixels else QPoint(0, -120),
+                        Qt.MouseButton.NoButton, Qt.KeyboardModifier.NoModifier,
+                        Qt.ScrollPhase.ScrollUpdate if pixels else Qt.ScrollPhase.NoScrollPhase, False)
+    QApplication.sendEvent(plot.viewport(), event)
+    QApplication.processEvents()
+
+
+@pytest.mark.parametrize('axis', [False, True])
+def test_subplot_wheel_scrolls_by_default_and_zoom_is_explicit_and_gentle(axis):
+    import numpy as np
+    from NepTrainKit.core.validation.protocols import get_protocol
+    from NepTrainKit.ui.views.model_library import RunDetailPanel
+    benchmark = dict(id='eos', name='EOS', protocol='eos', provenance={},
+                     summary=get_protocol('eos').summarize_reference(eos_frames()))
+    panel = RunDetailPanel(); panel.resize(1180, 600)
+    panel.show_groups([(f'G{i}', benchmark, []) for i in range(10)])
+    panel.show(); QApplication.processEvents()
+    assert not panel.wheel_zoom_checkbox.isChecked()
+    scroll = panel.grid_scroll.verticalScrollBar()
+    assert scroll.maximum() > 100
+    scroll.setValue(50)
+    plot = panel.eos_plots[0]
+    plot.setRange(xRange=(20, 40), yRange=(0, 1), padding=0)
+    before = plot.viewRange()
+    _wheel_over_plot(plot, axis=axis)
+    np.testing.assert_allclose(plot.viewRange(), before)
+    assert scroll.value() > 50
+    scroll.setValue(50)
+    _wheel_over_plot(plot, axis=axis, pixels=True)
+    np.testing.assert_allclose(plot.viewRange(), before)
+    assert scroll.value() > 50
+    panel.wheel_zoom_checkbox.setChecked(True)
+    scroll.setValue(50)
+    _wheel_over_plot(plot, axis=axis)
+    after = plot.viewRange()
+    # One notch changes scale by about 7%, rather than the default 35%.
+    assert 1 < (after[1][1] - after[1][0]) / (before[1][1] - before[1][0]) < 1.1
+    assert scroll.value() == 50
+    panel.relative_checkbox.click()
+    assert panel.wheel_zoom_checkbox.isChecked()
+    plot = panel.eos_plots[0]
+    QApplication.processEvents()
+    before = plot.viewRange()
+    _wheel_over_plot(plot, axis=axis)
+    assert not np.allclose(plot.viewRange(), before)
+    panel.wheel_zoom_checkbox.setChecked(False)
+    scroll.setValue(50)
+    before = plot.viewRange()
+    _wheel_over_plot(plot, axis=axis)
+    np.testing.assert_allclose(plot.viewRange(), before)
+    assert scroll.value() > 50
+    panel.close(); panel.deleteLater()

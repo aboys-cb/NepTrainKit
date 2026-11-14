@@ -23,6 +23,7 @@ from NepTrainKit.core.dataset import DatasetManager
 from NepTrainKit.core.dataset.services import ProjectItem, ModelItem
 from NepTrainKit.core.types import ModelTypeIcon
 from NepTrainKit.ui.messages import translate_runtime_error
+from NepTrainKit.ui.dialogs import call_path_dialog
 from NepTrainKit.ui.widgets import TreeModel, TreeItem, TagDelegate
 from NepTrainKit.ui.widgets import ModelInfoMessageBox, AdvancedModelSearchDialog, TagManageDialog
 
@@ -46,6 +47,7 @@ class ModelItemWidget(QWidget, DatasetManager):
     model_item_dict: dict[int, ModelItem] = {}
     projectChangedSignal = Signal(int)
     modelsChanged = Signal(int)
+    importRequested = Signal(str)
 
     def __init__(self, parent=None):
         """Configure the backing model, view, shortcuts, and context menu."""
@@ -311,106 +313,72 @@ class ModelItemWidget(QWidget, DatasetManager):
         self._refresh_empty_hint()
 
     def create_model(self, modify: bool = False, initial_path: str = "") -> None:
-        """Create a new model or update the currently selected one.
-
-        Parameters
-        ----------
-        modify : bool, default=False
-            When ``True`` the selected model is updated; otherwise a new
-            version entry is inserted.
-        """
+        """Import weights through the shared dialog, or edit saved model metadata."""
+        if not modify:
+            path = initial_path or call_path_dialog(
+                self, self.tr("Select NEP model file"), "select", file_filter="NEP (*.txt);;All files (*)"
+            )
+            if path:
+                self.importRequested.emit(path)
+            return
         if self.project is None:
             MessageManager.send_info_message(self.tr("Select a project first"))
             return
-        box = ModelInfoMessageBox(self._parent)
         index = self._current_index()
-        excluded = set()
-        if modify and index.isValid():
-            pending = [self.model_item_dict[index.internalPointer().data(0)]]
-            while pending:
-                model = pending.pop()
-                excluded.add(model.model_id)
-                pending.extend(model.children)
+        if not index.isValid():
+            return
+        current_model = self.model_item_dict[index.internalPointer().data(0)]
+        box = ModelInfoMessageBox(self._parent)
+        excluded, pending = set(), [current_model]
+        while pending:
+            model = pending.pop()
+            excluded.add(model.model_id)
+            pending.extend(model.children)
         box.parent_combox.addItem(self.tr("Top model"), userData=None)
         for model in self.model_item_dict.values():
-            if model.model_id in excluded:
-                continue
-            box.parent_combox.addItem(
-                f"{model.model_id}-{model.name}",
-                userData=model.model_id,
-            )
-
-        if index.row() != -1:
-            item = index.internalPointer()
-            box.parent_combox.setCurrentText(f"{item.data(0)}-{item.data(1)}")
-            model_id = item.data(0)
+            if model.model_id not in excluded:
+                box.parent_combox.addItem(f"{model.model_id}-{model.name}", userData=model.model_id)
+        box.setWindowTitle(self.tr("Model info"))
+        box.model_name_edit.setText(current_model.name)
+        box.model_note_edit.setText(current_model.notes)
+        box.train_path_edit.setText(current_model.model_path)
+        box.model_type_combox.setText(current_model.model_type)
+        box.energy_spinBox.setText("" if current_model.energy is None else str(current_model.energy))
+        box.force_spinBox.setText("" if current_model.force is None else str(current_model.force))
+        box.virial_spinBox.setText("" if current_model.virial is None else str(current_model.virial))
+        for tag in current_model.tags:
+            box.add_tag(tag.name)
+        if current_model.parent_id is not None:
+            parent_model = self.model_item_dict[current_model.parent_id]
+            box.parent_combox.setCurrentText(f"{parent_model.model_id}-{parent_model.name}")
         else:
             box.parent_combox.setCurrentIndex(0)
-            if modify:
-                return
-            model_id = None
-
-        box.setWindowTitle(self.tr("Model info"))
-        if initial_path and not modify:
-            box.train_path_edit.setText(initial_path)
-        if modify:
-            current_model = self.model_item_dict[model_id]
-            box.model_name_edit.setText(current_model.name)
-            box.model_note_edit.setText(current_model.notes)
-            box.train_path_edit.setText(current_model.model_path)
-            box.model_type_combox.setText(current_model.model_type)
-            box.energy_spinBox.setText("" if current_model.energy is None else str(current_model.energy))
-            box.force_spinBox.setText("" if current_model.force is None else str(current_model.force))
-            box.virial_spinBox.setText("" if current_model.virial is None else str(current_model.virial))
-            for tag in current_model.tags:
-                box.add_tag(tag.name)
-
-            if current_model.parent_id is not None:
-                parent_model = self.model_item_dict[current_model.parent_id]
-                box.parent_combox.setCurrentText(
-                    f"{parent_model.model_id}-{parent_model.name}"
-                )
-            else:
-                box.parent_combox.setCurrentIndex(0)
-
         if not box.exec_():
             return
-
         data = box.get_dict()
-        data["project_id"] = current_model.project_id if modify else self.project.project_id
-        if modify and "data_size" in data and data["data_size"] is None:
+        data["project_id"] = current_model.project_id
+        if data.get("data_size") is None:
             data["data_size"] = current_model.data_size
-
-        if modify:
-            try:
-                saved = self.model_service.modify_model(current_model.model_id, **data)
-            except (OSError, ValueError) as error:
-                MessageManager.send_error_message(translate_runtime_error(error))
-                return
-            self.load_models_by_project(self.project)
-            self.modelsChanged.emit(saved.id)
-            matches = self._model.match(self._model.index(0, 0), Qt.ItemDataRole.DisplayRole,
-                                        saved.id, 1, Qt.MatchFlag.MatchExactly | Qt.MatchFlag.MatchRecursive)
-            if matches:
-                self._view.setCurrentIndex(matches[0])
-                parent = matches[0].parent()
-                while parent.isValid():
-                    self._view.expand(parent)
-                    parent = parent.parent()
-                self._view.scrollTo(matches[0])
-            if saved.id != current_model.model_id:
-                MessageManager.send_success_message("模型内容已变化，已创建新版本；旧版本、基准势和历史结果保持不变。")
-            else:
-                MessageManager.send_success_message(self.tr("Model modified successfully"))
+        try:
+            saved = self.model_service.modify_model(current_model.model_id, **data)
+        except (OSError, ValueError) as error:
+            MessageManager.send_error_message(translate_runtime_error(error))
             return
-
-        project = self.model_service.add_version(**data)
-        if project is None:
-            MessageManager.send_error_message(self.tr("Failed to create model"))
+        self.load_models_by_project(self.project)
+        self.modelsChanged.emit(saved.id)
+        matches = self._model.match(self._model.index(0, 0), Qt.ItemDataRole.DisplayRole,
+                                    saved.id, 1, Qt.MatchFlag.MatchExactly | Qt.MatchFlag.MatchRecursive)
+        if matches:
+            self._view.setCurrentIndex(matches[0])
+            parent = matches[0].parent()
+            while parent.isValid():
+                self._view.expand(parent)
+                parent = parent.parent()
+            self._view.scrollTo(matches[0])
+        if saved.id != current_model.model_id:
+            MessageManager.send_success_message("模型内容已变化，已创建新版本；旧版本、基准势和历史结果保持不变。")
         else:
-            MessageManager.send_success_message(self.tr("Model created successfully"))
-            self.load_models_by_project(self.project)
-            self.modelsChanged.emit(project.id)
+            MessageManager.send_success_message(self.tr("Model modified successfully"))
 
     def remove_model(self) -> None:
         """Delete the currently highlighted model after confirmation."""

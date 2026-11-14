@@ -193,6 +193,14 @@ class BenchmarkSuite(Base):
     created_at: Mapped[dt.datetime] = mapped_column(DateTime, default=dt.datetime.utcnow)
 
 
+class BenchmarkSuiteGroup(Base):
+    __tablename__ = "benchmark_suite_groups"
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    suite_id: Mapped[int] = mapped_column(ForeignKey("benchmark_suites.id", ondelete="CASCADE"), index=True)
+    name: Mapped[str] = mapped_column(String(200))
+    position: Mapped[int] = mapped_column(Integer, default=0)
+
+
 class BenchmarkSuiteSet(Base):
     __tablename__ = "benchmark_suite_sets"
     suite_id: Mapped[int] = mapped_column(
@@ -202,6 +210,8 @@ class BenchmarkSuiteSet(Base):
         ForeignKey("benchmark_sets.id", ondelete="CASCADE"), primary_key=True
     )
     position: Mapped[int] = mapped_column(Integer, default=0)
+    group_id: Mapped[int | None] = mapped_column(ForeignKey("benchmark_suite_groups.id", ondelete="SET NULL"), nullable=True)
+    display_name: Mapped[str] = mapped_column(Text, default="")
 
 
 class BenchmarkRun(Base):

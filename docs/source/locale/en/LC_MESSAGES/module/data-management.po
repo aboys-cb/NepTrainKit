@@ -255,3 +255,171 @@ msgstr "Reference imports verify that the file contents match the confirmed prev
 #: ../../source/module/data-management.md:85 f9d5c0c4dfa541438fcb00ac354b2ce0:None
 msgid "库清理与快照、评估结果的发布和登记会协调执行，避免把正在登记的文件误删为孤立文件。"
 msgstr "Library cleanup is coordinated with the publication and registration of snapshots and evaluation results, so files being registered are not mistaken for orphaned files and deleted."
+
+msgid "拖拽导入 NEP 模型"
+msgstr "Import a NEP model by drag and drop"
+
+msgid "将 `.txt` 模型文件或包含模型的文件夹拖入数据管理页。软件根据 NEP 文件头识别模型，不要求文件一定名为 `nep.txt`；文件夹优先采用其中有效的 `nep.txt`，否则检查该文件夹直接包含的其他 `.txt`，不递归扫描子目录。普通说明文本不会作为模型导入。"
+msgstr "Drop a `.txt` model file or a folder containing a model onto the data management page. Recognition uses the NEP header, so the filename need not be `nep.txt`. For a folder, a valid `nep.txt` takes precedence; otherwise, other `.txt` files directly inside that folder are checked without searching subdirectories. Ordinary text notes are not imported as models."
+
+msgid "识别成功后弹出导入窗口，自动填入模型名称，并显示实际文件路径、模型类型和元素。项目优先沿用当前选择，其次沿用上次保存的项目，没有时预填 `Inbox`；项目和名称都可以修改。单个有效候选只需确认一次；多个候选在同一窗口中选择，再点“导入”。取消不会创建项目或模型快照。"
+msgstr "A recognised model opens an import dialog with a suggested model name and the actual file path, model type and elements. The current project is preferred, followed by the last saved project, or `Inbox` if neither is available. Both project and name are editable. A single valid candidate needs one confirmation; multiple candidates are selected in the same dialog before clicking Import. Cancelling creates no project or model snapshot."
+
+msgid "导入保存窗口中预览过的模型权重快照，不要求提供 `train.xyz`。同目录的 `energy_*.out`、`force_*.out`、`virial_*.out`、`mforce_*.out` 会在后台分块读取并自动填入 RMSE；不会重新运行模型预测。训练 / 测试输出分组显示，可在导入前选择，缺失项显示为不可用。没有来源哈希时标为“历史精度，未校验”；已知模型或输出哈希不符时仅导入权重。完整来源记录及本地数据均通过校验时才标为已校验。磁力及各项有效分量数随导入记录保存；历史统计不替代模型验证页的评估记录。数据集可以随后另行选择并运行评估。识别文件头不等于完整模型可计算。"
+msgstr "Import saves the previewed model snapshot and does not require train.xyz. Nearby energy_*.out, force_*.out, virial_*.out and mforce_*.out files are read in background chunks to prefill RMSE without running model predictions. Training and test groups are shown separately and can be selected before import; absent quantities remain unavailable. Outputs without provenance hashes are marked historical and unverified; known model or output hash mismatches import weights only. Verification requires complete provenance and local dataset checks. Magnetic-force statistics and valid component counts are retained in the import record. These statistics do not replace evaluations in model validation, where datasets are selected separately. Header recognition does not establish that the full model can be evaluated."
+
+msgid "单独选择数据并计算精度"
+msgstr "Choose a dataset separately and calculate accuracy"
+
+msgid "用“新建模型”选择 `.txt` 权重，或拖拽文件 / 文件夹导入模型；无需同目录的训练数据和输出。"
+msgstr "Choose `.txt` weights with New model, or drop a file or folder to import a model. Training data and outputs need not be in the same directory."
+
+msgid "切换到模型验证，导入参考数据，选择“能量 / 力 / virial 误差”，独立选择带标签的 EXTXYZ，并加入一个验证方案。"
+msgstr "Switch to model validation, import reference data, choose energy / force / virial errors, and independently select labelled EXTXYZ data to add to a validation plan."
+
+msgid "选择当前模型和要比较的模型，勾选要评估的验证项，核对模型数、验证项数和任务数，再运行验证。每个模型在同一封存数据上独立调用 NEPAdapters。"
+msgstr "Select the current and comparison models, check the validation items, review the model, item and task counts, then evaluate. Each model runs independently through NEPAdapters on the same sealed data."
+
+msgid "运行菜单中的“重新计算所选模型”会绕过已有评估记录。普通运行只复用模型、数据、评估协议及运行环境匹配的成功记录。"
+msgstr "Recalculate selected models bypasses existing evaluation records. Normal runs reuse only successful records matching the model, dataset, protocol and runtime environment."
+
+msgid "每条评估记录显式保存模型与数据的 SHA-256。结果明细保存零基帧索引、逐帧原子数、评估来源及各项标签数量；EOS 分组使用原文件中的帧索引。范围中的原子指各项参考标签实际覆盖的原子，不根据磁矩是否为零自动筛选。"
+msgstr "Every evaluation record explicitly stores model and dataset SHA-256 hashes. Details retain zero-based frame indices, per-frame atom counts, prediction source and label counts. EOS groups retain indices in the original file. Atom scope follows reference-label coverage for each quantity; zero magnetic moments do not automatically exclude atoms."
+
+msgid "项目"
+msgstr "Quantity"
+
+msgid "参考值与显示单位"
+msgstr "Reference and display units"
+
+msgid "有效数量"
+msgstr "Valid counts"
+
+msgid "能量 E"
+msgstr "Energy E"
+
+msgid "输入总能量 eV，按原子数归一后显示 meV/atom"
+msgstr "Input total energy in eV; display meV/atom after normalization by atom count"
+
+msgid "有标签的结构数、对应原子数和标量数"
+msgstr "Labelled structures, corresponding atoms and scalar components"
+
+msgid "原子力 F"
+msgstr "Atomic force F"
+
+msgid "输入 eV/Å，显示 meV/Å"
+msgstr "Input eV/angstrom; display meV/angstrom"
+
+msgid "有标签的结构数、原子数和三维分量数"
+msgstr "Labelled structures, atoms and Cartesian components"
+
+msgid "Virial V"
+msgstr "Virial V"
+
+msgid "输入总 virial eV，按原子数归一后显示 meV/atom"
+msgstr "Input total virial in eV; display meV/atom after normalization by atom count"
+
+msgid "有标签的结构数及六分量数"
+msgstr "Labelled structures and six-component counts"
+
+msgid "磁力 MF"
+msgstr "Magnetic force MF"
+
+msgid "读取 `force_mag` 或 `mforce`，输入 eV/μB，显示 meV/μB"
+msgstr "Read `force_mag` or `mforce`; input eV/μB, display meV/μB"
+
+msgid "各项独立统计：一帧没有力标签，不影响其他帧的力误差；没有能量但有力或磁力标签的数据也可评估。未标注项不参与 RMSE/MAE，不会补零或把预测值当参考；真实零标签会计入。已经提供却包含 NaN/Inf、形状错误或相互冲突的标签会报错，非有限预测也会失败。"
+msgstr "Quantities are counted independently: a frame without force labels does not discard force errors on other frames. Data with force or magnetic-force labels but no energies can also be evaluated. Unlabelled entries do not enter RMSE/MAE and are never filled with zeros or predictions; true zero labels are counted. Supplied non-finite, malformed or conflicting labels are errors, and non-finite predictions also fail."
+
+msgid "结果同时记录有效参考分量数和实际比较分量数。不输出磁力的模型会将磁力误差显示为不可用、比较数量记为零，其他有参考标签的量仍可比较。磁力采用模型和标签共同约定的磁矩导数，不自动转换为力矩或改变自旋归一化。"
+msgstr "Records contain both available reference components and actually compared components. Models without magnetic-force output show its error as unavailable and its comparison count as zero; other labelled quantities remain comparable. Magnetic force uses the moment-derivative convention shared by model and labels, without conversion to torque or changes to spin normalization."
+
+msgid "RMSE 和 MAE 按有效分量平均。精度协议 v2 的 virial 固定采用 NEP 六分量顺序 `xx, yy, zz, xy, yz, zx`，与官方 `.out` 一致；不会把非对角元重复计权。旧 v1 九分量误差记录保留，但不会作为 v2 结果复用；旧分享包中的参考数据可重新导入并按 v2 评估。"
+msgstr "RMSE and MAE average over valid components. Accuracy protocol v2 uses the NEP virial order `xx, yy, zz, xy, yz, zx`, matching official `.out` files without double-weighting off-diagonal terms. Old v1 nine-component records remain in history but are not reused as v2 results. Reference data in old sharing packages can be imported again and evaluated with v2."
+
+msgid "导入已有输出缓存"
+msgstr "Import existing output caches"
+
+msgid "在运行菜单选择“为精度数据导入 .out 缓存”，选取包含 `prediction.meta.json` 和对应输出的文件夹。该操作只针对当前范围内所选模型的精度数据集，不用于 EOS 拟合或无参考诊断。"
+msgstr "Choose Import .out cache for accuracy datasets in the run menu and select a folder with `prediction.meta.json` and its outputs. This applies only to the selected models and accuracy datasets in the current scope, not to EOS fitting or diagnostics without references."
+
+msgid "正式复用缓存须核对模型哈希、数据哈希、结构数、原子数、每个所需输出文件的 SHA-256、数组形状及有标签位置的参考列。能量、力、virial、磁力分别读取 `energy_*.out`、`force_*.out`、`virial_*.out`、`mforce_*.out`，缺失参考位置仍以所选数据的标签掩码为准。"
+msgstr "Formal cache reuse checks model and dataset hashes, structure and atom counts, the SHA-256 of every required output, array shapes and reference columns at labelled positions. Energy, force, virial and magnetic force use `energy_*.out`, `force_*.out`, `virial_*.out` and `mforce_*.out`; missing references still follow masks from the selected dataset."
+
+msgid "新生成的结果页缓存会保存输出文件哈希。旧 `.out` 没有来源记录或输出哈希、文件被替换、参考列错位时，会保留原文件并调用 NEPAdapters 重算，原因写入评估记录和详情。后端无法计算时显示失败，不会登记为零误差；仅凭文件名、行数或同目录关系不能确认旧输出来自当前权重。"
+msgstr "New result-viewer caches record output hashes. Old `.out` files without provenance or output hashes, replaced files and misaligned reference columns are preserved while NEPAdapters recalculates predictions. The reason is saved with the evaluation and shown in details. An unavailable backend is reported as a failure, never as zero error. Filenames, row counts and directory proximity alone do not identify the originating weights."
+
+msgid "项目编辑窗口中的历史手填 RMSE 标为“未校验”，不再扫描同目录 `.out` 自动填写，也不作为上述带哈希评估记录使用。选择了某个数据集只表明评估覆盖该数据，文件名或低 RMSE 不会自动证明它是独立留出集或模型具有外推能力。"
+msgstr "Historical hand-entered RMSE values in the project editor are marked unverified. The editor no longer fills them from nearby `.out` files, and they are not used as the hash-bound evaluation records above. Selecting a dataset establishes coverage only; its filename or a low RMSE does not prove an independent holdout or extrapolative capability."
+
+msgid "EOS 曲线始终使用紧凑图卡，单组或聚焦某组时也不会铺满窗口；多组按窗口宽度排列。空间足够显示单组时不会额外产生纵向滚动条。 子图默认关闭滚轮缩放，鼠标位于图内时滚轮仍滚动列表；可勾选“滚轮缩放”开启较缓的缩放。该开关也适用于无参考诊断子图，图卡上的重置按钮可恢复视野。"
+msgstr "EOS curves always use compact cards, including a single group or focused group. Multiple cards follow the window width. No extra vertical scroll bar appears when there is enough room for a single card. Wheel zoom is off by default, so the wheel scrolls the list even over a chart. Enable Wheel zoom for gentler zooming. The switch also applies to reference-free diagnostic charts; the reset button on each card restores its view."
+
+msgid "验证工作台：套件、主题与验证项"
+msgstr "Validation workspace: suites, topics and items"
+
+msgid "用一个套件组织同一项目的验证，例如建立 `BFO` 套件，再按 EOS、MAE、交换响应、剪切等主题整理验证项。同一份参考数据可以加入多个套件；主题归属和显示名称分别保存在各自套件中。主题与四态分析中的样本分组相互独立。"
+msgstr "Organize a project in a suite, such as BFO, with topics for EOS, MAE, exchange responses and shear. The same reference can belong to several suites; topic membership and display names are local to each suite. Topics are separate from the sample groups used in four-state analysis."
+
+msgid "打开套件先显示“总览”：按主题列出各模型已计算、失败、不支持及相对基准退化的验证项数量。不同物理量不会合并为一个总误差；“已计算”也不代表物性验收通过。总览读取已有评估摘要，不自动预测或加载全部曲线文件。"
+msgstr "A suite opens in Overview, showing counts of computed, failed, unsupported and regressed items per topic and model relative to the baseline. Different physical quantities are not combined into one overall error. Computed does not mean scientifically accepted. Overview reads saved evaluation summaries without running predictions or loading every curve file."
+
+msgid "点击左侧主题查看验证项；双击某项打开曲线和数值详情。勾选框决定运行范围，可以跨主题保留；浏览、选中行和打开详情都不会改变勾选范围。“勾选当前视图”只增加当前可见项，“清空勾选”清除整个套件中的勾选。任务启动后固定当次模型与验证项，继续浏览或调整下一次勾选不会改动正在执行的任务。"
+msgstr "Select a topic on the left to view its items; double-click an item to open curves and numeric details. Checkboxes define the evaluation scope and persist across topics. Browsing, selecting rows and opening details do not change it. Check visible items adds the current view; Clear checks clears the entire suite selection. Starting an evaluation freezes its models and items. Browsing or preparing the next selection cannot change an active task."
+
+msgid "导入文件夹时，可勾选“按来源文件夹建立主题”；已有套件也能用“按来源文件夹分组”整理尚未分组的项。“添加已有验证项”支持搜索名称和原始来源路径，并能恢复归档项，不需要重新复制数据或预测。分享包保留主题和套件内的显示名称。"
+msgstr "When importing a folder, enable Use source folders as topics. Group by source folders also organizes ungrouped items in an existing suite. Add existing items searches names and original paths and can restore archived references without copying data or predicting again. Sharing packages retain topics and suite-local display names."
+
+msgid "在验证项列表选中行，再用右键菜单或“管理选中项”操作：可以改名、移动主题、编辑分析版本、从当前套件移除或归档。这里的行选择用于管理，复选框用于运行。删除主题会将成员移到“未分组”，不会删除验证项。"
+msgstr "Select rows in the item list, then use the context menu or Manage selected items to rename, move, edit an analysis version, remove from this suite or archive. Row selection is for management; checkboxes are for evaluation. Removing a topic moves its members to Ungrouped without deleting items."
+
+msgid "编辑分析会保存新版本，并替换当前套件中的对应项；其他套件仍引用原版本。旧数据快照及评估历史保留，新版本显示尚未评估，不沿用旧版本的精度。对选择了部分帧的 EOS 子组，编辑时保留 EOS 协议；需要其他分析类型时另建验证项，避免无意扩大到原始文件全部帧。"
+msgstr "Editing an analysis saves a new version and replaces its membership in the current suite. Other suites continue to reference the original version. Old data snapshots and evaluation history remain available. The new version is unevaluated and does not inherit old accuracy results. An EOS item selecting a subset of frames retains its EOS protocol while editing; create a new item for another analysis to avoid silently evaluating the entire original file."
+
+msgid "“从当前套件移除”只解除当前成员关系。“归档”保留快照和历史；被其他套件使用的项不能直接归档，应先从当前套件移除。软件不会通过这些操作删除原始文件。运行历史按当前主题列出已有评估记录及失败原因。"
+msgstr "Remove from this suite only removes that membership. Archiving retains snapshots and history; an item used by other suites cannot be archived directly and should instead be removed from the current suite. These actions never delete original files. Run history lists saved evaluations and failures for the current topic."
+
+msgid "参考响应分析"
+msgstr "Reference response analysis"
+
+msgid "在模型验证页导入参考数据，选择“参考响应 · 扫描 / 能差 / 组合”。软件会根据已有字段建议分析方式，保存前可修改分组字段、参考态和归一化方式。这里评估模型在给定结构上的响应；不会修改结构或代替模型弛豫。"
+msgstr "Import reference data in model validation and select Reference response: scans, differences or combinations. Existing fields suggest editable mappings. Review grouping fields, reference states and normalization before saving. This evaluates responses on the supplied structures; it neither changes them nor replaces model relaxation."
+
+msgid "**参考扫描曲线**：选择一个扫描字段，可选第二坐标轴。体积、磁矩比例、角度和位移等均可使用。相对曲线统一减去参考曲线的最低点，不单独移动各模型的最低点；二维稀疏点按第二坐标分片显示。"
+msgstr "**Reference scan:** choose a metadata axis and optionally a second axis for volume, moment ratios, angles or displacement. Relative curves subtract the reference minimum from both curves, without shifting each model minimum separately. Sparse two-dimensional data is shown as slices of the second coordinate."
+
+msgid "**状态能差**：按一个或多个字段分组，指定状态字段和每组唯一的参考态。状态字段可以组合，例如 `direction, plane, angle_deg`；部分状态分量缺失时用空值区分，但每个状态至少有一个值。参考态填写相应值，以逗号分隔，末尾空值可省略。"
+msgstr "**State differences:** group by one or more fields and select state fields and one unique reference state per group. State fields may be combined, such as `direction, plane, angle_deg`. Missing state components are distinguished by empty values, but each state needs at least one value. Enter reference components separated by commas; trailing empty components may be omitted."
+
+msgid "**四态响应**：两个状态字段分别取 `-1/+1`，计算 `E++ + E-- - E+- - E-+`。同组须有且仅有四个状态，原子几何相同。"
+msgstr "**Four-state response:** two state fields take -1/+1, giving `E++ + E-- - E+- - E-+`. A group must contain exactly those four states with the same atomic geometry."
+
+msgid "**交叉响应**：两个状态字段分别取 `0/1`，计算 `E11 + E00 - E10 - E01`。也可在“有符号状态组合”中直接填写状态及系数；不会执行文本表达式。"
+msgstr "**Cross response:** two state fields take 0/1, giving `E11 + E00 - E10 - E01`. Signed state combinations also accept explicit states and coefficients; no text expressions are executed."
+
+msgid "**分组精度统计**：分别统计各组的 E/F/V/MF 误差、有效标签分量和实际比较分量。缺失标签保持不可用；数据用途由用户明确声明为训练回归、开发验证或验证集，不根据文件名推断独立性。"
+msgstr "**Accuracy by group:** report E/F/V/MF errors, available label components and actually compared components separately for each group. Missing labels remain unavailable. Training regression, development validation and validation roles are declared by the user; filenames do not establish independence."
+
+msgid "保存前的预览会列出完整组、响应点数和排除原因。重复状态、缺少参考态或缺少四态端点时默认禁止导入；只有明确勾选“排除不完整或无效的组”后才排除相应组。结果页采用小图卡，数值按钮可以查看原始帧编号与组合系数、逐点误差、采样最低点和局部三点曲率，并导出 CSV。边界最低点不报告曲率。"
+msgstr "The preview lists complete groups, response points and exclusion reasons. Duplicate states, missing references and incomplete four-state endpoints block import by default. Explicitly enable exclusion to omit invalid groups. Compact result cards provide frame indices and coefficients, pointwise errors, sampled minima and local three-point curvatures, plus CSV export. Boundary minima have no curvature estimate."
+
+msgid "能量可以按晶胞、全部原子或所选元素的原子数归一化，显示为 meV 或 μeV。应力和压力显示为 GPa；使用自定义参考字段时，换算系数必须将该字段直接转换到所选的最终显示单位。例如 `dft_pressure_kbar` 转换到 GPa 的系数为 `0.1`。磁力参考字段仅支持 `force_mag` 和 `mforce`。"
+msgstr "Normalize energies by cell, all atoms or atoms of a selected element, in meV or micro-eV. Stress and pressure use GPa. For a custom reference field, the conversion factor must convert directly into the final display unit; `dft_pressure_kbar` uses `0.1` to obtain GPa. Magnetic-force reference fields are limited to `force_mag` and `mforce`."
+
+msgid "需要从四态提取交换响应时，额外勾选“提取单位自旋双线性交换投影”，声明 `H = Σ eᵢᵀJᵢⱼeⱼ` 的正号及单位自旋约定，填写有序原子对字段、原子编号起点和相互作用重数。软件检查两个扰动是否独立、磁矩模长是否固定、其他磁矩是否不变；仅报告实际扰动方向上的有效投影。存在交换两个方向的配对数据时，同时给出对称部分及相应方向的 D 投影。它不自动补全未采样的张量分量，也不替用户判断周期镜像的键重数。"
+msgstr "To extract exchange responses, explicitly enable bilinear unit-spin exchange projections and declare the positive-sign `H = sum e_i^T J_ij e_j` convention, ordered-pair fields, atom index base and interaction multiplicity. Checks require independent perturbations, constant moment lengths and unchanged other moments. Only sampled directional projections are reported. Swapped-direction data also yields symmetric and directional D projections. Unmeasured tensor components and periodic bond multiplicities are not inferred."
+
+msgid "若分组或扫描信息只编码在名称中，可通过“导入分组元数据 CSV”补充映射。CSV 使用从 0 起的 `frame_index` 或唯一的 `frame_id` 关联原始帧，其他列定义标量分组或扫描字段。映射随分析方案保存，不修改 XYZ，也不允许覆盖结构、磁矩或参考标签。"
+msgstr "If grouping or coordinates are encoded only in names, import a grouping metadata CSV. Join by zero-based `frame_index` or unique `frame_id`; other columns define scalar metadata. Mappings are saved with the analysis without changing XYZ files, geometry, moments or reference labels."
+
+msgid "批量导入可从加载菜单选择多个参考文件，或选择文件夹递归查找 XYZ/EXTXYZ。后台预览不运行预测；可以逐个检查配置，勾选有效文件后统一导入。所有所选文件先校验再登记。预览会提示本批数据中相同有序输入和相同几何的重叠数量，报告随数据来源保存；该检查不是全库、跨原子重排或独立盲测证明。"
+msgstr "Use the load menu to select multiple reference files or recursively discover XYZ/EXTXYZ files in a folder. Background preview does not run predictions. Review mappings per file and import the selected valid files together. All selected files are checked before registration. Overlap counts for ordered inputs and geometry within this batch are retained in provenance; this is not a library-wide, atom-permutation or independent-holdout certificate."
+
+msgid "预测缓存绑定模型和数据 SHA-256、所选帧及计算环境；分析方案另外绑定分组、参考态、组合系数、归一化方式和版本。同一模型与数据使用不同分析方案时可复用预测；“重新计算”会绕过缓存。预测缓存位于库目录的 `cache/predictions/`，属于可重建缓存。分享包保存参考数据与分析设置，不导入预测结果。"
+msgstr "Prediction caches bind model and dataset SHA-256, frame selection and runtime environment. Analysis settings separately bind grouping, references, coefficients, normalization and version. Different analyses of the same model and data reuse predictions; Recalculate bypasses the cache. Rebuildable predictions are stored under `cache/predictions/` in the library. Sharing packages include reference data and analysis settings, not prediction results."
+
+msgid "固定磁态 EOS 现支持普通 NEP 和自旋模型，并检查不同体积点的输入磁序及磁矩模长保持一致。磁矩模长扫描应使用参考响应分析，而不套用体积 EOS 拟合。有限 q、场标记或极化参考字段不会自动变成长波周期、场下弛豫或极化预测；这些需要各自的计算方法及输入参数。"
+msgstr "Fixed-order EOS supports ordinary NEP and spin models, checking that input magnetic order and moment lengths stay fixed across volumes. Moment-magnitude scans use reference response analysis rather than a volume EOS fit. Finite q points, field labels or polarization reference fields do not automatically provide long-wave periods, field-relaxed structures or polarization predictions; those require their own calculation methods and inputs."
+
+msgid "命令行可用 `nepkit-validate import data.xyz --name response --source DFT --analysis recipe.json` 导入同样的 JSON 分析设置。"
+msgstr "The CLI accepts the same JSON settings: `nepkit-validate import data.xyz --name response --source DFT --analysis recipe.json`."

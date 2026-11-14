@@ -161,10 +161,11 @@ class TestDataManagerUi(unittest.TestCase):
         model_widget._view.clicked.emit(QModelIndex())
         self.assertEqual(spy.count(), len(expected_ids))
 
-    def test_dropped_path_prefills_existing_model_editor(self):
+    def test_new_model_routes_to_the_shared_import_dialog(self):
         model_widget = ModelItemWidget()
         model_widget.project = SimpleNamespace(project_id=7)
         model_widget.model_item_dict = {}
+        spy = QSignalSpy(model_widget.importRequested)
         with patch(
             "NepTrainKit.ui.views.dataset_widget.ModelInfoMessageBox"
         ) as box_class:
@@ -173,7 +174,9 @@ class TestDataManagerUi(unittest.TestCase):
 
             model_widget.create_model(initial_path="/tmp/training-run")
 
-        box.train_path_edit.setText.assert_called_once_with("/tmp/training-run")
+        box_class.assert_not_called()
+        self.assertEqual(spy.count(), 1)
+        self.assertEqual(spy.at(0)[0], "/tmp/training-run")
 
     def test_open_folder_opens_model_parent_or_existing_directory(self):
         model_widget = ModelItemWidget()
@@ -228,6 +231,7 @@ class TestDataManagerUi(unittest.TestCase):
         parent.resize(900, 700)
         with tempfile.TemporaryDirectory() as tmp_dir:
             model_dir = Path(tmp_dir)
+            (model_dir / "nep.txt").write_text("nep4 1 H\n")
             (model_dir / "train.xyz").write_text(
                 '1\nLattice="1 0 0 0 1 0 0 0 1" '
                 'Properties=species:S:1:pos:R:3 pbc="T T T"\nH 0 0 0\n',
@@ -247,45 +251,15 @@ class TestDataManagerUi(unittest.TestCase):
         self.assertEqual(box.energy_spinBox.text(), "1.5")
         self.assertEqual(box.force_spinBox.text(), "2.5")
         self.assertEqual(box.virial_spinBox.text(), "3.5")
-        self.assertEqual(message.call_count, 4)
+        self.assertEqual(message.call_count, 0)
 
-    @patch.object(data_manager_module.os.path, "isdir", return_value=True)
-    def test_dropped_model_folder_opens_prefilled_model_editor(self, _isdir):
-        folder = str(Path("/tmp/training-run"))
-        model_widget = SimpleNamespace(
-            project=SimpleNamespace(project_id=1),
-            create_model=MagicMock(),
-        )
-        page = SimpleNamespace(
-            data_item_widget=model_widget,
-            show_projects=MagicMock(),
-            tr=lambda text: text,
-        )
-        event = _DropEvent([_Url(folder)])
-
-        data_manager_module.DataManagerWidget.dropEvent(page, event)
-
-        page.show_projects.assert_called_once_with()
-        model_widget.create_model.assert_called_once_with(initial_path=folder)
-        self.assertTrue(event.accepted)
-        self.assertFalse(event.ignored)
-
-    @patch.object(data_manager_module.MessageManager, "send_info_message")
-    @patch.object(data_manager_module.os.path, "isdir", return_value=True)
-    def test_drop_without_project_explains_required_selection(
-        self, _isdir, info_message
-    ):
-        page = SimpleNamespace(
-            data_item_widget=SimpleNamespace(create_model=MagicMock()),
-            tr=lambda text: text,
-        )
-        event = _DropEvent([_Url("/tmp/training-run")])
-
-        data_manager_module.DataManagerWidget.dropEvent(page, event)
-
-        info_message.assert_called_once_with(
-            "Select a project before dropping a model folder"
-        )
+    def test_unrecognised_folder_drop_does_not_open_a_dialog(self):
+        with tempfile.TemporaryDirectory() as folder, patch.object(
+            data_manager_module, "ImportModelDialog"
+        ) as dialog:
+            event = _DropEvent([_Url(folder)])
+            data_manager_module.DataManagerWidget.dropEvent(SimpleNamespace(), event)
+        dialog.assert_not_called()
         self.assertTrue(event.ignored)
 
 

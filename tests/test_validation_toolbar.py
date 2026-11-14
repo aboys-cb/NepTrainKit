@@ -42,7 +42,7 @@ def toolbar(scored, monkeypatch):
     keep_created_styles_alive()
     monkeypatch.setattr(manager_module, "get_library", lambda: scored.service.library)
     monkeypatch.setattr(manager_module, "seed_nep_data_git", lambda *_: None)
-    monkeypatch.setattr(manager_module, "ModelLibraryWidget", lambda parent: ModelLibraryWidget(parent, scored.service))
+    monkeypatch.setattr(manager_module, "ValidationWorkspace", lambda parent: ModelLibraryWidget(parent, scored.service))
     host = ToolbarHost()
     page = manager_module.DataManagerWidget(host)
     page.toolbarActionsChanged.connect(host._refresh_page_actions)
@@ -65,7 +65,7 @@ def test_top_actions_dispatch_and_detach_on_page_and_tab_changes(toolbar, monkey
     toolbar.other.export_file = lambda: calls.append("other-save")
     assert not hasattr(library, "import_button") and not hasattr(library, "save_button")
     assert not hasattr(library, "star_button")
-    assert host.load_menu.actions() == [library.diagnostic_action, library.edit_diagnostic_action, library.import_action, library.import_package_action]
+    assert host.load_menu.actions() == [library.diagnostic_action, library.edit_diagnostic_action, library.import_action, library.import_files_action, library.import_folder_action, library.import_package_action]
     assert host.save_menu.actions() == [library.save_action, library.star_action, library.save_plan_action, library.export_package_action]
     library.diagnostic_action.trigger()
     assert library.diagnostic_editor.isVisible()
@@ -92,7 +92,7 @@ def test_top_actions_dispatch_and_detach_on_page_and_tab_changes(toolbar, monkey
         assert host.load_menu.actions() == [] and host.save_menu.actions() == []
         assert not host.open_dir_button.isEnabled() and not host.save_dir_button.isEnabled()
         page.open_scorecard(toolbar.scored.suite["id"], toolbar.scored.new["id"])
-        assert host.load_menu.actions() == [library.diagnostic_action, library.edit_diagnostic_action, library.import_action, library.import_package_action]
+        assert host.load_menu.actions() == [library.diagnostic_action, library.edit_diagnostic_action, library.import_action, library.import_files_action, library.import_folder_action, library.import_package_action]
         assert host.save_dir_button.isEnabled()
 
 
@@ -174,6 +174,9 @@ def test_project_model_mutations_update_counts_and_validation_without_losing_sel
     box.exec_.return_value = True
     box.get_dict.side_effect = lambda: dict(payload)
     monkeypatch.setattr(model_module, 'ModelInfoMessageBox', lambda *_: box)
+    monkeypatch.setattr(model_module, 'call_path_dialog', lambda *args, **kwargs: str(path))
+    from NepTrainKit.ui.widgets.validation_dialogs import ImportModelDialog
+    monkeypatch.setattr(ImportModelDialog, 'exec', lambda self: 1)
     models.create_model()
     model_id = next(iter(models.model_item_dict))
     assert tree.project_item_dict[project.id].model_num == 1

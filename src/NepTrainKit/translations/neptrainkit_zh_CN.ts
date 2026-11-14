@@ -1551,6 +1551,83 @@ Every structure must have the chosen field. Each group must be one structure / m
         <source>Checks passed</source>
         <translation>检查通过</translation>
     </message>
+
+    <message>
+        <source>Choose a dataset independently of the model. Energy, force, virial and magnetic-force labels are counted separately; at least one labelled quantity is required.</source>
+        <translation>数据集与模型独立选择。能量、原子力、virial 和磁力标签分别计数；至少需要一种参考标签。</translation>
+    </message>
+    <message>
+        <source>{count} structures · {atoms} atoms
+Valid labels: E {energy} structures; F {forces} atoms; V {virials} structures; MF {mforces} atoms.</source>
+        <translation>{count} 个结构 · {atoms} 个原子
+有效标签：E {energy} 个结构；F {forces} 个原子；V {virials} 个结构；MF {mforces} 个原子。</translation>
+    </message>
+
+    <message>
+        <source>Reference response · scans / differences / combinations</source>
+        <translation>参考响应 · 扫描 / 能差 / 组合</translation>
+    </message>
+    <message>
+        <source>Compare fixed reference structures using metadata groups, scan coordinates and signed state combinations. Review matching and exclusions before saving.</source>
+        <translation>利用元数据分组、扫描坐标和有符号状态组合比较固定参考结构，保存前请核对匹配结果和排除项。</translation>
+    </message>
+    <message>
+        <source>Reference response preview</source>
+        <translation>参考响应预览</translation>
+    </message>
+    <message>
+        <source>{groups} complete groups · {points} response points · {excluded} excluded groups
+Role: {role} · {unit}</source>
+        <translation>{groups} 个完整组 · {points} 个响应点 · 排除 {excluded} 组
+用途：{role} · {unit}</translation>
+    </message>
+
+    <message>
+        <source>Development validation</source>
+        <translation>开发验证</translation>
+    </message>
+    <message>
+        <source>Not declared</source>
+        <translation>未声明</translation>
+    </message>
+    <message>
+        <source>Reference</source>
+        <translation>参考值</translation>
+    </message>
+    <message>
+        <source>Training regression</source>
+        <translation>训练回归</translation>
+    </message>
+    <message>
+        <source>Validation (user declared)</source>
+        <translation>验证集（用户声明）</translation>
+    </message>
+    <message>
+        <source>Response points</source>
+        <translation>响应点数</translation>
+    </message>
+
+    <message>
+        <source>Each EOS group needs at least 5 distinct volume points from one phase / magnetic branch.
+Input: each structure's total energy in eV. Do not divide by the atom count beforehand.
+Comparison: E/N (eV/atom) and V/N (Å³/atom), normalized automatically.
+Fixed periodic reference structures; keep input magnetic order and moment magnitudes fixed.</source>
+        <translation>每组 EOS 至少需要 5 个不同体积点，属于同一相 / 磁态分支。
+输入：每个结构的总能量（eV），请勿提前除以原子数。
+比较：程序自动按原子数 N 归一化，使用 E/N（eV/atom）和 V/N（Å³/atom）。
+使用固定周期参考构型，支持普通 NEP 和自旋模型；输入磁序和磁矩模长须保持不变。</translation>
+    </message>
+
+
+    <message>
+        <source>State / combination</source>
+        <translation>状态 / 组合</translation>
+    </message>
+    <message>
+        <source>Reference group</source>
+        <translation>参考分组</translation>
+    </message>
+
 </context>
 <context>
     <name>BuiltinWorkflowTemplates</name>
@@ -9098,6 +9175,21 @@ Every structure must have the chosen field. Each group must be one structure / m
         <source>Projects</source>
         <translation>项目</translation>
     </message>
+
+    <message>
+        <source>Import failed: {error}</source>
+        <translation>导入失败：{error}</translation>
+    </message>
+    <message>
+        <source>Model imported: {name}</source>
+        <translation>已导入模型：{name}</translation>
+    </message>
+
+
+    <message>
+        <source>No valid NEP model header was found in this path.</source>
+        <translation>此路径中未找到有效的 NEP 模型文件头。</translation>
+    </message>
 </context>
 <context>
     <name>DatasetSummaryMessageBox</name>
@@ -12158,6 +12250,26 @@ Theoretical outputs before limit: {theoretical} · max_outputs: {maximum} · Exp
         <source>Fit warning</source>
         <translation>拟合警告</translation>
     </message>
+
+    <message>
+        <source>Magnetic force RMSE
+(meV/μB)</source>
+        <translation>磁力 RMSE
+(meV/μB)</translation>
+    </message>
+
+    <message>
+        <source>Response RMSE</source>
+        <translation>响应 RMSE</translation>
+    </message>
+    <message>
+        <source>Max response error</source>
+        <translation>最大响应误差</translation>
+    </message>
+
+
+
+
 </context>
 <context>
     <name>ImportValidationPackageDialog</name>
@@ -16012,6 +16124,28 @@ Baseline model: {baseline}</source>
         <source>Cannot calculate {metric} RMSE from {file}: {error}. The current manual value is kept.</source>
         <translation>无法从 {file} 计算{metric} RMSE：{error}。已保留当前手动输入值。</translation>
     </message>
+
+    <message>
+        <source>Historical RMSE (manual, unverified)</source>
+        <translation>历史 RMSE（手填，未校验）</translation>
+    </message>
+    <message>
+        <source>NEP model file or folder</source>
+        <translation>NEP 模型文件或文件夹</translation>
+    </message>
+    <message>
+        <source>Select NEP model file</source>
+        <translation>选择 NEP 模型文件</translation>
+    </message>
+    <message>
+        <source>Choose one valid NEP model file; accuracy data is selected separately.</source>
+        <translation>请选择一个有效的 NEP 模型文件；精度评估数据另行选择。</translation>
+    </message>
+
+    <message>
+        <source>Historical RMSE (unverified)</source>
+        <translation>历史 RMSE（未校验）</translation>
+    </message>
 </context>
 <context>
     <name>ModelItemWidget</name>
@@ -16147,6 +16281,11 @@ All child items will also be deleted.</source>
         <location filename="../ui/views/dataset_widget.py" line="448" />
         <source>Model folder does not exist: {path}</source>
         <translation>模型文件夹不存在：{path}</translation>
+    </message>
+
+    <message>
+        <source>Select NEP model file</source>
+        <translation>选择 NEP 模型文件</translation>
     </message>
 </context>
 <context>
@@ -16558,6 +16697,54 @@ Done {done}    Pending {pending}    Failed {failed}    Unsupported {unsupported}
         <source>Validate selected models</source>
         <translation>验证所选势</translation>
     </message>
+
+    <message>
+        <source>Recalculate selected models</source>
+        <translation>重新计算所选模型</translation>
+    </message>
+    <message>
+        <source>Import .out cache for accuracy datasets…</source>
+        <translation>为精度数据导入 .out 缓存…</translation>
+    </message>
+    <message>
+        <source>Select official .out cache folder</source>
+        <translation>选择官方 .out 缓存文件夹</translation>
+    </message>
+
+    <message>
+        <source>Only verified outputs are reused. Missing or mismatched provenance triggers a fresh evaluation; source files are kept.</source>
+        <translation>仅复用已校验输出。来源记录缺失或不匹配时会重新评估，并保留原文件。</translation>
+    </message>
+
+    <message>
+        <source>Each group has independent axes. Focus a chart or select rows in the error details.</source>
+        <translation>各组使用独立坐标轴，可聚焦某图，或在误差详情中选择行。</translation>
+    </message>
+
+    <message>
+        <source>Reference response analysis</source>
+        <translation>参考响应分析</translation>
+    </message>
+    <message>
+        <source>Import multiple reference files…</source>
+        <translation>批量导入参考文件…</translation>
+    </message>
+    <message>
+        <source>Import reference folder…</source>
+        <translation>导入参考文件夹…</translation>
+    </message>
+    <message>
+        <source>Select reference dataset folder</source>
+        <translation>选择参考数据集文件夹</translation>
+    </message>
+    <message>
+        <source>Select reference datasets</source>
+        <translation>选择参考数据集</translation>
+    </message>
+
+
+
+
 </context>
 <context>
     <name>NepDipoleResultData</name>
@@ -19695,6 +19882,191 @@ All child items will also be deleted.</source>
         <source>Create sampling workflow</source>
         <translation>创建采样工作流</translation>
     </message>
+
+    <message>
+        <source>{name}: valid labels — E {energy} structures; F {force} atoms; V {virial} structures; MF {mforce} atoms.</source>
+        <translation>{name}：有效标签 E {energy} 个结构；F {force} 个原子；V {virial} 个结构；MF {mforce} 个原子。</translation>
+    </message>
+    <message>
+        <source>Compared components E/F/V/MF: {counts}</source>
+        <translation>实际比较分量 E/F/V/MF：{counts}</translation>
+    </message>
+    <message>
+        <source>Model {model} · data {data} · {frames} frames / {atoms} atoms · {source}</source>
+        <translation>模型 {model} · 数据 {data} · {frames} 帧 / {atoms} 个原子 · {source}</translation>
+    </message>
+    <message>
+        <source>Verified cache</source>
+        <translation>已校验缓存</translation>
+    </message>
+    <message>
+        <source>Recalculated</source>
+        <translation>重新计算</translation>
+    </message>
+
+    <message>
+        <source>{name}
+Model SHA-256: {model}
+Dataset SHA-256: {data}</source>
+        <translation>{name}
+模型 SHA-256：{model}
+数据 SHA-256：{data}</translation>
+    </message>
+    <message>
+        <source>RMSE E/F/V/MF: {values}</source>
+        <translation>RMSE E/F/V/MF：{values}</translation>
+    </message>
+
+    <message>
+        <source>Focus this group</source>
+        <translation>聚焦此组</translation>
+    </message>
+
+    <message>
+        <source>Wheel zoom</source>
+        <translation>滚轮缩放</translation>
+    </message>
+    <message>
+        <source>Off: scroll the chart list. On: use the wheel to zoom the chart under the pointer.</source>
+        <translation>关闭时滚动图表列表；开启后，用滚轮缩放鼠标指向的图表。</translation>
+    </message>
+
+    <message>
+        <source>Error</source>
+        <translation>误差</translation>
+    </message>
+    <message>
+        <source>Export CSV</source>
+        <translation>导出 CSV</translation>
+    </message>
+    <message>
+        <source>Export response values</source>
+        <translation>导出响应数值</translation>
+    </message>
+    <message>
+        <source>Fixed structures · signed responses · normalization and reference states are stored with each dataset</source>
+        <translation>固定结构 · 有符号响应 · 每个数据集独立保存归一化方式和参考态</translation>
+    </message>
+    <message>
+        <source>Frame coefficients (zero based)</source>
+        <translation>帧编号及系数（从 0 起）</translation>
+    </message>
+    <message>
+        <source>Group</source>
+        <translation>分组</translation>
+    </message>
+    <message>
+        <source>Group / state</source>
+        <translation>分组 / 状态</translation>
+    </message>
+    <message>
+        <source>Local curvature</source>
+        <translation>局部曲率</translation>
+    </message>
+    <message>
+        <source>Minima refer to sampled points. Curvature is a local three-point estimate and is unavailable at a boundary minimum.</source>
+        <translation>最低点仅指已采样点；曲率按相邻三点局部估计。最低点位于边界时不报告曲率。</translation>
+    </message>
+    <message>
+        <source>Projected response</source>
+        <translation>投影响应</translation>
+    </message>
+    <message>
+        <source>Projected unit-spin response (reference)</source>
+        <translation>单位自旋投影响应（参考）</translation>
+    </message>
+    <message>
+        <source>Reference local curvature</source>
+        <translation>参考局部曲率</translation>
+    </message>
+    <message>
+        <source>Reference response analysis</source>
+        <translation>参考响应分析</translation>
+    </message>
+    <message>
+        <source>Reference sampled minimum</source>
+        <translation>参考采样最低点</translation>
+    </message>
+    <message>
+        <source>Response values and frame combinations</source>
+        <translation>响应数值与帧组合</translation>
+    </message>
+    <message>
+        <source>Sampled minimum</source>
+        <translation>采样最低点</translation>
+    </message>
+    <message>
+        <source>Second axis</source>
+        <translation>第二坐标轴</translation>
+    </message>
+    <message>
+        <source>State / combination</source>
+        <translation>状态 / 组合</translation>
+    </message>
+    <message>
+        <source>Symmetric</source>
+        <translation>对称部分</translation>
+    </message>
+    <message>
+        <source>Saved predictions</source>
+        <translation>已保存的预测</translation>
+    </message>
+    <message>
+        <source>Ordered pair / group</source>
+        <translation>有序原子对 / 分组</translation>
+    </message>
+    <message>
+        <source>D projection direction</source>
+        <translation>D 投影方向</translation>
+    </message>
+    <message>
+        <source>Symmetric reference</source>
+        <translation>对称部分参考值</translation>
+    </message>
+    <message>
+        <source>D reference</source>
+        <translation>D 参考值</translation>
+    </message>
+    <message>
+        <source>Quantity</source>
+        <translation>物理量</translation>
+    </message>
+    <message>
+        <source>Model</source>
+        <translation>模型</translation>
+    </message>
+    <message>
+        <source>Valid components</source>
+        <translation>有效标签分量数</translation>
+    </message>
+    <message>
+        <source>Compared components</source>
+        <translation>实际比较分量数</translation>
+    </message>
+
+    <message>
+        <source>Development validation</source>
+        <translation>开发验证</translation>
+    </message>
+    <message>
+        <source>Not declared</source>
+        <translation>未声明</translation>
+    </message>
+    <message>
+        <source>Training regression</source>
+        <translation>训练回归</translation>
+    </message>
+    <message>
+        <source>Validation (user declared)</source>
+        <translation>验证集（用户声明）</translation>
+    </message>
+
+
+    <message>
+        <source>Close</source>
+        <translation>关闭</translation>
+    </message>
+
 </context>
 <context>
     <name>RuntimeMessage</name>
@@ -20757,6 +21129,524 @@ All child items will also be deleted.</source>
         <source>A selected EOS group is no longer present in the file.</source>
         <translation>选中的 EOS 组已不在文件中，请重新加载并检查分组。</translation>
     </message>
+
+    <message>
+        <source>Accuracy evaluation needs non-empty structures.</source>
+        <translation>精度评估需要非空结构。</translation>
+    </message>
+    <message>
+        <source>force_mag and mforce reference labels disagree.</source>
+        <translation>force_mag 和 mforce 参考标签不一致。</translation>
+    </message>
+    <message>
+        <source>Reference {key} labels have shape {shape}; expected {expected}.</source>
+        <translation>参考标签 {key} 的形状为 {shape}；应为 {expected}。</translation>
+    </message>
+    <message>
+        <source>Reference {key} labels must be finite.</source>
+        <translation>参考标签 {key} 必须为有限数值。</translation>
+    </message>
+    <message>
+        <source>Predicted {key} values must be finite and match the reference shape.</source>
+        <translation>预测值 {key} 必须为有限数值，并与参考值形状一致。</translation>
+    </message>
+    <message>
+        <source>Predicted magnetic forces must be finite and have shape (atoms, 3).</source>
+        <translation>预测磁力必须为有限数值，形状必须为（原子数，3）。</translation>
+    </message>
+    <message>
+        <source>The model cannot evaluate any labelled quantity in this dataset.</source>
+        <translation>此模型无法评估该数据集中的任何已标注物理量。</translation>
+    </message>
+    <message>
+        <source>The cache needs a supported prediction.meta.json manifest.</source>
+        <translation>缓存需要受支持的 prediction.meta.json 来源记录。</translation>
+    </message>
+    <message>
+        <source>The cache must identify exactly one matching model and dataset hash.</source>
+        <translation>缓存必须唯一对应当前模型和数据集哈希。</translation>
+    </message>
+    <message>
+        <source>The cache manifest must record matching structure and atom counts.</source>
+        <translation>缓存来源记录必须包含匹配的结构数和原子数。</translation>
+    </message>
+    <message>
+        <source>The cache manifest has invalid output metadata.</source>
+        <translation>缓存来源记录中的输出信息无效。</translation>
+    </message>
+    <message>
+        <source>The cache has no verified output hash for {filename}.</source>
+        <translation>缓存缺少 {filename} 的可校验输出哈希。</translation>
+    </message>
+    <message>
+        <source>The cache output hash does not match {filename}.</source>
+        <translation>缓存输出 {filename} 的哈希不匹配。</translation>
+    </message>
+    <message>
+        <source>{filename} has shape {actual}; expected {expected}.</source>
+        <translation>{filename} 的形状为 {actual}；应为 {expected}。</translation>
+    </message>
+    <message>
+        <source>{filename} contains non-finite predictions.</source>
+        <translation>{filename} 包含非有限预测值。</translation>
+    </message>
+    <message>
+        <source>{filename} reference columns do not match the selected dataset.</source>
+        <translation>{filename} 的参考列与所选数据集不匹配。</translation>
+    </message>
+    <message>
+        <source>Official output caches are supported only for accuracy evaluation.</source>
+        <translation>官方输出缓存仅用于精度评估。</translation>
+    </message>
+    <message>
+        <source>At least one energy, force, virial or magnetic-force label is required.</source>
+        <translation>至少需要能量、原子力、virial 或磁力中的一种参考标签。</translation>
+    </message>
+    <message>
+        <source>Magnetic-force labels exist, but this model does not provide magnetic forces.</source>
+        <translation>数据中有磁力标签，但此模型不输出磁力。</translation>
+    </message>
+    <message>
+        <source>Cache not used; predictions recalculated: {reason}</source>
+        <translation>缓存未采用，已重新计算预测：{reason}</translation>
+    </message>
+    <message>
+        <source>prediction.meta.json has invalid {section} metadata</source>
+        <translation>prediction.meta.json 中的 {section} 信息无效</translation>
+    </message>
+    <message>
+        <source>prediction.meta.json records a different structure file</source>
+        <translation>prediction.meta.json 记录的是另一个结构文件</translation>
+    </message>
+    <message>
+        <source>prediction.meta.json records a different structure count</source>
+        <translation>prediction.meta.json 记录的结构数不匹配</translation>
+    </message>
+    <message>
+        <source>prediction.meta.json records a different atom count</source>
+        <translation>prediction.meta.json 记录的原子数不匹配</translation>
+    </message>
+    <message>
+        <source>prediction.meta.json records a different NEP model</source>
+        <translation>prediction.meta.json 记录的是另一个 NEP 模型</translation>
+    </message>
+    <message>
+        <source>prediction.meta.json has invalid output metadata</source>
+        <translation>prediction.meta.json 中的输出信息无效</translation>
+    </message>
+    <message>
+        <source>prediction.meta.json has an invalid output filename</source>
+        <translation>prediction.meta.json 中的输出文件名无效</translation>
+    </message>
+    <message>
+        <source>prediction.meta.json output hash does not match {name}</source>
+        <translation>prediction.meta.json 中 {name} 的输出哈希不匹配</translation>
+    </message>
+
+    <message>
+        <source>Cache rejected: {reason}; {error}</source>
+        <translation>缓存未采用：{reason}；{error}</translation>
+    </message>
+
+    <message>
+        <source>The cache output hash does not match {output_name}.</source>
+        <translation>缓存输出 {output_name} 的哈希不匹配。</translation>
+    </message>
+    <message>
+        <source>Imported output statistics do not match the saved model snapshot.</source>
+        <translation>导入的输出统计与已保存的模型快照不匹配。</translation>
+    </message>
+    <message>
+        <source>No usable existing-output statistics are available for this model.</source>
+        <translation>此模型没有可用的已有输出统计。</translation>
+    </message>
+    <message>
+        <source>{filename} must have {expected_columns} columns.</source>
+        <translation>{filename} 必须包含 {expected_columns} 列。</translation>
+    </message>
+    <message>
+        <source>{filename} contains non-finite predictions or reference infinities.</source>
+        <translation>{filename} 包含非有限预测值或无穷参考值。</translation>
+    </message>
+    <message>
+        <source>{filename} contains incomplete reference vectors.</source>
+        <translation>{filename} 包含不完整的参考向量。</translation>
+    </message>
+    <message>
+        <source>{filename} error accumulation is not finite.</source>
+        <translation>{filename} 的误差累加结果不是有限数值。</translation>
+    </message>
+
+    <message>
+        <source>A combination needs state fields and signed coefficients.</source>
+        <translation>组合分析需要状态字段和有符号系数。</translation>
+    </message>
+    <message>
+        <source>A grouping or state value is missing or is not scalar.</source>
+        <translation>分组或状态值缺失，或不是标量。</translation>
+    </message>
+    <message>
+        <source>A metadata override refers to a frame outside this dataset.</source>
+        <translation>元数据映射引用了数据集范围之外的帧。</translation>
+    </message>
+    <message>
+        <source>A relative reference scan needs at least two points.</source>
+        <translation>相对参考扫描至少需要两个点。</translation>
+    </message>
+    <message>
+        <source>A required combination state is missing from this group.</source>
+        <translation>此组缺少组合所需的状态。</translation>
+    </message>
+    <message>
+        <source>An energy difference needs state fields and a reference state.</source>
+        <translation>能差分析需要状态字段和参考态。</translation>
+    </message>
+    <message>
+        <source>Assumption: H = sum e_i^T J_ij e_j with unit spins and a positive sign. Reports measured projections only; local-bond interpretation requires the correct periodic multiplicity.</source>
+        <translation>约定：H = Σ eᵢᵀJᵢⱼeⱼ，使用单位自旋和正号。仅报告已测方向的投影；解释为局域键参数时，须设置正确的周期相互作用重数。</translation>
+    </message>
+    <message>
+        <source>Choose a supported analysis and dataset role.</source>
+        <translation>请选择受支持的分析方式和数据用途。</translation>
+    </message>
+    <message>
+        <source>Choose an available response quantity.</source>
+        <translation>请选择可用的响应物理量。</translation>
+    </message>
+    <message>
+        <source>Choose an energy unit and normalization.</source>
+        <translation>请选择能量单位和归一化方式。</translation>
+    </message>
+    <message>
+        <source>Choose the element used for normalization.</source>
+        <translation>请选择用于归一化的元素。</translation>
+    </message>
+    <message>
+        <source>Combination coefficients must be finite.</source>
+        <translation>组合系数必须为有限数值。</translation>
+    </message>
+    <message>
+        <source>Combination states must be unique and coefficients nonzero.</source>
+        <translation>组合状态不能重复，系数不能全为零。</translation>
+    </message>
+    <message>
+        <source>Corrupted predictions.</source>
+        <translation>预测缓存损坏。</translation>
+    </message>
+    <message>
+        <source>Duplicate scan coordinates: add grouping fields or a second axis.</source>
+        <translation>扫描坐标重复；请补充分组字段或第二坐标轴。</translation>
+    </message>
+    <message>
+        <source>Duplicate states: add grouping fields to distinguish them.</source>
+        <translation>状态重复；请补充分组字段加以区分。</translation>
+    </message>
+    <message>
+        <source>Each metadata frame_id must identify exactly one frame.</source>
+        <translation>元数据中的每个 frame_id 必须唯一对应一个帧。</translation>
+    </message>
+    <message>
+        <source>Each term must contain state values and one coefficient.</source>
+        <translation>每个组合项必须包含状态值和一个系数。</translation>
+    </message>
+    <message>
+        <source>Every response state needs at least one state field.</source>
+        <translation>每个响应状态至少需要一个状态字段。</translation>
+    </message>
+    <message>
+        <source>Exchange extraction needs four states, per-cell energies, an explicit index base and positive interaction multiplicity.</source>
+        <translation>交换响应提取需要四态、每晶胞能量、明确的原子编号起点和正的相互作用重数。</translation>
+    </message>
+    <message>
+        <source>Fill every combination state and coefficient.</source>
+        <translation>请填写每个组合状态及其系数。</translation>
+    </message>
+    <message>
+        <source>Fixed-structure prediction {key} has an invalid shape or non-finite values.</source>
+        <translation>固定结构预测 {key} 的形状无效，或包含非有限值。</translation>
+    </message>
+    <message>
+        <source>For multiple EOS groups, use the single-file importer.</source>
+        <translation>请使用单文件导入窗口拆分多个 EOS 组。</translation>
+    </message>
+    <message>
+        <source>Four-state and cross responses need two state fields.</source>
+        <translation>四态和交叉响应需要两个状态字段。</translation>
+    </message>
+    <message>
+        <source>Four-state and cross responses require total energies.</source>
+        <translation>四态和交叉响应需要能量物理量。</translation>
+    </message>
+    <message>
+        <source>Four-state exchange needs nonzero perturbations on both atoms.</source>
+        <translation>四态交换分析需要对两个原子施加非零扰动。</translation>
+    </message>
+    <message>
+        <source>Four-state exchange needs one consistent ordered pair of distinct atom indices.</source>
+        <translation>四态交换分析需要一对一致、有序且不同的原子编号。</translation>
+    </message>
+    <message>
+        <source>Four-state exchange requires all other input moments to remain fixed.</source>
+        <translation>四态交换分析要求其他原子的输入磁矩保持不变。</translation>
+    </message>
+    <message>
+        <source>Four-state exchange requires explicit finite vector moments.</source>
+        <translation>四态交换分析需要明确且有限的矢量磁矩。</translation>
+    </message>
+    <message>
+        <source>Four-state response reports a signed energy combination, not an assumed J/D Hamiltonian parameter. Cross response uses binary states 0/1. Stress and pressure are in GPa; reference conversion is explicit.</source>
+        <translation>四态响应默认报告有符号能量组合；提取 J/D 投影需另外声明模型约定。交叉响应使用 0/1 二态，应力和压力使用 GPa，参考单位换算须明确设置。</translation>
+    </message>
+    <message>
+        <source>Frame metadata must be indexed by zero-based frame numbers.</source>
+        <translation>帧元数据必须按从 0 起的帧编号索引。</translation>
+    </message>
+    <message>
+        <source>Grouping and state fields must be distinct non-empty names.</source>
+        <translation>分组字段及状态字段必须为不重复的非空名称。</translation>
+    </message>
+    <message>
+        <source>Grouping metadata mapped to {count} frames. Source structures and labels are unchanged.</source>
+        <translation>已为 {count} 帧映射分组元数据，原始结构和标签保持不变。</translation>
+    </message>
+    <message>
+        <source>Incomplete predictions.</source>
+        <translation>预测缓存不完整。</translation>
+    </message>
+    <message>
+        <source>Inspecting reference datasets in the background; no predictions are run.</source>
+        <translation>正在后台检查参考数据集，不运行模型预测。</translation>
+    </message>
+    <message>
+        <source>Invalid reference analysis settings.</source>
+        <translation>参考分析设置无效。</translation>
+    </message>
+    <message>
+        <source>Join by frame_index (zero based) or a unique frame_id. Other columns define grouping or scan metadata, not calculation labels.</source>
+        <translation>通过从 0 起的 frame_index 或唯一的 frame_id 匹配帧；其他列定义分组或扫描元数据，不修改计算标签。</translation>
+    </message>
+    <message>
+        <source>Metadata CSV needs frame_index (zero based) or frame_id.</source>
+        <translation>元数据 CSV 需要 frame_index（从 0 起）或 frame_id 列。</translation>
+    </message>
+    <message>
+        <source>Metadata contains duplicate or out-of-range frame indices.</source>
+        <translation>元数据包含重复或超出范围的帧编号。</translation>
+    </message>
+    <message>
+        <source>Metadata overrides must contain finite scalar grouping fields, never reference labels or model inputs.</source>
+        <translation>元数据映射仅允许有限标量分组字段，不得覆盖参考标签或模型输入。</translation>
+    </message>
+    <message>
+        <source>Minima refer to sampled points. Curvature is a local three-point estimate and is unavailable at a boundary minimum.</source>
+        <translation>最低点仅指已采样点；曲率按相邻三点局部估计。最低点位于边界时不报告曲率。</translation>
+    </message>
+    <message>
+        <source>Missing metadata field: {key}.</source>
+        <translation>缺少元数据字段：{key}。</translation>
+    </message>
+    <message>
+        <source>No complete response groups remain.</source>
+        <translation>没有剩余的完整响应组。</translation>
+    </message>
+    <message>
+        <source>Predicted response values must be finite.</source>
+        <translation>预测响应值必须为有限数值。</translation>
+    </message>
+    <message>
+        <source>Predicted virial shapes do not match the reference structures.</source>
+        <translation>预测 virial 的形状与参考结构不匹配。</translation>
+    </message>
+    <message>
+        <source>Prediction identity mismatch.</source>
+        <translation>预测缓存身份不匹配。</translation>
+    </message>
+    <message>
+        <source>Reference analysis needs non-empty structures.</source>
+        <translation>参考分析需要非空结构。</translation>
+    </message>
+    <message>
+        <source>Reference response values must be finite scalars.</source>
+        <translation>参考响应值必须为有限标量。</translation>
+    </message>
+    <message>
+        <source>Reference scaling must be finite and nonzero.</source>
+        <translation>参考值换算系数必须有限且非零。</translation>
+    </message>
+    <message>
+        <source>Reference structures need finite positions and cells.</source>
+        <translation>参考结构的坐标和晶胞必须为有限数值。</translation>
+    </message>
+    <message>
+        <source>Review analysis mappings and dataset roles. Invalid files are not selected automatically.</source>
+        <translation>请核对分析字段和数据用途，无效文件不会自动勾选。</translation>
+    </message>
+    <message>
+        <source>Scan coordinate types must agree within a group.</source>
+        <translation>同一组内的扫描坐标类型必须一致。</translation>
+    </message>
+    <message>
+        <source>Scan field {key} must contain finite scalar values.</source>
+        <translation>扫描字段 {key} 必须包含有限标量。</translation>
+    </message>
+    <message>
+        <source>State fields must not also be grouping fields.</source>
+        <translation>状态字段不能同时用作分组字段。</translation>
+    </message>
+    <message>
+        <source>States in this group do not share the same atomic geometry.</source>
+        <translation>此组各状态的原子几何不一致。</translation>
+    </message>
+    <message>
+        <source>Stress response needs virial/stress labels or an explicit reference field.</source>
+        <translation>应力响应需要 virial/应力标签，或明确指定的参考字段。</translation>
+    </message>
+    <message>
+        <source>Term state values must match the state fields.</source>
+        <translation>组合项的状态值数量必须与状态字段一致。</translation>
+    </message>
+    <message>
+        <source>The normalization element is absent from a structure.</source>
+        <translation>某个结构中不存在用于归一化的元素。</translation>
+    </message>
+    <message>
+        <source>The reference state is missing from this group.</source>
+        <translation>此组缺少参考态。</translation>
+    </message>
+    <message>
+        <source>The two four-state perturbations must be independently controlled.</source>
+        <translation>四态分析中的两个扰动必须独立控制。</translation>
+    </message>
+    <message>
+        <source>This group has no comparable response points.</source>
+        <translation>此组没有可比较的响应点。</translation>
+    </message>
+    <message>
+        <source>Unexpected extra states in a combination group.</source>
+        <translation>组合组内出现额外状态。</translation>
+    </message>
+    <message>
+        <source>Unit-spin exchange requires constant nonzero moment lengths on the selected pair.</source>
+        <translation>单位自旋交换分析要求所选原子对的磁矩模长固定且非零。</translation>
+    </message>
+    <message>
+        <source>{key} must be a list.</source>
+        <translation>{key} 必须为列表。</translation>
+    </message>
+    <message>
+        <source>Compare fixed reference structures using metadata groups, scan coordinates and signed state combinations. Review matching and exclusions before saving.</source>
+        <translation>利用元数据分组、扫描坐标和有符号状态组合比较固定参考结构，保存前请核对匹配结果和排除项。</translation>
+    </message>
+    <message>
+        <source>EOS requires the same input magnetic order and moment magnitudes at every volume.</source>
+        <translation>EOS 要求各体积点的输入磁序和磁矩模长保持一致。</translation>
+    </message>
+    <message>
+        <source>Analysis settings require the reference response protocol.</source>
+        <translation>分析设置需要使用参考响应协议。</translation>
+    </message>
+    <message>
+        <source>Select at least one reference dataset.</source>
+        <translation>请至少选择一个参考数据集。</translation>
+    </message>
+
+    <message>
+        <source>Response group {name}: {error}</source>
+        <translation>响应分组 {name}：{error}</translation>
+    </message>
+
+    <message>
+        <source>Metadata CSV column names must be unique.</source>
+        <translation>元数据 CSV 的列名不能重复。</translation>
+    </message>
+    <message>
+        <source>Metadata CSV rows must match the header columns.</source>
+        <translation>元数据 CSV 的每行必须与表头列数一致。</translation>
+    </message>
+    <message>
+        <source>Every metadata row needs a frame index or ID.</source>
+        <translation>每行元数据必须提供帧编号或 ID。</translation>
+    </message>
+    <message>
+        <source>Analysis field names and selections must be text.</source>
+        <translation>分析字段名称和选项必须为文本。</translation>
+    </message>
+    <message>
+        <source>Analysis switches must be boolean values.</source>
+        <translation>分析开关必须为布尔值。</translation>
+    </message>
+    <message>
+        <source>Interaction multiplicity must be finite.</source>
+        <translation>相互作用重数必须为有限数值。</translation>
+    </message>
+
+
+    <message>
+        <source>Atom-pair indices must be integers.</source>
+        <translation>原子对编号必须为整数。</translation>
+    </message>
+
+    <message>
+        <source>Archive {count} items and remove their current memberships? References shared by another suite cannot be archived. Snapshots and history are retained.</source>
+        <translation>归档 {count} 项并从当前套件移除？其他套件仍在引用的项目不能归档；数据快照和评估历史会保留。</translation>
+    </message>
+    <message>
+        <source>Remove {count} items? Other suites, source files and historical evaluations are preserved.</source>
+        <translation>从当前套件移除 {count} 项？其他套件、源文件和评估历史均保留。</translation>
+    </message>
+    <message>
+        <source>{visible} visible · {checked} checked across topics. Viewing details does not change run targets.</source>
+        <translation>当前显示 {visible} 项 · 跨主题勾选 {checked} 项；查看详情不会改变运行范围。</translation>
+    </message>
+    <message>
+        <source>A topic needs a name of at most 200 characters.</source>
+        <translation>主题名称不能为空，且最多 200 个字符。</translation>
+    </message>
+    <message>
+        <source>Save this validation suite before managing its topics.</source>
+        <translation>请先保存验证套件，再管理主题。</translation>
+    </message>
+    <message>
+        <source>Some selected items no longer belong to this suite.</source>
+        <translation>部分所选验证项已不在当前套件中。</translation>
+    </message>
+    <message>
+        <source>The topic does not belong to this suite.</source>
+        <translation>该主题不属于当前套件。</translation>
+    </message>
+    <message>
+        <source>A topic with this name already exists.</source>
+        <translation>当前套件已有同名主题。</translation>
+    </message>
+    <message>
+        <source>A validation item needs a name.</source>
+        <translation>验证项名称不能为空。</translation>
+    </message>
+    <message>
+        <source>The replacement reference does not exist.</source>
+        <translation>用于替换的验证项不存在。</translation>
+    </message>
+    <message>
+        <source>This analysis already belongs to the current suite.</source>
+        <translation>当前套件中已经包含此分析。</translation>
+    </message>
+    <message>
+        <source>The destination suite no longer exists.</source>
+        <translation>目标套件已不存在。</translation>
+    </message>
+    <message>
+        <source>The reference no longer exists.</source>
+        <translation>参考验证项已不存在。</translation>
+    </message>
+    <message>
+        <source>This reference is used by other suites; remove it from the current suite instead.</source>
+        <translation>其他套件仍在引用此验证项；可先选择从当前套件移除。</translation>
+    </message>
+
+    <message>
+        <source>This item selects an EOS subgroup. Keep its protocol when editing; create a new reference item for a different analysis.</source>
+        <translation>此验证项引用一个 EOS 子组。编辑时保留协议；其他分析请另建验证项。</translation>
+    </message>
 </context>
 <context>
     <name>SOCTextureResponseCard</name>
@@ -21321,6 +22211,24 @@ All child items will also be deleted.</source>
         <source>Virial RMSE</source>
         <translation>维里 RMSE</translation>
     </message>
+
+    <message>
+        <source>Magnetic force RMSE</source>
+        <translation>磁力 RMSE</translation>
+    </message>
+
+    <message>
+        <source>Response RMSE</source>
+        <translation>响应 RMSE</translation>
+    </message>
+    <message>
+        <source>Max response error</source>
+        <translation>最大响应误差</translation>
+    </message>
+
+
+
+
 </context>
 <context>
     <name>SetMagneticMomentsCard</name>
@@ -31186,6 +32094,805 @@ Baseline model: {baseline}</source>
         <location filename="../ui/widgets/filter_bar.py" line="567" />
         <source>Remove condition</source>
         <translation>删除条件</translation>
+    </message>
+</context>
+<context>
+    <name>ImportModelDialog</name>
+    <message>
+        <source>Save model to project</source>
+        <translation>保存模型到项目</translation>
+    </message>
+    <message>
+        <source>Library: {path}</source>
+        <translation>模型库：{path}</translation>
+    </message>
+    <message>
+        <source>Change…</source>
+        <translation>更改…</translation>
+    </message>
+    <message>
+        <source>Library location is controlled by NEPTRAINKIT_LIBRARY</source>
+        <translation>模型库位置由 NEPTRAINKIT_LIBRARY 环境变量指定</translation>
+    </message>
+    <message>
+        <source>Choose model library</source>
+        <translation>选择模型库</translation>
+    </message>
+    <message>
+        <source>Choose a project or type a new name</source>
+        <translation>选择项目或输入新项目名</translation>
+    </message>
+    <message>
+        <source>Project</source>
+        <translation>项目</translation>
+    </message>
+    <message>
+        <source>Version name</source>
+        <translation>版本名</translation>
+    </message>
+    <message>
+        <source>Save</source>
+        <translation>保存</translation>
+    </message>
+    <message>
+        <source>Cancel</source>
+        <translation>取消</translation>
+    </message>
+    <message>
+        <source>Import NEP model</source>
+        <translation>导入 NEP 模型</translation>
+    </message>
+    <message>
+        <source>Import</source>
+        <translation>导入</translation>
+    </message>
+    <message>
+        <source>Model file</source>
+        <translation>模型文件</translation>
+    </message>
+    <message>
+        <source>Choose one of the recognised model files.</source>
+        <translation>请选择一个已识别的模型文件。</translation>
+    </message>
+    <message>
+        <source>Cannot read model: {error}</source>
+        <translation>无法读取模型：{error}</translation>
+    </message>
+    <message>
+        <source>File: {path}
+Type: {kind} · Elements: {elements}</source>
+        <translation>文件：{path}
+类型：{kind} · 元素：{elements}</translation>
+    </message>
+
+
+    <message>
+        <source>Reading existing outputs in the background; no model prediction is run.</source>
+        <translation>正在后台读取已有输出，不会重新运行模型预测。</translation>
+    </message>
+    <message>
+        <source>Model, dataset and output hashes verified. Existing outputs were read without prediction.</source>
+        <translation>模型、数据和输出哈希已校验，仅读取已有输出，未重新预测。</translation>
+    </message>
+    <message>
+        <source>RMSE from existing outputs</source>
+        <translation>已有输出的 RMSE</translation>
+    </message>
+    <message>
+        <source>Energy (meV/atom)</source>
+        <translation>能量（meV/atom）</translation>
+    </message>
+    <message>
+        <source>Force (meV/Å)</source>
+        <translation>原子力（meV/Å）</translation>
+    </message>
+    <message>
+        <source>Virial (meV/atom)</source>
+        <translation>Virial（meV/atom）</translation>
+    </message>
+    <message>
+        <source>Magnetic force (meV/μB)</source>
+        <translation>磁力（meV/μB）</translation>
+    </message>
+    <message>
+        <source>Training outputs</source>
+        <translation>训练集输出</translation>
+    </message>
+    <message>
+        <source>Outputs do not match this model or dataset. Import will save weights only.</source>
+        <translation>输出与当前模型或数据不匹配，本次仅导入模型权重。</translation>
+    </message>
+    <message>
+        <source>Historical output precision: its association with this model is unverified; this is not a validation record.</source>
+        <translation>历史输出精度：尚未确认与当前模型的对应关系，不属于正式验证记录。</translation>
+    </message>
+    <message>
+        <source>Test outputs</source>
+        <translation>测试集输出</translation>
+    </message>
+    <message>
+        <source>Cannot read existing outputs: {error}</source>
+        <translation>无法读取已有输出：{error}</translation>
+    </message>
+</context>
+<context>
+    <name>ReferenceAnalysisEditor</name>
+    <message>
+        <source>Accuracy by group</source>
+        <translation>分组精度统计</translation>
+    </message>
+    <message>
+        <source>Add term</source>
+        <translation>添加组合项</translation>
+    </message>
+    <message>
+        <source>Analysis</source>
+        <translation>分析方式</translation>
+    </message>
+    <message>
+        <source>Assumption: H = sum e_i^T J_ij e_j with unit spins and a positive sign. Reports measured projections only; local-bond interpretation requires the correct periodic multiplicity.</source>
+        <translation>约定：H = Σ eᵢᵀJᵢⱼeⱼ，使用单位自旋和正号。仅报告已测方向的投影；解释为局域键参数时，须设置正确的周期相互作用重数。</translation>
+    </message>
+    <message>
+        <source>Atom index base</source>
+        <translation>原子编号起点</translation>
+    </message>
+    <message>
+        <source>Coefficient</source>
+        <translation>系数</translation>
+    </message>
+    <message>
+        <source>Cross response</source>
+        <translation>交叉响应</translation>
+    </message>
+    <message>
+        <source>Dataset role</source>
+        <translation>数据用途</translation>
+    </message>
+    <message>
+        <source>Development validation</source>
+        <translation>开发验证</translation>
+    </message>
+    <message>
+        <source>Each metadata frame_id must identify exactly one frame.</source>
+        <translation>元数据中的每个 frame_id 必须唯一对应一个帧。</translation>
+    </message>
+    <message>
+        <source>Element symbol</source>
+        <translation>元素符号</translation>
+    </message>
+    <message>
+        <source>Empty: use energy or virial/stress labels</source>
+        <translation>留空时读取能量或 virial/应力标签</translation>
+    </message>
+    <message>
+        <source>Energy unit</source>
+        <translation>能量单位</translation>
+    </message>
+    <message>
+        <source>Explicitly exclude incomplete or invalid groups</source>
+        <translation>明确排除不完整或无效的组</translation>
+    </message>
+    <message>
+        <source>Extract bilinear unit-spin exchange projections</source>
+        <translation>提取单位自旋双线性交换投影</translation>
+    </message>
+    <message>
+        <source>Fill every combination state and coefficient.</source>
+        <translation>请填写每个组合状态及其系数。</translation>
+    </message>
+    <message>
+        <source>Four-state response</source>
+        <translation>四态响应</translation>
+    </message>
+    <message>
+        <source>Four-state response reports a signed energy combination, not an assumed J/D Hamiltonian parameter. Cross response uses binary states 0/1. Stress and pressure are in GPa; reference conversion is explicit.</source>
+        <translation>四态响应默认报告有符号能量组合；提取 J/D 投影需另外声明模型约定。交叉响应使用 0/1 二态，应力和压力使用 GPa，参考单位换算须明确设置。</translation>
+    </message>
+    <message>
+        <source>Group fields</source>
+        <translation>分组字段</translation>
+    </message>
+    <message>
+        <source>Grouping fields, separated by commas; empty means one group</source>
+        <translation>分组字段以逗号分隔；留空时整个文件为一组</translation>
+    </message>
+    <message>
+        <source>Grouping metadata mapped to {count} frames. Source structures and labels are unchanged.</source>
+        <translation>已为 {count} 帧映射分组元数据，原始结构和标签保持不变。</translation>
+    </message>
+    <message>
+        <source>Import grouping metadata</source>
+        <translation>导入分组元数据</translation>
+    </message>
+    <message>
+        <source>Import grouping metadata CSV…</source>
+        <translation>导入分组元数据 CSV…</translation>
+    </message>
+    <message>
+        <source>Interaction multiplicity</source>
+        <translation>相互作用重数</translation>
+    </message>
+    <message>
+        <source>Join by frame_index (zero based) or a unique frame_id. Other columns define grouping or scan metadata, not calculation labels.</source>
+        <translation>通过从 0 起的 frame_index 或唯一的 frame_id 匹配帧；其他列定义分组或扫描元数据，不修改计算标签。</translation>
+    </message>
+    <message>
+        <source>Metadata CSV needs frame_index (zero based) or frame_id.</source>
+        <translation>元数据 CSV 需要 frame_index（从 0 起）或 frame_id 列。</translation>
+    </message>
+    <message>
+        <source>Metadata contains duplicate or out-of-range frame indices.</source>
+        <translation>元数据包含重复或超出范围的帧编号。</translation>
+    </message>
+    <message>
+        <source>Not declared</source>
+        <translation>未声明</translation>
+    </message>
+    <message>
+        <source>Ordered atom-pair fields</source>
+        <translation>有序原子对字段</translation>
+    </message>
+    <message>
+        <source>Per atom</source>
+        <translation>每原子</translation>
+    </message>
+    <message>
+        <source>Per cell</source>
+        <translation>每晶胞</translation>
+    </message>
+    <message>
+        <source>Per selected element</source>
+        <translation>按所选元素原子数</translation>
+    </message>
+    <message>
+        <source>Reference conversion factor</source>
+        <translation>参考值换算系数</translation>
+    </message>
+    <message>
+        <source>Reference field (optional)</source>
+        <translation>参考字段（可选）</translation>
+    </message>
+    <message>
+        <source>Reference scan</source>
+        <translation>参考扫描曲线</translation>
+    </message>
+    <message>
+        <source>Reference state</source>
+        <translation>参考态</translation>
+    </message>
+    <message>
+        <source>Remove term</source>
+        <translation>移除组合项</translation>
+    </message>
+    <message>
+        <source>Scan axis</source>
+        <translation>扫描坐标轴</translation>
+    </message>
+    <message>
+        <source>Second axis (optional)</source>
+        <translation>第二坐标轴（可选）</translation>
+    </message>
+    <message>
+        <source>Signed state combination</source>
+        <translation>有符号状态组合</translation>
+    </message>
+    <message>
+        <source>State energy differences</source>
+        <translation>状态能差</translation>
+    </message>
+    <message>
+        <source>State fields</source>
+        <translation>状态字段</translation>
+    </message>
+    <message>
+        <source>State fields, separated by commas</source>
+        <translation>状态字段以逗号分隔</translation>
+    </message>
+    <message>
+        <source>State values (comma separated)</source>
+        <translation>状态值（逗号分隔）</translation>
+    </message>
+    <message>
+        <source>Subtract the reference-curve minimum from both curves</source>
+        <translation>两条曲线均减去参考曲线的最低点能量</translation>
+    </message>
+    <message>
+        <source>Training regression</source>
+        <translation>训练回归</translation>
+    </message>
+    <message>
+        <source>Validation (user declared)</source>
+        <translation>验证集（用户声明）</translation>
+    </message>
+    <message>
+        <source>Quantity</source>
+        <translation>物理量</translation>
+    </message>
+    <message>
+        <source>Normalization</source>
+        <translation>归一化方式</translation>
+    </message>
+    <message>
+        <source>Element</source>
+        <translation>元素</translation>
+    </message>
+
+
+    <message>
+        <source>Metadata CSV column names must be unique.</source>
+        <translation>元数据 CSV 的列名不能重复。</translation>
+    </message>
+    <message>
+        <source>Metadata CSV rows must match the header columns.</source>
+        <translation>元数据 CSV 的每行必须与表头列数一致。</translation>
+    </message>
+    <message>
+        <source>Every metadata row needs a frame index or ID.</source>
+        <translation>每行元数据必须提供帧编号或 ID。</translation>
+    </message>
+
+    <message>
+        <source>Energy</source>
+        <translation>能量</translation>
+    </message>
+    <message>
+        <source>Pressure</source>
+        <translation>压力</translation>
+    </message>
+    <message>
+        <source>Stress</source>
+        <translation>应力</translation>
+    </message>
+
+</context>
+<context>
+    <name>ReferenceBatchDialog</name>
+    <message>
+        <source>Accuracy by group</source>
+        <translation>分组精度统计</translation>
+    </message>
+    <message>
+        <source>Analysis</source>
+        <translation>分析方式</translation>
+    </message>
+    <message>
+        <source>Checks / dataset role</source>
+        <translation>检查结果 / 数据用途</translation>
+    </message>
+    <message>
+        <source>Choose or name a validation plan</source>
+        <translation>选择验证方案或输入新名称</translation>
+    </message>
+    <message>
+        <source>Cross response</source>
+        <translation>交叉响应</translation>
+    </message>
+    <message>
+        <source>Development validation</source>
+        <translation>开发验证</translation>
+    </message>
+    <message>
+        <source>For multiple EOS groups, use the single-file importer.</source>
+        <translation>请使用单文件导入窗口拆分多个 EOS 组。</translation>
+    </message>
+    <message>
+        <source>Four-state response</source>
+        <translation>四态响应</translation>
+    </message>
+    <message>
+        <source>Frames</source>
+        <translation>帧数</translation>
+    </message>
+    <message>
+        <source>Groups</source>
+        <translation>组数</translation>
+    </message>
+    <message>
+        <source>Import</source>
+        <translation>导入</translation>
+    </message>
+    <message>
+        <source>Import / file</source>
+        <translation>导入 / 文件</translation>
+    </message>
+    <message>
+        <source>Import reference datasets</source>
+        <translation>导入参考数据集</translation>
+    </message>
+    <message>
+        <source>Inspecting reference datasets in the background; no predictions are run.</source>
+        <translation>正在后台检查参考数据集，不运行模型预测。</translation>
+    </message>
+    <message>
+        <source>Not declared</source>
+        <translation>未声明</translation>
+    </message>
+    <message>
+        <source>Overlap found</source>
+        <translation>发现数据重叠</translation>
+    </message>
+    <message>
+        <source>Overlap within this batch (same ordered inputs / geometry):</source>
+        <translation>本批数据重叠（相同有序输入 / 几何）：</translation>
+    </message>
+    <message>
+        <source>Reference scan</source>
+        <translation>参考扫描曲线</translation>
+    </message>
+    <message>
+        <source>Review analysis mappings and dataset roles. Invalid files are not selected automatically.</source>
+        <translation>请核对分析字段和数据用途，无效文件不会自动勾选。</translation>
+    </message>
+    <message>
+        <source>Review selected dataset…</source>
+        <translation>检查所选数据集…</translation>
+    </message>
+    <message>
+        <source>Signed state combination</source>
+        <translation>有符号状态组合</translation>
+    </message>
+    <message>
+        <source>State energy differences</source>
+        <translation>状态能差</translation>
+    </message>
+    <message>
+        <source>Training regression</source>
+        <translation>训练回归</translation>
+    </message>
+    <message>
+        <source>Use these settings</source>
+        <translation>使用这些设置</translation>
+    </message>
+    <message>
+        <source>Validation (user declared)</source>
+        <translation>验证集（用户声明）</translation>
+    </message>
+
+
+
+    <message>
+        <source>Cancel</source>
+        <translation>取消</translation>
+    </message>
+
+
+    <message>
+        <source>Use source folders as topics</source>
+        <translation>按来源文件夹创建主题</translation>
+    </message>
+
+</context>
+<context>
+    <name>ValidationWorkspace</name>
+    <message>
+        <source>Accuracy by group</source>
+        <translation>分组精度</translation>
+    </message>
+    <message>
+        <source>Add existing items…</source>
+        <translation>添加已有验证项…</translation>
+    </message>
+    <message>
+        <source>Add existing validation items</source>
+        <translation>添加已有验证项</translation>
+    </message>
+    <message>
+        <source>Add reference data…</source>
+        <translation>添加参考数据…</translation>
+    </message>
+    <message>
+        <source>All topics</source>
+        <translation>全部主题</translation>
+    </message>
+    <message>
+        <source>Analysis</source>
+        <translation>分析方式</translation>
+    </message>
+    <message>
+        <source>Archive references</source>
+        <translation>归档验证项</translation>
+    </message>
+    <message>
+        <source>Archive unshared items</source>
+        <translation>归档未共享的验证项</translation>
+    </message>
+    <message>
+        <source>Archive {count} items and remove their current memberships? References shared by another suite cannot be archived. Snapshots and history are retained.</source>
+        <translation>归档 {count} 项并从当前套件移除？其他套件仍在引用的项目不能归档；数据快照和评估历史会保留。</translation>
+    </message>
+    <message>
+        <source>Archived</source>
+        <translation>已归档</translation>
+    </message>
+    <message>
+        <source>Baseline</source>
+        <translation>基准</translation>
+    </message>
+    <message>
+        <source>Check visible items</source>
+        <translation>勾选当前列表</translation>
+    </message>
+    <message>
+        <source>Clear checks</source>
+        <translation>清空勾选</translation>
+    </message>
+    <message>
+        <source>Computed</source>
+        <translation>已计算</translation>
+    </message>
+    <message>
+        <source>Cross response</source>
+        <translation>交叉响应</translation>
+    </message>
+    <message>
+        <source>Current model metric</source>
+        <translation>当前模型指标</translation>
+    </message>
+    <message>
+        <source>Development validation</source>
+        <translation>开发验证</translation>
+    </message>
+    <message>
+        <source>Done {done}/{total}</source>
+        <translation>已计算 {done}/{total}</translation>
+    </message>
+    <message>
+        <source>Edit analysis version…</source>
+        <translation>编辑分析版本…</translation>
+    </message>
+    <message>
+        <source>Error</source>
+        <translation>错误信息</translation>
+    </message>
+    <message>
+        <source>Evaluate checked items</source>
+        <translation>评估勾选项</translation>
+    </message>
+    <message>
+        <source>Failed</source>
+        <translation>失败</translation>
+    </message>
+    <message>
+        <source>Four-state response</source>
+        <translation>四态响应</translation>
+    </message>
+    <message>
+        <source>Frames</source>
+        <translation>帧数</translation>
+    </message>
+    <message>
+        <source>Group by source folders</source>
+        <translation>按来源目录整理</translation>
+    </message>
+    <message>
+        <source>Item details</source>
+        <translation>验证项详情</translation>
+    </message>
+    <message>
+        <source>Item name</source>
+        <translation>验证项名称</translation>
+    </message>
+    <message>
+        <source>Items</source>
+        <translation>验证项数</translation>
+    </message>
+    <message>
+        <source>Manage selected items</source>
+        <translation>管理所选验证项</translation>
+    </message>
+    <message>
+        <source>Model</source>
+        <translation>模型</translation>
+    </message>
+    <message>
+        <source>Move to topic</source>
+        <translation>移动到主题</translation>
+    </message>
+    <message>
+        <source>Move to topic…</source>
+        <translation>移动到主题…</translation>
+    </message>
+    <message>
+        <source>New suite</source>
+        <translation>新建套件</translation>
+    </message>
+    <message>
+        <source>New topic</source>
+        <translation>新建主题</translation>
+    </message>
+    <message>
+        <source>Not declared</source>
+        <translation>用途未声明</translation>
+    </message>
+    <message>
+        <source>Not run</source>
+        <translation>未运行</translation>
+    </message>
+    <message>
+        <source>Open details</source>
+        <translation>查看详情</translation>
+    </message>
+    <message>
+        <source>Overview</source>
+        <translation>套件总览</translation>
+    </message>
+    <message>
+        <source>Recorded at</source>
+        <translation>记录时间</translation>
+    </message>
+    <message>
+        <source>Reference scan</source>
+        <translation>参考扫描</translation>
+    </message>
+    <message>
+        <source>Remove from this suite</source>
+        <translation>从当前套件移除</translation>
+    </message>
+    <message>
+        <source>Remove topic</source>
+        <translation>移除主题（保留验证项）</translation>
+    </message>
+    <message>
+        <source>Remove {count} items? Other suites, source files and historical evaluations are preserved.</source>
+        <translation>从当前套件移除 {count} 项？其他套件、源文件和评估历史均保留。</translation>
+    </message>
+    <message>
+        <source>Rename in this suite</source>
+        <translation>在当前套件内改名</translation>
+    </message>
+    <message>
+        <source>Rename in this suite…</source>
+        <translation>在当前套件内改名…</translation>
+    </message>
+    <message>
+        <source>Rename topic</source>
+        <translation>重命名主题</translation>
+    </message>
+    <message>
+        <source>Rename topic…</source>
+        <translation>重命名主题…</translation>
+    </message>
+    <message>
+        <source>Role</source>
+        <translation>数据用途</translation>
+    </message>
+    <message>
+        <source>Run history</source>
+        <translation>运行记录</translation>
+    </message>
+    <message>
+        <source>Save analysis version</source>
+        <translation>保存分析版本</translation>
+    </message>
+    <message>
+        <source>Search names or original source paths</source>
+        <translation>搜索名称或原始来源路径</translation>
+    </message>
+    <message>
+        <source>Session only</source>
+        <translation>当前会话</translation>
+    </message>
+    <message>
+        <source>Signed combination</source>
+        <translation>有符号组合</translation>
+    </message>
+    <message>
+        <source>State differences</source>
+        <translation>状态能差</translation>
+    </message>
+    <message>
+        <source>Status</source>
+        <translation>计算状态</translation>
+    </message>
+    <message>
+        <source>Suite name</source>
+        <translation>套件名称</translation>
+    </message>
+    <message>
+        <source>Topic</source>
+        <translation>物理主题</translation>
+    </message>
+    <message>
+        <source>Topic name</source>
+        <translation>主题名称</translation>
+    </message>
+    <message>
+        <source>Training regression</source>
+        <translation>训练回归</translation>
+    </message>
+    <message>
+        <source>Ungrouped</source>
+        <translation>未分组</translation>
+    </message>
+    <message>
+        <source>Unsupported</source>
+        <translation>不支持</translation>
+    </message>
+    <message>
+        <source>Validation (declared)</source>
+        <translation>验证集（用户声明）</translation>
+    </message>
+    <message>
+        <source>Validation item</source>
+        <translation>验证项</translation>
+    </message>
+    <message>
+        <source>Validation items</source>
+        <translation>验证项列表</translation>
+    </message>
+    <message>
+        <source>Validation suites</source>
+        <translation>验证套件</translation>
+    </message>
+    <message>
+        <source>{count} failed</source>
+        <translation>失败 {count} 项</translation>
+    </message>
+    <message>
+        <source>{count} regressed</source>
+        <translation>指标退化 {count} 项</translation>
+    </message>
+    <message>
+        <source>{count} unsupported</source>
+        <translation>不支持 {count} 项</translation>
+    </message>
+    <message>
+        <source>{visible} visible · {checked} checked across topics. Viewing details does not change run targets.</source>
+        <translation>当前显示 {visible} 项 · 跨主题勾选 {checked} 项；查看详情不会改变运行范围。</translation>
+    </message>
+    <message>
+        <source>Use source folders as topics</source>
+        <translation>按来源文件夹创建主题</translation>
+    </message>
+    <message>
+        <source>A topic needs a name of at most 200 characters.</source>
+        <translation>主题名称不能为空，且最多 200 个字符。</translation>
+    </message>
+    <message>
+        <source>Save this validation suite before managing its topics.</source>
+        <translation>请先保存验证套件，再管理主题。</translation>
+    </message>
+    <message>
+        <source>Some selected items no longer belong to this suite.</source>
+        <translation>部分所选验证项已不在当前套件中。</translation>
+    </message>
+    <message>
+        <source>The topic does not belong to this suite.</source>
+        <translation>该主题不属于当前套件。</translation>
+    </message>
+    <message>
+        <source>A topic with this name already exists.</source>
+        <translation>当前套件已有同名主题。</translation>
+    </message>
+    <message>
+        <source>A validation item needs a name.</source>
+        <translation>验证项名称不能为空。</translation>
+    </message>
+    <message>
+        <source>The replacement reference does not exist.</source>
+        <translation>用于替换的验证项不存在。</translation>
+    </message>
+    <message>
+        <source>This analysis already belongs to the current suite.</source>
+        <translation>当前套件中已经包含此分析。</translation>
+    </message>
+    <message>
+        <source>The destination suite no longer exists.</source>
+        <translation>目标套件已不存在。</translation>
+    </message>
+    <message>
+        <source>The reference no longer exists.</source>
+        <translation>参考验证项已不存在。</translation>
+    </message>
+    <message>
+        <source>This reference is used by other suites; remove it from the current suite instead.</source>
+        <translation>其他套件仍在引用此验证项；可先选择从当前套件移除。</translation>
+    </message>
+
+    <message>
+        <source>This item selects an EOS subgroup. Keep its protocol when editing; create a new reference item for a different analysis.</source>
+        <translation>此验证项引用一个 EOS 子组。编辑时保留协议；其他分析请另建验证项。</translation>
     </message>
 </context>
 </TS>

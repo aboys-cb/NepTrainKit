@@ -17,14 +17,18 @@ from pathlib import Path
 
 from sqlalchemy import delete, select, func
 
+from .protocols import protocol_for_set
+
 from NepTrainKit.core.dataset.models import (
     BenchmarkRun,
     BenchmarkSet,
     BenchmarkSuite,
     BenchmarkSuiteSet,
+    BenchmarkSuiteGroup,
     ModelVersion,
     Project,
     StorageRef,
+    Event,
 )
 
 from .grouping import eos_frame_groups
@@ -64,7 +68,41 @@ def parse_model_header(data: bytes) -> tuple[str, tuple[str, ...]]:
         raise ValueError("The NEP model header does not list its elements.") from None
     if len(elements) != count:
         raise ValueError("The NEP model header does not list its elements.")
-    return line[0], elements
+    kind = line[0]
+    if kind == "nep":
+        for header_line in data[:4096].decode("utf-8", "replace").splitlines()[1:]:
+            tokens = header_line.split()
+            if tokens[:1] == ["model"] and len(tokens) == 2:
+                kind = tokens[1]
+                break
+    return kind, elements
+
+
+def find_model_files(path: str | Path) -> list[Path]:
+    """Recognise local TXT model headers; prefer a folder's valid nep.txt."""
+    path = Path(path).expanduser()
+    try:
+        candidates = sorted(
+            path.iterdir() if path.is_dir() else [path],
+            key=lambda item: (item.name.lower() != "nep.txt", item.name.lower()),
+        )
+    except OSError:
+        return []
+    models = []
+    for candidate in candidates:
+        if candidate.suffix.lower() != ".txt" or not candidate.is_file():
+            continue
+        try:
+            with candidate.open("rb") as handle:
+                _, elements = parse_model_header(handle.readline(4096))
+            if not elements:
+                continue
+        except (OSError, ValueError):
+            continue
+        models.append(candidate.resolve())
+        if candidate.name.lower() == "nep.txt":
+            return models
+    return models
 
 
 def _record(row) -> dict:
@@ -243,6 +281,31 @@ class ValidationService:
             project_id = project.id
         return self.capture_model(draft, project_id=project_id, name=name, auto=False)
 
+    def save_imported_accuracy(self, model_id: int, summary: dict) -> dict:
+        """Keep existing-output statistics in project metadata, separate from validation runs."""
+        with self.db.write_session() as session:
+            row = session.get(ModelVersion, model_id)
+            if row is None or row.content_hash != summary.get("model_sha256"):
+                raise ValueError("Imported output statistics do not match the saved model snapshot.")
+            metrics = summary.get("metrics", {})
+            if (summary.get("status") not in {"verified", "unverified"}
+                    or not any(value is not None for value in metrics.values()) or not _finite_metrics(metrics)):
+                raise ValueError("No usable existing-output statistics are available for this model.")
+            row.energy = summary["metrics"].get("energy_rmse")
+            row.force = summary["metrics"].get("force_rmse")
+            row.virial = summary["metrics"].get("virial_rmse")
+            session.add(Event(entity_type="model_version", entity_id=model_id, action="import_accuracy",
+                              payload_json=summary))
+            session.commit()
+            return _record(row)
+
+    def imported_accuracy(self, model_id: int) -> dict:
+        with self.db.session() as session:
+            event = session.scalars(select(Event).where(
+                Event.entity_type == "model_version", Event.entity_id == model_id, Event.action == "import_accuracy"
+            ).order_by(Event.id.desc())).first()
+            return dict(event.payload_json) if event else {}
+
     def projects(self) -> list[dict]:
         with self.db.session() as session:
             return [_record(row) for row in session.scalars(select(Project).order_by(Project.name))]
@@ -344,11 +407,12 @@ class ValidationService:
         max_bytes: int = DEFAULT_MAX_SET_BYTES,
         allow_large: bool = False,
         expected_hash: str | None = None,
+        analysis: dict | None = None,
     ) -> dict:
         """Seal an EXTXYZ with optional provenance; never infer that labels are DFT."""
         return self._import_sets(
             path, name=name, provenance=provenance, protocol=protocol,
-            max_bytes=max_bytes, allow_large=allow_large, expected_hash=expected_hash,
+            max_bytes=max_bytes, allow_large=allow_large, expected_hash=expected_hash, analysis=analysis,
         )[0]
 
     def import_eos_groups(
@@ -368,7 +432,7 @@ class ValidationService:
 
     def _import_sets(
         self, path, *, name, provenance, protocol, max_bytes, allow_large,
-        group_field=None, group_names=None, expected_hash=None,
+        group_field=None, group_names=None, expected_hash=None, analysis=None, prepare_only=False,
     ) -> list[dict]:
         if not name.strip():
             raise ValueError("A benchmark set needs a name.")
@@ -388,7 +452,9 @@ class ValidationService:
                 raise ValueError("No validation protocol recognises this file.")
             chosen = ranked[0][1]
         else:
-            chosen = get_protocol(protocol)
+            chosen = get_protocol(protocol, analysis=analysis)
+        if analysis is not None and chosen.kind != "response":
+            raise ValueError("Analysis settings require the reference response protocol.")
         if group_field is None:
             selections = [(name.strip(), frames, None)]
         else:
@@ -412,28 +478,54 @@ class ValidationService:
             prepared.append((set_name, summary, elements, selection))
         source_ref = FileRef.of(path).to_dict()
         clean_provenance = {key: value for key, value in sorted(provenance.items()) if value not in ("", None)}
+        package = dict(data=data, chosen=chosen, prepared=prepared, source_ref=source_ref, clean_provenance=clean_provenance)
+        if prepare_only:
+            return package
         with self.db.write_session() as session:
-            object_hash = self.library.put_bytes(data)
-            records = []
-            for set_name, summary, elements, selection in prepared:
-                identity = [object_hash, chosen.kind, chosen.version, clean_provenance]
-                reference = dict(source_ref)
-                if selection is not None:
-                    identity.append(selection)
-                    reference["eos_group"] = selection
-                key = sha256_bytes(json.dumps(identity, sort_keys=True).encode())
-                row = session.get(BenchmarkSet, key)
-                if row is None:
-                    row = BenchmarkSet(
-                        id=key, name=set_name, protocol=chosen.kind,
-                        protocol_version=chosen.version, object_hash=object_hash,
-                        source_ref=reference, elements=elements,
-                        provenance=clean_provenance, summary=summary,
-                    )
-                    session.add(row)
-                records.append(row)
+            records = self._seal_references(session, package)
             session.commit()
             return [_record(row) for row in records]
+
+    def _seal_references(self, session, package):
+        data, chosen, prepared, source_ref, clean_provenance = (package[key] for key in
+            ('data', 'chosen', 'prepared', 'source_ref', 'clean_provenance'))
+        object_hash = self.library.put_bytes(data)
+        records = []
+        for set_name, summary, elements, selection in prepared:
+            identity = [object_hash, chosen.kind, chosen.version, clean_provenance]
+            reference = dict(source_ref)
+            if chosen.kind == "response":
+                reference["analysis"] = chosen.spec.to_dict()
+                identity.append(reference["analysis"])
+            if selection is not None:
+                identity.append(selection)
+                reference["eos_group"] = selection
+            key = sha256_bytes(json.dumps(identity, sort_keys=True).encode())
+            row = session.get(BenchmarkSet, key)
+            if row is None:
+                row = BenchmarkSet(
+                    id=key, name=set_name, protocol=chosen.kind,
+                    protocol_version=chosen.version, object_hash=object_hash,
+                    source_ref=reference, elements=elements,
+                    provenance=clean_provenance, summary=summary,
+                )
+                session.add(row)
+                session.flush()
+            records.append(row)
+        return records
+
+    def import_reference_batch(self, entries):
+        """Validate every reviewed file before registering the batch atomically."""
+        packages = [self._import_sets(entry['path'], name=entry['name'], provenance=entry.get('provenance', {}),
+                    protocol=entry['protocol'], analysis=entry.get('analysis'), expected_hash=entry['expected_hash'],
+                    max_bytes=DEFAULT_MAX_SET_BYTES, allow_large=entry.get('allow_large', False), prepare_only=True)
+                    for entry in entries]
+        if not packages:
+            raise ValueError("Select at least one reference dataset.")
+        with self.db.write_session() as session:
+            rows = [row for package in packages for row in self._seal_references(session, package)]
+            session.commit()
+            return [_record(row) for row in rows]
 
     def get_set(self, set_id: str) -> dict:
         if set_id in self._temporary_sets:
@@ -561,7 +653,8 @@ class ValidationService:
 
     def _add_to_suite(self, session, suite_id, set_ids):
         existing = set(session.scalars(select(BenchmarkSuiteSet.set_id).where(BenchmarkSuiteSet.suite_id == suite_id)))
-        position = len(existing)
+        last_position = session.scalar(select(func.max(BenchmarkSuiteSet.position)).where(BenchmarkSuiteSet.suite_id == suite_id))
+        position = last_position + 1 if last_position is not None else 0
         for set_id in dict.fromkeys(set_ids):
             if set_id in existing:
                 continue
@@ -594,6 +687,142 @@ class ValidationService:
                 .order_by(BenchmarkSuiteSet.position)
             ).scalars()
             return [_record(row) for row in rows]
+
+    def suite_groups(self, suite_id):
+        if suite_id in self._temporary_suites:
+            return []
+        with self.db.session() as session:
+            return [_record(row) for row in session.scalars(select(BenchmarkSuiteGroup).where(
+                BenchmarkSuiteGroup.suite_id == suite_id).order_by(BenchmarkSuiteGroup.position, BenchmarkSuiteGroup.id))]
+
+    def create_group(self, suite_id, name):
+        name = name.strip()
+        if not name or len(name) > 200:
+            raise ValueError("A topic needs a name of at most 200 characters.")
+        with self.db.write_session() as session:
+            if session.get(BenchmarkSuite, suite_id) is None:
+                raise ValueError("Save this validation suite before managing its topics.")
+            row = session.scalar(select(BenchmarkSuiteGroup).where(BenchmarkSuiteGroup.suite_id == suite_id, BenchmarkSuiteGroup.name == name))
+            if row is None:
+                row = BenchmarkSuiteGroup(suite_id=suite_id, name=name, position=len(self.suite_groups(suite_id)))
+                session.add(row); session.flush()
+            return _record(row)
+
+    def suite_items(self, suite_id):
+        records = self.suite_sets(suite_id)
+        if suite_id in self._temporary_suites:
+            return [dict(row, group_id=None, group_name="") for row in records]
+        with self.db.session() as session:
+            links = {row.set_id: row for row in session.scalars(select(BenchmarkSuiteSet).where(BenchmarkSuiteSet.suite_id == suite_id))}
+            groups = {row.id: row.name for row in session.scalars(select(BenchmarkSuiteGroup).where(BenchmarkSuiteGroup.suite_id == suite_id))}
+            return [dict(row, name=links[row['id']].display_name or row['name'],
+                         group_id=links[row['id']].group_id, group_name=groups.get(links[row['id']].group_id, '')) for row in records]
+
+    @staticmethod
+    def _suite_links(session, suite_id, set_ids):
+        ids = list(dict.fromkeys(set_ids))
+        links = list(session.scalars(select(BenchmarkSuiteSet).where(BenchmarkSuiteSet.suite_id == suite_id, BenchmarkSuiteSet.set_id.in_(ids))))
+        if not ids or len(links) != len(ids):
+            raise ValueError("Some selected items no longer belong to this suite.")
+        return links
+
+    def assign_group(self, suite_id, set_ids, group_id):
+        with self.db.write_session() as session:
+            group = session.get(BenchmarkSuiteGroup, group_id) if group_id is not None else None
+            if group_id is not None and (group is None or group.suite_id != suite_id):
+                raise ValueError("The topic does not belong to this suite.")
+            for link in self._suite_links(session, suite_id, set_ids):
+                link.group_id = group_id
+
+    def rename_group(self, suite_id, group_id, name):
+        name = name.strip()
+        if not name or len(name) > 200:
+            raise ValueError("A topic needs a name of at most 200 characters.")
+        with self.db.write_session() as session:
+            group = session.get(BenchmarkSuiteGroup, group_id)
+            if group is None or group.suite_id != suite_id:
+                raise ValueError("The topic does not belong to this suite.")
+            if session.scalar(select(BenchmarkSuiteGroup.id).where(BenchmarkSuiteGroup.suite_id == suite_id, BenchmarkSuiteGroup.name == name, BenchmarkSuiteGroup.id != group_id)):
+                raise ValueError("A topic with this name already exists.")
+            group.name = name
+
+    def remove_group(self, suite_id, group_id):
+        with self.db.write_session() as session:
+            group = session.get(BenchmarkSuiteGroup, group_id)
+            if group is None or group.suite_id != suite_id:
+                raise ValueError("The topic does not belong to this suite.")
+            session.delete(group)  # Members return to the ungrouped topic via SET NULL.
+
+    def rename_suite_item(self, suite_id, set_id, name):
+        if not name.strip():
+            raise ValueError("A validation item needs a name.")
+        with self.db.write_session() as session:
+            self._suite_links(session, suite_id, [set_id])[0].display_name = name.strip()
+
+    def remove_from_suite(self, suite_id, set_ids):
+        with self.db.write_session() as session:
+            for link in self._suite_links(session, suite_id, set_ids):
+                session.delete(link)
+
+    def replace_suite_item(self, suite_id, old_id, new_id):
+        with self.db.write_session() as session:
+            link = self._suite_links(session, suite_id, [old_id])[0]
+            if session.get(BenchmarkSet, new_id) is None:
+                raise ValueError("The replacement reference does not exist.")
+            if old_id == new_id:
+                return
+            if session.get(BenchmarkSuiteSet, (suite_id, new_id)) is not None:
+                raise ValueError("This analysis already belongs to the current suite.")
+            session.add(BenchmarkSuiteSet(suite_id=suite_id, set_id=new_id, group_id=link.group_id,
+                                         display_name=link.display_name, position=link.position))
+            session.delete(link)
+
+    def add_existing_references(self, suite_id, set_ids, *, group_id=None):
+        ids = list(dict.fromkeys(set_ids))
+        with self.db.write_session() as session:
+            if session.get(BenchmarkSuite, suite_id) is None:
+                raise ValueError("The destination suite no longer exists.")
+            group = session.get(BenchmarkSuiteGroup, group_id) if group_id is not None else None
+            if group_id is not None and (group is None or group.suite_id != suite_id):
+                raise ValueError("The topic does not belong to this suite.")
+            rows = [session.get(BenchmarkSet, key) for key in ids]
+            if any(row is None for row in rows):
+                raise ValueError("The reference no longer exists.")
+            before = set(session.scalars(select(BenchmarkSuiteSet.set_id).where(BenchmarkSuiteSet.suite_id == suite_id)))
+            self._add_to_suite(session, suite_id, ids)
+            session.flush()
+            for row in rows:
+                row.archived = False
+                if row.id not in before:
+                    session.get(BenchmarkSuiteSet, (suite_id, row.id)).group_id = group_id
+
+    def reference_usage(self, set_id):
+        with self.db.session() as session:
+            return [dict(id=row.id, name=row.name) for row in session.scalars(select(BenchmarkSuite).join(
+                BenchmarkSuiteSet, BenchmarkSuite.id == BenchmarkSuiteSet.suite_id).where(BenchmarkSuiteSet.set_id == set_id))]
+
+    def archive_reference(self, suite_id, set_ids):
+        with self.db.write_session() as session:
+            links = self._suite_links(session, suite_id, set_ids)
+            for link in links:
+                if session.scalar(select(BenchmarkSuiteSet.suite_id).where(BenchmarkSuiteSet.set_id == link.set_id, BenchmarkSuiteSet.suite_id != suite_id)) is not None:
+                    raise ValueError("This reference is used by other suites; remove it from the current suite instead.")
+            for link in links:
+                session.get(BenchmarkSet, link.set_id).archived = True
+                session.delete(link)
+
+    def restore_reference(self, set_id):
+        with self.db.write_session() as session:
+            row = session.get(BenchmarkSet, set_id)
+            if row is None:
+                raise ValueError("The reference no longer exists.")
+            row.archived = False
+
+    def reference_history(self, set_ids):
+        with self.db.session() as session:
+            saved = [_record(row) for row in session.scalars(select(BenchmarkRun).where(
+                BenchmarkRun.set_id.in_(set_ids)).order_by(BenchmarkRun.created_at.desc(), BenchmarkRun.id.desc()))]
+        return [dict(run) for (_, key), run in self._temporary_runs.items() if key in set_ids] + saved
 
     def set_baseline(self, suite_id: int, model_id: int | None, note: str = "") -> None:
         if suite_id in self._temporary_suites:
@@ -633,24 +862,26 @@ class ValidationService:
             row = session.scalars(query.order_by(BenchmarkRun.created_at.desc())).first()
             return _record(row) if row is not None else None
 
-    def evaluate(self, model_id: int, set_id: str, *, force: bool = False) -> dict:
-        """Reuse results only for matching model, set, protocol and runtime; keep failures."""
+    def evaluate(self, model_id: int, set_id: str, *, force: bool = False,
+                 cache_directory: str | Path | None = None) -> dict:
+        """Evaluate immutable inputs, optionally importing fully verified official outputs."""
         model = self.get_model(model_id)
         benchmark = self.get_set(set_id)
-        protocol = get_protocol(benchmark["protocol"])
-        cached = None
-        if not force:
-            cached = self.latest_run(model_id, set_id, protocol_version=protocol.version)
+        protocol = protocol_for_set(benchmark)
+        if cache_directory is not None and protocol.kind != "efv":
+            raise ValueError("Official output caches are supported only for accuracy evaluation.")
+        cached = None if force else self.latest_run(model_id, set_id, protocol_version=protocol.version)
         run_id = uuid.uuid4().hex
         start = time.monotonic()
         environment = {
-            "protocol": protocol.kind,
-            "requested_backend": self.backend,
-            "mode": protocol.mode,
+            "protocol": protocol.kind, "requested_backend": self.backend, "mode": protocol.mode,
             "neptrainkit": _package_version("NepTrainKit"),
             "nep_adapters": _package_version("nep-adapters"),
-            "ase": _package_version("ase"),
-            "numpy": _package_version("numpy"),
+            "ase": _package_version("ase"), "numpy": _package_version("numpy"),
+            "model_sha256": model["content_hash"], "dataset_sha256": benchmark["object_hash"],
+            "selection": (benchmark.get("source_ref") or {}).get("eos_group"),
+            "analysis": (benchmark.get("source_ref") or {}).get("analysis"),
+            "reference_label_counts": benchmark.get("summary", {}).get("label_counts", {}),
         }
         status, metrics, error, result_path = "failed", {}, "", ""
         reason = protocol.supports(self.capabilities(model))
@@ -660,25 +891,77 @@ class ValidationService:
             status, error = "unsupported", reason
         else:
             predictor = None
+            cache_warning = None
             try:
                 model_path = self.model_file(model_id)
-                predictor = self.predictor_factory(model_path, self.backend)
-                environment["backend"] = str(getattr(predictor, "backend", self.backend))
-                if protocol.kind == "diagnostic":
-                    environment["model_capabilities"] = sorted(getattr(getattr(predictor, "model_info", None), "capability_names", ()))
-                # Resolve Auto before cache reuse: CPU and CUDA are different experiments.
-                if (
-                    cached and cached["status"] == "succeeded"
-                    and _finite_metrics(cached["metrics"])
-                    and cached["environment"] == environment
-                ):
-                    return cached
-                frames = self.set_frames(set_id)
-                evaluation = protocol.evaluate(predictor, frames)
+                # A cache hit must not conceal a damaged or missing sealed dataset.
+                if set_id not in self._temporary_data:
+                    self.library.open_object(benchmark["object_hash"])
+                frames, evaluation = None, None
+                if cache_directory is not None and not force:
+                    from NepTrainKit.core.prediction_cache import load_accuracy_cache
+                    from .accuracy import accuracy_labels, accuracy_statistics
+                    from .protocols.base import Evaluation
+                    frames = self.set_frames(set_id)
+                    labels = accuracy_labels(frames)
+                    try:
+                        values, source = load_accuracy_cache(
+                            cache_directory, model_hash=model["content_hash"],
+                            dataset_hash=benchmark["object_hash"], labels=labels,
+                        )
+                        metrics, details = accuracy_statistics(labels, values)
+                        details["prediction_source"] = source
+                        evaluation = Evaluation(metrics=metrics, details=details)
+                        backend_record = source.get("backend", {})
+                        environment["backend"] = (
+                            backend_record.get("resolved", "verified_cache")
+                            if isinstance(backend_record, dict) else "verified_cache"
+                        )
+                        environment["nep_adapters"] = source["nep_adapters_version"]
+                    except (OSError, ValueError, TypeError, KeyError) as exc:
+                        cache_warning = str(exc)
+                if evaluation is None:
+                    predictor = self.predictor_factory(model_path, self.backend)
+                    environment["backend"] = str(getattr(predictor, "backend", self.backend))
+                    if protocol.kind == "diagnostic":
+                        environment["model_capabilities"] = sorted(getattr(
+                            getattr(predictor, "model_info", None), "capability_names", ()))
+                    if (cache_directory is None and cached and cached["status"] == "succeeded"
+                            and _finite_metrics(cached["metrics"]) and cached["environment"] == environment):
+                        return cached
+                    if frames is None:
+                        frames = self.set_frames(set_id)
+                    if protocol.kind == "diagnostic":
+                        evaluation = protocol.evaluate(predictor, frames)
+                    else:
+                        from .predictions import CachedPrediction
+                        identity = {key: value for key, value in environment.items()
+                                    if key not in ("protocol", "mode", "analysis", "reference_label_counts")}
+                        shared = CachedPrediction(predictor, self.library.root / "cache" / "predictions", identity, refresh=force)
+                        evaluation = protocol.evaluate(shared, frames)
+                        if shared.source:
+                            evaluation.details["prediction_source"] = shared.source
                 if not _finite_metrics(evaluation.metrics):
                     raise ValueError("Validation metrics must be finite.")
                 metrics = evaluation.metrics
-                result = {"details": evaluation.details, "warnings": evaluation.warnings}
+                if protocol.kind == "efv":
+                    environment["reference_label_counts"] = {
+                        key: {field: value for field, value in count.items() if field != "evaluated_components"}
+                        for key, count in evaluation.details["label_counts"].items()
+                    }
+                selection = (benchmark.get("source_ref") or {}).get("eos_group")
+                evaluation.details["evaluation_scope"] = {
+                    "kind": "selected_dataset", "index_base": 0,
+                    "frame_indices": selection["indices"] if selection else list(range(len(frames))),
+                    "atom_counts": [len(frame) for frame in frames],
+                    "atoms": "all atoms carrying each reference quantity",
+                }
+                evaluation.details["model_sha256"] = model["content_hash"]
+                evaluation.details["dataset_sha256"] = benchmark["object_hash"]
+                warnings = list(evaluation.warnings)
+                if cache_warning:
+                    warnings.append("Cache not used; predictions recalculated: " + cache_warning)
+                result = {"details": evaluation.details, "warnings": warnings}
                 if set_id in self._temporary_sets:
                     self._temporary_results[run_id] = result
                 status = "succeeded"
@@ -686,7 +969,10 @@ class ValidationService:
                 from .protocols.diagnostic import UnsupportedDiagnostic
                 if isinstance(exc, UnsupportedDiagnostic):
                     status = "unsupported"
+                metrics = {}
                 error = str(exc) or type(exc).__name__
+                if cache_warning:
+                    error = "Cache rejected: " + cache_warning + "; " + error
             finally:
                 close = getattr(predictor, "close", None)
                 if callable(close):
@@ -699,21 +985,25 @@ class ValidationService:
             return dict(run)
         with self.db.write_session() as session:
             if status == "succeeded":
+                if protocol.kind == "efv":
+                    reference = session.get(BenchmarkSet, set_id)
+                    label_counts = {key: {field: value for field, value in count.items()
+                                          if field != "evaluated_components"}
+                                    for key, count in evaluation.details["label_counts"].items()}
+                    reference.summary = dict(
+                        reference.summary, label_counts=label_counts,
+                        has_forces=bool(label_counts["force"]["components"]),
+                        has_virials=bool(label_counts["virial"]["components"]), warnings=[],
+                    )
+                    reference.protocol_version = protocol.version
                 try:
                     result_path = self.library.write_result(run_id, result)
                 except Exception as exc:
                     status, error = "failed", str(exc) or type(exc).__name__
             row = BenchmarkRun(
-                id=run_id,
-                model_id=model_id,
-                set_id=set_id,
-                protocol_version=protocol.version,
-                status=status,
-                metrics=metrics,
-                result_path=result_path,
-                error=error,
-                environment=environment,
-                elapsed_seconds=time.monotonic() - start,
+                id=run_id, model_id=model_id, set_id=set_id, protocol_version=protocol.version,
+                status=status, metrics=metrics, result_path=result_path, error=error,
+                environment=environment, elapsed_seconds=time.monotonic() - start,
             )
             session.add(row)
             session.commit()
@@ -746,8 +1036,12 @@ class ValidationService:
         sets = self.suite_sets(suite_id) if suite_id is not None else []
         columns = []
         for benchmark in sets:
-            protocol = get_protocol(benchmark["protocol"])
+            protocol = protocol_for_set(benchmark)
             for metric in protocol.headline_metrics():
+                if metric.key == "mforce_rmse" and not benchmark.get("summary", {}).get(
+                    "label_counts", {}
+                ).get("mforce", {}).get("components", 0):
+                    continue
                 columns.append(
                     {
                         "set_id": benchmark["id"],

@@ -109,6 +109,7 @@ def redraw_diagnostics(panel):
         heading.addWidget(focus)
         layout.addLayout(heading)
         plot = panel._pg.PlotWidget(card)
+        panel._configure_subplot(plot)
         plot.setMinimumHeight(280 if focused else 175)
         plot.setBackground(palette.SURFACE)
         plot.showGrid(x=False, y=True, alpha=.09)

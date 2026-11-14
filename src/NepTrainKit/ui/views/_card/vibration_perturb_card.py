@@ -3,11 +3,12 @@
 from __future__ import annotations
 
 from PySide6.QtWidgets import QHBoxLayout, QWidget
-from qfluentwidgets import CaptionLabel, CheckBox
+from qfluentwidgets import CaptionLabel, CheckBox, ComboBox, PlainTextEdit
 
 from NepTrainKit.core import CardManager
 from NepTrainKit.core.cards.operation import params_to_dict
 from NepTrainKit.core.cards.structure import VibrationModePerturbOperation, VibrationModePerturbParams
+from NepTrainKit.ui.views._card.i18n_utils import add_translated_items, combo_value, set_combo_value
 from NepTrainKit.ui.widgets import (
     CompactField,
     InspectorSection,
@@ -170,6 +171,28 @@ class VibrationModePerturbCard(MakeDataCard):
         self.settingLayout.addWidget(frequency_section, 2, 0, 1, 3)
         self.settingLayout.addWidget(output_section, 3, 0, 1, 3)
 
+        self.sampling_combo = ComboBox(self.setting_widget)
+        self.sampling_combo.setAccessibleName(self.tr("Mode sampling"))
+        add_translated_items(self, self.sampling_combo, ["Random", "Coefficient table"])
+        sampling_field = CompactField(self.tr("Mode sampling"), self.sampling_combo, input_section)
+        input_section.addWidget(sampling_field)
+        self.coefficient_edit = PlainTextEdit(self.setting_widget)
+        self.coefficient_edit.setAccessibleName(self.tr("Coefficient table (JSON)"))
+        self.coefficient_edit.setPlainText("[[-1], [0], [1]]")
+        self.coefficient_edit.setFixedHeight(110)
+        self.coefficient_field = CompactField(
+            self.tr("Coefficient table (JSON)"), self.coefficient_edit, self.setting_widget,
+            self.tr(
+                "One row per output, one column per input mode in extraction order. "
+                "Uses raw Cartesian displacement modes without frequency weighting, normalization or wrapping."
+            ),
+        )
+        self.settingLayout.addWidget(self.coefficient_field, 4, 0, 1, 3)
+        self._random_sections = (perturb_section, frequency_section, output_section)
+        self.sampling_combo.currentIndexChanged.connect(self._update_sampling_controls)
+        self.coefficient_edit.textChanged.connect(self.refresh_compact_presentation)
+        self._update_sampling_controls()
+
         self.exclude_checkbox.toggled.connect(self._update_frequency_controls)
         self.seed_checkbox.toggled.connect(self.seed_frame.setEnabled)
         self.distribution_combo.currentIndexChanged.connect(
@@ -188,6 +211,13 @@ class VibrationModePerturbCard(MakeDataCard):
             checkbox.toggled.connect(lambda _checked: self.refresh_compact_presentation())
         self._update_frequency_controls(self.exclude_checkbox.isChecked())
 
+    def _update_sampling_controls(self, *_args) -> None:
+        deterministic = combo_value(self.sampling_combo) == "Coefficient table"
+        for section in self._random_sections:
+            section.setVisible(not deterministic)
+        self.coefficient_field.setVisible(deterministic)
+        self.refresh_compact_presentation()
+
     def _update_frequency_controls(self, enabled: bool) -> None:
         self.min_freq_frame.setEnabled(bool(enabled))
         self.min_freq_field.setToolTip(
@@ -198,6 +228,12 @@ class VibrationModePerturbCard(MakeDataCard):
 
     def get_summary_text(self) -> str:
         params = self.get_params()
+        if params.sampling_mode == "Coefficient table":
+            try:
+                rows = VibrationModePerturbOperation.parse_coefficient_table(params.coefficient_table)
+                return self.tr("{count} coefficient rows · {modes} modes").format(count=len(rows), modes=rows.shape[1])
+            except ValueError:
+                return self.tr("Invalid coefficient table")
         distribution = self.tr("Normal") if params.distribution == 0 else self.tr("Uniform")
         parts = [
             self.tr("{distribution} · scale {scale} · {modes} modes").format(
@@ -217,6 +253,11 @@ class VibrationModePerturbCard(MakeDataCard):
 
     def get_guidance_text(self) -> str:
         params = self.get_params()
+        if params.sampling_mode == "Coefficient table":
+            return self.tr(
+                "Each row gives an exact linear combination of the supplied displacement modes. "
+                "A zero row preserves the input positions; no frequency data is required."
+            )
         notes = []
         if self._preview_input_count:
             notes.append(
@@ -244,6 +285,8 @@ class VibrationModePerturbCard(MakeDataCard):
 
     def get_params(self) -> VibrationModePerturbParams:
         return VibrationModePerturbParams(
+            sampling_mode=combo_value(self.sampling_combo),
+            coefficient_table=self.coefficient_edit.toPlainText(),
             distribution=self.distribution_combo.currentIndex(),
             amplitude=float(self.amplitude_frame.get_input_value()[0]),
             modes_per_sample=int(self.modes_frame.get_input_value()[0]),
@@ -256,6 +299,8 @@ class VibrationModePerturbCard(MakeDataCard):
         )
 
     def set_params(self, params: VibrationModePerturbParams) -> None:
+        set_combo_value(self.sampling_combo, params.sampling_mode)
+        self.coefficient_edit.setPlainText(params.coefficient_table)
         self.distribution_combo.setCurrentIndex(int(params.distribution))
         self.amplitude_frame.set_input_value([float(params.amplitude)])
         self.modes_frame.set_input_value([int(params.modes_per_sample)])

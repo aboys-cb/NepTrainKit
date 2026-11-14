@@ -478,3 +478,36 @@ msgstr ""
 "Finite-q frames use `response_probe=chirality`; they currently support "
 "response analysis or ordinary E/MF training and do not activate the grouped "
 "response loss, which is restricted to rotation paths."
+
+msgid "**有限 q 纹理：** 可选择重新生成方向，或让同一个空间旋转场作用于输入磁序；两者均保持逐原子磁矩模长。"
+msgstr "**Finite-q textures:** either regenerate directions or apply a common spatial rotation field to the input magnetic order. Both preserve individual moment magnitudes."
+
+msgid "默认“生成方向”模式中的 `q=0` 是生成的共线参考帧。“旋转输入磁矩”模式在 `q=0`、初始相位为零时恢复母态，适合反铁磁和多子格磁体。"
+msgstr "In the default Generate directions mode, `q=0` is a generated collinear reference. Rotate input moments restores the parent state at `q=0` and zero initial phase, including antiferromagnets and magnets with multiple sublattices."
+
+msgid "选择“旋转输入磁矩”时，改用"
+msgstr "Rotate input moments instead uses"
+
+msgid "旋转轴仍由上述三种几何确定，旋转角正号遵循右手规则。输入的反铁磁子格、非共线分量和零磁矩直接参与该旋转，不从元素或标签推断子格。该模式不设置统一的锥角，法向分量由输入磁矩决定；非零相位使 q=0 帧成为母态的整体旋转。"
+msgstr "The three geometries above still determine the rotation axis; positive angles follow the right-hand rule. Input antiferromagnetic sublattices, noncollinear components and zero moments are rotated directly, without inferring sublattices from elements or labels. This mode does not impose a common cone angle: the input moments determine their normal components. A nonzero phase rigidly rotates the parent state at q=0."
+
+msgid "旋转输入磁矩时，该条件检查旋转场闭合；输入磁序本身也须与输入晶胞相容，卡片不会自动扩胞或修复磁畴接缝。"
+msgstr "When rotating input moments, this condition checks closure of the rotation field. The input magnetic order must itself fit the input cell; the card does not build a supercell or repair domain boundaries."
+
+msgid "若要补充 G-AFM 母态附近的摆线响应，先导入逐原子磁矩正确的母态，再选择 `Interfacial / Cycloidal` 和“旋转输入磁矩”，保持相位为零。先逐原子核对 q=0 与母态一致，再检查正负 q 的旋转方向；回填参考标签后比较相对 q=0 的配对能差及相邻几何上的斜率，不能仅凭结构生成成功判断螺旋周期正确。"
+msgstr "To sample cycloidal response around a G-AFM parent, import a parent with correct individual moments, choose `Interfacial / Cycloidal` and Rotate input moments, and keep the phase at zero. Check every moment against the parent at q=0, then check the rotation sense for positive and negative q. After reference labelling, compare paired energy differences relative to q=0 and slopes on neighbouring geometries. Successful structure generation alone does not validate a spiral period."
+
+msgid "纹理操作（texture_action）"
+msgstr "Texture action (texture_action)"
+
+msgid "默认 `Generate directions`，保留原有生成行为；另一选项为 `Rotate input moments`，对输入磁矩应用空间旋转场。仅用于有限 q 模式，旧 JSON 缺少该字段时仍生成方向。"
+msgstr "Default: `Generate directions`, preserving the existing generation behaviour. The other option, `Rotate input moments`, applies a spatial rotation field to the input moments. Used only for finite-q modes. Old JSON without this field still regenerates directions."
+
+msgid "默认 `0`，范围 `[-1,1]`，表示 $m_\\parallel/|m|$。仅在有限 q 的 `Generate directions` 模式生效；旋转输入磁矩时隐藏并忽略。"
+msgstr "Default: `0`, range `[-1,1]`, representing $m_\\parallel/|m|$. Used only in finite-q `Generate directions` mode; hidden and ignored when rotating input moments."
+
+msgid "**q=0 与输入自旋不同：** 若需保留母态，选择“旋转输入磁矩”并将初始相位置零；默认“生成方向”仍使用共线参考帧。"
+msgstr "**q=0 differs from the input spins:** choose Rotate input moments and set the initial phase to zero to preserve the parent. The default Generate directions mode still uses a collinear reference."
+
+msgid "manifest 的 `texture_action` 区分两种操作；旋转输入磁矩与重新生成方向使用不同的响应组标识。"
+msgstr "The manifest records `texture_action` to distinguish the two operations. Rotating input moments and regenerating directions use different response group identifiers."

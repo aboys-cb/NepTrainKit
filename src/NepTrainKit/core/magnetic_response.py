@@ -21,6 +21,7 @@ from ase import Atoms
 
 from NepTrainKit.core.cards.errors import CardOperationError
 from NepTrainKit.core.cards.lattice import BainPathOperation, BainPathParams
+from NepTrainKit.core.cards.labels import invalidate_changed_labels
 from NepTrainKit.core.cards.magnetism import (
     SmallAngleSpinTiltOperation,
     SmallAngleSpinTiltParams,
@@ -260,6 +261,7 @@ class TextureMagneticResponseParams:
     include_time_reversal: bool = False
     require_commensurate: bool = True
     max_outputs: int = 100
+    texture_action: str = "Generate directions"
 
 
 @dataclass(frozen=True)
@@ -509,6 +511,7 @@ class MagneticResponseScanOperation(StructureOperation):
                 break
         return self._finish(outputs, records)
 
+    @invalidate_changed_labels
     def generate_texture(self, structure: Atoms, params: TextureMagneticResponseParams) -> list[Atoms]:
         moments, source_id, parent = self._base(structure)
         outputs: list[Atoms] = []
@@ -553,6 +556,12 @@ class MagneticResponseScanOperation(StructureOperation):
         }
         if params.response_kind not in kind_map:
             raise ValueError(f"unsupported texture response kind: {params.response_kind}")
+        if params.texture_action not in {"Generate directions", "Rotate input moments"}:
+            raise CardOperationError(
+                "texture_response_invalid_action",
+                "Texture action must be Generate directions or Rotate input moments.",
+            )
+        rotate_input = params.texture_action == "Rotate input moments"
         multipliers = _parse_scan(params.coordinate_scan, minimum_points=3)
         if 0.0 not in multipliers:
             raise ValueError("q response scan must include q=0")
@@ -592,6 +601,10 @@ class MagneticResponseScanOperation(StructureOperation):
                 "q definition must be Cell reciprocal vector or Cartesian vector.",
             )
         q0_norm = float(np.linalg.norm(q0))
+        if q0.shape != (3,) or not np.isfinite(q0).all() or not np.isfinite(q0_norm):
+            raise CardOperationError(
+                "texture_response_invalid_q", "The Cartesian q vector must contain three finite values."
+            )
         if q0_norm <= 1.0e-12:
             raise CardOperationError(
                 "texture_response_zero_q",
@@ -614,12 +627,16 @@ class MagneticResponseScanOperation(StructureOperation):
             else:
                 e1 = normalize_vector(q_hat - np.dot(q_hat, plane_normal) * plane_normal)
         e2 = normalize_vector(np.cross(plane_normal, e1))
-        cone = float(params.cone_component)
+        cone = 0.0 if rotate_input else float(params.cone_component)
         if not -1.0 <= cone <= 1.0:
             raise ValueError("cone_component must be in [-1, 1]")
         radial = math.sqrt(max(0.0, 1.0 - cone * cone))
         magnitudes = np.linalg.norm(moments, axis=1)
         phase0 = math.radians(float(params.phase_deg))
+        if not np.isfinite(phase0) or not np.isfinite(structure.positions).all():
+            raise CardOperationError(
+                "texture_response_invalid_phase", "Texture phase and atomic positions must be finite."
+            )
         frames = []
         q_fractional_records = []
         reciprocal = 2.0 * math.pi * np.linalg.inv(structure.cell.array).T if abs(np.linalg.det(structure.cell.array)) > 1.0e-14 else None
@@ -636,14 +653,26 @@ class MagneticResponseScanOperation(StructureOperation):
                                 index=index + 1,
                             )
             phases = structure.positions @ q + phase0
-            unit = radial * (np.cos(phases)[:, None] * e1 + np.sin(phases)[:, None] * e2) + cone * plane_normal
-            frames.append((float(np.sign(multiplier) * np.linalg.norm(q)), magnitudes[:, None] * unit, structure))
+            if rotate_input:
+                cosines = np.cos(phases)[:, None]
+                spins = (
+                    cosines * moments
+                    + np.sin(phases)[:, None] * np.cross(plane_normal, moments)
+                    + (1.0 - cosines) * (moments @ plane_normal)[:, None] * plane_normal
+                )
+            else:
+                unit = radial * (np.cos(phases)[:, None] * e1 + np.sin(phases)[:, None] * e2) + cone * plane_normal
+                spins = magnitudes[:, None] * unit
+            frames.append((float(np.sign(multiplier) * np.linalg.norm(q)), spins, structure))
             q_fractional_records.append(
                 None if reciprocal is None else np.linalg.solve(reciprocal.T, q).tolist()
             )
         q0_period = 2.0 * math.pi / q0_norm
+        group_key = [kind_map[params.response_kind], q0.tolist(), phase0]
+        if rotate_input:
+            group_key.append(params.texture_action)
         self._emit_group(
-            structure, source_id=source_id, parent=parent, group_key=[kind_map[params.response_kind], q0.tolist(), phase0],
+            structure, source_id=source_id, parent=parent, group_key=group_key,
             probe="chirality", kind=kind_map[params.response_kind], frames=frames,
             max_outputs=params.max_outputs, records=records, outputs=outputs,
             target_indices=range(len(structure)), plane_normal=plane_normal,
@@ -657,6 +686,7 @@ class MagneticResponseScanOperation(StructureOperation):
                 "phase_radian": phase0,
                 "plane_normal": plane_normal.tolist(),
                 "cone_component": cone,
+                "texture_action": params.texture_action,
                 "supercell": [1, 1, 1],
                 "commensurate": bool(params.require_commensurate),
             },

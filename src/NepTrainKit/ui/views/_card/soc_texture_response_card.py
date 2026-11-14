@@ -67,6 +67,14 @@ class SOCTextureResponseCard(MakeDataCard):
             CompactField(self.tr("Preset"), self.kind_combo, self.path_section)
         )
         self.path_section.addWidget(self.scan_field)
+        self.action_combo = ComboBox(self.setting_widget)
+        self.action_combo.setAccessibleName(self.tr("Texture action"))
+        add_translated_items(self, self.action_combo, ["Generate directions", "Rotate input moments"])
+        self.action_field = CompactField(
+            self.tr("Texture action"), self.action_combo, self.path_section,
+            self.tr("Rotate input moments preserves the input magnetic order at q=0 and zero phase."),
+        )
+        self.path_section.addWidget(self.action_field)
 
         self.axis_input = DirectionInput(self.setting_widget, default=(0.0, 1.0, 0.0))
         self.axis_field = CompactField(
@@ -213,6 +221,7 @@ class SOCTextureResponseCard(MakeDataCard):
         self.settingLayout.addWidget(output_section, 4, 0, 1, 3)
 
         self.kind_combo.currentIndexChanged.connect(self._update_widgets)
+        self.action_combo.currentIndexChanged.connect(self._update_widgets)
         self.q_definition_combo.currentIndexChanged.connect(self._update_widgets)
         self.time_reversal.toggled.connect(self._update_output_preview)
         self.advanced_checkbox.toggled.connect(self.advanced_section.setVisible)
@@ -231,6 +240,7 @@ class SOCTextureResponseCard(MakeDataCard):
         kind = combo_value(self.kind_combo)
         global_scan = kind == "Global anisotropy"
         reciprocal_q = combo_value(self.q_definition_combo) == "Cell reciprocal vector"
+        rotate_input = combo_value(self.action_combo) == "Rotate input moments"
         descriptions = {
             "Global anisotropy": self.tr(
                 "Rigidly rotate every input spin together; relative spin angles and the lattice stay fixed."
@@ -246,6 +256,10 @@ class SOCTextureResponseCard(MakeDataCard):
             ),
         }
         self.path_section.description_label.setText(descriptions[kind])
+        if not global_scan and rotate_input:
+            self.path_section.description_label.setText(self.tr(
+                "Apply the same spatial rotation field to every input moment, preserving sublattices and moment magnitudes."
+            ))
         self.path_section.description_label.show()
         self.scan_field.set_label(
             self.tr("Rigid rotation scan (degrees)") if global_scan else self.tr("Signed q scan (multiples of base q)")
@@ -257,13 +271,14 @@ class SOCTextureResponseCard(MakeDataCard):
         )
         self.axis_field.setVisible(global_scan)
         self.time_reversal.setVisible(global_scan)
+        self.action_field.setVisible(not global_scan)
         self.q_definition_field.setVisible(not global_scan)
         self.q_reciprocal_field.setVisible(not global_scan and reciprocal_q)
         self.q_direction_field.setVisible(not global_scan and not reciprocal_q)
         self.q_magnitude_field.setVisible(not global_scan and not reciprocal_q)
         self.plane_field.setVisible(kind == "General spiral")
         self.surface_field.setVisible(kind == "Interfacial / Cycloidal")
-        self.cone_field.setVisible(not global_scan)
+        self.cone_field.setVisible(not global_scan and not rotate_input)
         self.phase_field.setVisible(not global_scan)
         self.commensurate_field.setVisible(not global_scan)
         self._update_output_preview()
@@ -316,6 +331,11 @@ class SOCTextureResponseCard(MakeDataCard):
             return self.tr(
                 "Compare the reference and rotated frames after an SOC-enabled calculation; all relative spin angles should stay fixed."
             )
+        if combo_value(self.action_combo) == "Rotate input moments":
+            return self.tr(
+                "At q=0 and zero phase the input magnetic order is restored. "
+                "Periodic closure applies to the rotation field; the input order must already fit the cell."
+            )
         if combo_value(self.q_definition_combo) == "Cell reciprocal vector":
             return self.tr(
                 "The integer reciprocal index closes in the current cell. The q=0 frame is a generated collinear reference, not the input spin directions."
@@ -347,9 +367,11 @@ class SOCTextureResponseCard(MakeDataCard):
             include_time_reversal=self.time_reversal.isChecked(),
             require_commensurate=self.commensurate.isChecked(),
             max_outputs=int(self.limit_frame.get_input_value()[0]),
+            texture_action=combo_value(self.action_combo),
         )
 
     def set_params(self, params):
+        set_combo_value(self.action_combo, params.texture_action)
         set_combo_value(self.kind_combo, params.response_kind)
         self.scan_input.set_scan_text(params.coordinate_scan)
         self.axis_input.set_vector(params.rotation_axis)

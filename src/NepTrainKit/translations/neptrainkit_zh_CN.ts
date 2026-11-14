@@ -2541,6 +2541,15 @@ Every structure must have the chosen field. Each group must be one structure / m
         <source>contributor</source>
         <translation>贡献者</translation>
     </message>
+
+    <message>
+        <source>Rotate the input magnetic order or generate new directions along a cell-compatible signed-q texture path.</source>
+        <translation>沿与晶胞相容的有符号 q 路径旋转输入磁序，或重新生成磁矩方向。</translation>
+    </message>
+    <message>
+        <source>Generate random or explicitly weighted combinations of displacement modes stored on each input structure.</source>
+        <translation>对输入结构保存的位移模做随机采样，或按指定系数生成组合。</translation>
+    </message>
 </context>
 <context>
     <name>CardCombo</name>
@@ -3707,6 +3716,19 @@ Every structure must have the chosen field. Each group must be one structure / m
     <message>
         <source>111 (along lattice a+b+c)</source>
         <translation type="vanished">111（沿晶格 a+b+c）</translation>
+    </message>
+
+    <message>
+        <source>Generate directions</source>
+        <translation>生成方向</translation>
+    </message>
+    <message>
+        <source>Rotate input moments</source>
+        <translation>旋转输入磁矩</translation>
+    </message>
+    <message>
+        <source>Coefficient table</source>
+        <translation>系数表</translation>
     </message>
 </context>
 <context>
@@ -6570,6 +6592,43 @@ Every structure must have the chosen field. Each group must be one structure / m
     <message>
         <source>Small-angle Spin Tilt group A and B labels must be different.</source>
         <translation>小角度自旋倾斜的 A 组和 B 组标签必须不同。</translation>
+    </message>
+
+    <message>
+        <source>Texture action must be Generate directions or Rotate input moments.</source>
+        <translation>纹理操作必须为“生成方向”或“旋转输入磁矩”。</translation>
+    </message>
+    <message>
+        <source>The Cartesian q vector must contain three finite values.</source>
+        <translation>笛卡尔 q 向量必须包含三个有限数值。</translation>
+    </message>
+    <message>
+        <source>Texture phase and atomic positions must be finite.</source>
+        <translation>纹理相位和原子坐标必须为有限数值。</translation>
+    </message>
+    <message>
+        <source>Coefficient table must be a non-empty rectangular JSON array of finite numbers.</source>
+        <translation>系数表必须为非空矩形 JSON 数组，且所有系数都是有限数值。</translation>
+    </message>
+    <message>
+        <source>Coefficient scans need finite displacement modes on every input structure.</source>
+        <translation>系数扫描要求每个输入结构都带有有限数值的位移模。</translation>
+    </message>
+    <message>
+        <source>Coefficient table has {actual} columns, but the input has {expected} modes.</source>
+        <translation>系数表有 {actual} 列，但输入包含 {expected} 个模式。</translation>
+    </message>
+    <message>
+        <source>Atomic positions must be finite for a coefficient scan.</source>
+        <translation>系数扫描要求原子坐标为有限数值。</translation>
+    </message>
+    <message>
+        <source>The mode combination produced non-finite positions; reduce the coefficients.</source>
+        <translation>模式组合产生了非有限坐标；请减小系数。</translation>
+    </message>
+    <message>
+        <source>Mode sampling must be Random or Coefficient table.</source>
+        <translation>模式采样必须为“随机采样”或“系数表”。</translation>
     </message>
 </context>
 <context>
@@ -21040,6 +21099,23 @@ All child items will also be deleted.</source>
         <source>Output limit (complete groups)</source>
         <translation type="vanished">输出上限（完整组）</translation>
     </message>
+
+    <message>
+        <source>Texture action</source>
+        <translation>纹理操作</translation>
+    </message>
+    <message>
+        <source>Rotate input moments preserves the input magnetic order at q=0 and zero phase.</source>
+        <translation>旋转输入磁矩时，q=0 且相位为零会恢复输入磁序。</translation>
+    </message>
+    <message>
+        <source>Apply the same spatial rotation field to every input moment, preserving sublattices and moment magnitudes.</source>
+        <translation>让同一个空间旋转场作用于每个输入磁矩，保留子格关系和磁矩模长。</translation>
+    </message>
+    <message>
+        <source>At q=0 and zero phase the input magnetic order is restored. Periodic closure applies to the rotation field; the input order must already fit the cell.</source>
+        <translation>q=0 且相位为零时恢复输入磁序。周期闭合检查针对旋转场；输入磁序本身也须与晶胞相容。</translation>
+    </message>
 </context>
 <context>
     <name>SaveModelDialog</name>
@@ -30142,6 +30218,27 @@ Baseline model: {baseline}</source>
     <message>
         <source>Enable reproducible random sampling</source>
         <translation type="vanished">启用可复现的随机采样</translation>
+    </message>
+
+    <message>
+        <source>Coefficient table (JSON)</source>
+        <translation>系数表（JSON）</translation>
+    </message>
+    <message>
+        <source>One row per output, one column per input mode in extraction order. Uses raw Cartesian displacement modes without frequency weighting, normalization or wrapping.</source>
+        <translation>每行生成一帧，每列按提取顺序对应一个输入模式。直接使用原始笛卡尔位移模，不做频率加权、归一化或坐标 wrap。</translation>
+    </message>
+    <message>
+        <source>{count} coefficient rows · {modes} modes</source>
+        <translation>{count} 行系数 · {modes} 个模式</translation>
+    </message>
+    <message>
+        <source>Invalid coefficient table</source>
+        <translation>系数表格式无效</translation>
+    </message>
+    <message>
+        <source>Each row gives an exact linear combination of the supplied displacement modes. A zero row preserves the input positions; no frequency data is required.</source>
+        <translation>每行指定输入位移模的精确线性组合。全零行保留原坐标；无需频率数据。</translation>
     </message>
 </context>
 <context>

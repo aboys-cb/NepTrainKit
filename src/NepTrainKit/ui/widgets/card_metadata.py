@@ -308,7 +308,7 @@ def _localized_catalog(_language_marker: str):
             QCoreApplication.translate("CardCatalog", "SOC / Texture Response"),
             QCoreApplication.translate(
                 "CardCatalog",
-                "Rigidly rotate an input spin texture or regenerate a cell-compatible signed-q texture path.",
+                "Rotate the input magnetic order or generate new directions along a cell-compatible signed-q texture path.",
             ),
         ),
         "StackingFaultCard": (
@@ -344,7 +344,7 @@ def _localized_catalog(_language_marker: str):
             QCoreApplication.translate("CardCatalog", "Vib Mode Perturb"),
             QCoreApplication.translate(
                 "CardCatalog",
-                "Sample correlated atomic displacements from vibrational modes already stored on each input structure.",
+                "Generate random or explicitly weighted combinations of displacement modes stored on each input structure.",
             ),
         ),
     }

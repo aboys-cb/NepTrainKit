@@ -612,7 +612,7 @@ class ShowNepWidget(QWidget):
         """Build the placeholder shown over the plot area before any data loads."""
         hint = QWidget(parent)
         hint.setObjectName("showNepEmptyHint")
-        hint.setStyleSheet("QWidget#showNepEmptyHint { background: white; }")
+        hint.setStyleSheet("QWidget#showNepEmptyHint { background: transparent; }")
         layout = QVBoxLayout(hint)
         layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
         layout.setSpacing(10)
@@ -816,7 +816,12 @@ class ShowNepWidget(QWidget):
         self.struct_widget_layout = QGridLayout(self.struct_widget)
         canvas_type = Config.get("widget", "canvas_type",  str(CanvasMode.PYQTGRAPH.value))
         self.show_struct_widget, fallback = create_structure_plot(canvas_type, self.struct_widget)
-        self.struct_widget_layout.addWidget(resolve_canvas_host_widget(self.show_struct_widget), 1, 0, 1, 1)
+        struct_host = resolve_canvas_host_widget(self.show_struct_widget)
+        struct_host.setStyleSheet(
+            f"background-color: {palette.SURFACE}; "
+            "border: 1px solid rgba(15, 23, 42, 0.045); border-radius: 8px;"
+        )
+        self.struct_widget_layout.addWidget(struct_host, 1, 0, 1, 1)
         if fallback and not self._structure_canvas_fallback_warned:
             MessageManager.send_warning_message(
                 "Current canvas backend is vispy, but vispy structure canvas failed to initialize; fallback to pyqtgraph."
@@ -836,16 +841,16 @@ class ShowNepWidget(QWidget):
             self.structure_toolbar.dropRejectSignal.connect(self._drop_all_reject)
 
         self.struct_info_widget = StructureInfoWidget(self.struct_widget)
-        self.struct_index_widget = SimpleCardWidget(self)
-        self.struct_index_widget.setObjectName("structureNavigatorCard")
+        self.struct_index_widget = QWidget(self)
+        self.struct_index_widget.setObjectName("structureNavigatorBar")
         self.struct_index_widget_layout = QHBoxLayout(self.struct_index_widget)
-        self.struct_index_widget_layout.setContentsMargins(10, 5, 10, 5)
+        self.struct_index_widget_layout.setContentsMargins(4, 2, 4, 2)
         self.struct_index_widget_layout.setSpacing(6)
         self.struct_index_label = CaptionLabel(self.struct_index_widget)
         self.struct_index_label.setText(self.tr("Original index"))
 
         self.struct_index_spinbox = SpinBox(self.struct_index_widget)
-        self.struct_index_spinbox.setFixedWidth(150)
+        self.struct_index_spinbox.setFixedWidth(110)
         self.struct_index_spinbox.setAlignment(Qt.AlignCenter)
         self.struct_index_spinbox.setAccessibleName(self.tr("Original structure index"))
         try:
@@ -887,19 +892,19 @@ class ShowNepWidget(QWidget):
 
         self.struct_widget_layout.setRowStretch(1, 1)
         self.struct_widget_layout.setSpacing(6)
-        self.struct_widget_layout.setContentsMargins(6, 6, 6, 6)
+        self.struct_widget_layout.setContentsMargins(4, 6, 8, 6)
 
         self.plot_widget = QWidget(self)
 
         self.plot_widget_layout = QGridLayout(self.plot_widget)
-        self.plot_widget_layout.setSpacing(1)
-        self.plot_widget_layout.setContentsMargins(0, 0, 0, 0)
-        self.graph_widget = NepResultPlotWidget(self  )
+        self.plot_widget_layout.setSpacing(6)
+        self.plot_widget_layout.setContentsMargins(8, 6, 4, 6)
+        self.graph_widget = NepResultPlotWidget(self.plot_widget)
         self.graph_widget.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
 
         self.graph_widget.structureIndexChanged.connect(self.struct_index_spinbox.setValue)
 
-        self.graph_toolbar = NepDisplayGraphicsToolBar(  self.plot_widget)
+        self.graph_toolbar = NepDisplayGraphicsToolBar(self.plot_widget)
         self.graph_widget.set_tool_bar(self.graph_toolbar)
         self.graph_toolbar.trainingSetCheckSignal.connect(
             self.open_training_set_audit
@@ -922,18 +927,21 @@ class ShowNepWidget(QWidget):
             context=Qt.ShortcutContext.WidgetWithChildrenShortcut,
         )
         self.structure_filter_shortcut.activated.connect(self._on_filter_edit_clicked)
+
         self.path_label = HyperlinkLabel(self.plot_widget)
         self.path_label.setFixedHeight(30)
 
         self.dataset_info_label = BodyLabel(self.plot_widget)
         self.dataset_info_label.setFixedHeight(30)
+        self.dataset_info_label.setTextFormat(Qt.TextFormat.RichText)
+        self.dataset_info_label.setStyleSheet(f"color: {palette.TEXT_SECONDARY}; font-size: 12px;")
 
         # Create a container for path label and NEP model selector
         self.path_container = QWidget(self.plot_widget)
         self.path_container_layout = QHBoxLayout(self.path_container)
         # Keep a gap before the counts even when the footer is tight.
-        self.path_container_layout.setContentsMargins(0, 0, 12, 0)
-        self.path_container_layout.setSpacing(5)
+        self.path_container_layout.setContentsMargins(2, 2, 8, 2)
+        self.path_container_layout.setSpacing(6)
         
         self.nep_model_combo = ComboBox(self.path_container)
         self.nep_model_combo.setToolTip(self.tr("Switch NEP model"))
@@ -989,17 +997,15 @@ class ShowNepWidget(QWidget):
         self.path_container_layout.addStretch()
 
         self.plot_widget_layout.addWidget(self.graph_toolbar, 0, 0, 1, 2)
-
         self.plot_widget_layout.addWidget(frame, 1, 0, 1, 2)
         self.plot_widget_layout.addWidget(self.graph_widget, 2, 0, 1, 2)
         self.empty_hint = self._create_empty_hint(self.plot_widget)
         self.plot_widget_layout.addWidget(self.empty_hint, 2, 0, 1, 2)
         self.plot_widget_layout.addWidget(self.path_container, 3, 0, 1, 1)
-        self.plot_widget_layout.addWidget(self.dataset_info_label , 3, 1, 1, 1)
-        # Counts keep their natural width; the left side takes the rest.
+        self.plot_widget_layout.addWidget(self.dataset_info_label, 3, 1, 1, 1)
+        self.plot_widget_layout.setRowStretch(2, 1)
         self.plot_widget_layout.setColumnStretch(0, 1)
         self.plot_widget_layout.setColumnStretch(1, 0)
-        self.plot_widget_layout.setContentsMargins(0,0,0,0)
 
         self.splitter = QSplitter(Qt.Orientation.Horizontal, self)
         self.splitter.addWidget(self.plot_widget)
@@ -2841,7 +2847,26 @@ class ShowNepWidget(QWidget):
         info = self.tr(
             "Orig {orig} | Now {now} | Rm {removed} | Sel {selected} | Rej {rejected}"
         ).format(**counts)
-        self.dataset_info_label.setText(info)
+        parts = [part.strip() for part in info.split("|")]
+        if len(parts) == 5:
+            badge_styles = (
+                (palette.TEXT_PRIMARY, palette.SURFACE_SUBTLE),
+                (palette.ACCENT_PRESSED, palette.ACCENT_SOFT),
+                (palette.WARNING if counts["removed"] > 0 else palette.TEXT_SECONDARY,
+                 palette.WARNING_SOFT if counts["removed"] > 0 else palette.SURFACE_SUBTLE),
+                ("#C2410C" if counts["selected"] > 0 else palette.TEXT_SECONDARY,
+                 "#FFF4E6" if counts["selected"] > 0 else palette.SURFACE_SUBTLE),
+                (palette.DANGER if counts["rejected"] > 0 else palette.TEXT_SECONDARY,
+                 palette.DANGER_SOFT if counts["rejected"] > 0 else palette.SURFACE_SUBTLE),
+            )
+            styled_parts = [
+                f"<span style='background-color:{bg}; color:{fg}; "
+                f"font-weight:600; padding:2px 6px; border-radius:4px;'>{part}</span>"
+                for part, (fg, bg) in zip(parts, badge_styles)
+            ]
+            self.dataset_info_label.setText(" &nbsp;".join(styled_parts))
+        else:
+            self.dataset_info_label.setText(info)
         self.dataset_info_label.setToolTip(
             self.tr(
                 "Original structures: {orig}\nCurrently shown: {now}\n"

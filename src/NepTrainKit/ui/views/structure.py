@@ -57,11 +57,13 @@ class StructureInfoWidget(QWidget):
 
         self.card = SimpleCardWidget(self)
         self.card.setObjectName("structureInspectorCard")
+        if hasattr(self.card, "setBorderRadius"):
+            self.card.setBorderRadius(8)
         outer.addWidget(self.card)
 
         card_layout = QVBoxLayout(self.card)
-        card_layout.setContentsMargins(12, 8, 12, 8)
-        card_layout.setSpacing(3)
+        card_layout.setContentsMargins(14, 10, 18, 12)
+        card_layout.setSpacing(5)
 
         header_layout = QHBoxLayout()
         header_layout.setContentsMargins(0, 0, 0, 0)
@@ -104,7 +106,7 @@ class StructureInfoWidget(QWidget):
         card_layout.addWidget(self.phase_summary_label)
 
         config_layout = QHBoxLayout()
-        config_layout.setContentsMargins(0, 1, 0, 1)
+        config_layout.setContentsMargins(0, 2, 0, 2)
         config_layout.setSpacing(8)
         self.config_label = CaptionLabel(self.tr("Config type"), self.card)
         self.config_text = StrongBodyLabel("—", self.card)
@@ -116,8 +118,8 @@ class StructureInfoWidget(QWidget):
 
         summary_grid = QGridLayout()
         summary_grid.setContentsMargins(0, 0, 0, 0)
-        summary_grid.setHorizontalSpacing(8)
-        summary_grid.setVerticalSpacing(1)
+        summary_grid.setHorizontalSpacing(10)
+        summary_grid.setVerticalSpacing(3)
         self.formula_text = self._add_metric(summary_grid, 0, 0, self.tr("Formula"), "formula")
         self.atom_num_text = self._add_metric(summary_grid, 0, 1, self.tr("Atoms"), "atoms")
         self.volume_text = self._add_metric(summary_grid, 1, 0, self.tr("Cell volume"), "volume")
@@ -130,7 +132,7 @@ class StructureInfoWidget(QWidget):
         card_layout.addWidget(CardSeparator(self.card))
 
         signal_header = QHBoxLayout()
-        signal_header.setContentsMargins(0, 1, 0, 0)
+        signal_header.setContentsMargins(0, 2, 0, 0)
         self.signal_title_label = StrongBodyLabel(self.tr("Frame signals"), self.card)
         setFont(self.signal_title_label, 13, QFont.Weight.Medium)
         self.contact_badge = InfoBadge(self.card, InfoLevel.ATTENTION)
@@ -142,8 +144,8 @@ class StructureInfoWidget(QWidget):
 
         signal_grid = QGridLayout()
         signal_grid.setContentsMargins(0, 0, 0, 0)
-        signal_grid.setHorizontalSpacing(8)
-        signal_grid.setVerticalSpacing(1)
+        signal_grid.setHorizontalSpacing(10)
+        signal_grid.setVerticalSpacing(3)
         self.shortest_text = self._add_metric(
             signal_grid, 0, 0, self.tr("Shortest contact"), "shortest"
         )

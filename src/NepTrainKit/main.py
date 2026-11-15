@@ -35,6 +35,7 @@ from PySide6.QtGui import QIcon, QFontDatabase, QPalette, QColor
 from PySide6.QtWidgets import QApplication, QWidget, QGridLayout
 from qfluentwidgets import (
     setTheme,
+    setThemeColor,
     setFontFamilies,
     Theme,
     FluentWindow,
@@ -136,10 +137,11 @@ class NepTrainKitMainWindow(FluentWindow):
     def init_menu(self) -> None:
         """Create the toolbar housing common open/save actions."""
         self.menu_widget = QWidget(self)
-        self.menu_widget.setStyleSheet("ButtonView{background: rgb(240, 244, 249)}")
+        self.menu_widget.setObjectName("titleBarActionCapsule")
         self.menu_gridLayout = QGridLayout(self.menu_widget)
-        self.menu_gridLayout.setContentsMargins(3, 0, 3, 0)
-        self.menu_gridLayout.setSpacing(1)
+        self.menu_gridLayout.setContentsMargins(4, 2, 4, 2)
+        self.menu_gridLayout.setHorizontalSpacing(4)
+        self.menu_gridLayout.setVerticalSpacing(0)
 
         self.open_dir_button = SplitToolButton(QIcon(':/images/src/images/open.svg'), self.menu_widget)
         self.open_dir_button.setAccessibleName(self.tr("Open"))
@@ -160,13 +162,13 @@ class NepTrainKitMainWindow(FluentWindow):
             2,
             self.menu_widget,
             0,
-            Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignCenter,
+            Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter,
         )
 
     def init_navigation(self) -> None:
         """Register the navigation items and default pages."""
         self.navigationInterface.setReturnButtonVisible(False)
-        self.navigationInterface.setExpandWidth(200)
+        self.navigationInterface.setExpandWidth(210)
         self.navigationInterface.addSeparator()
 
         self.addSubInterface(
@@ -330,12 +332,14 @@ class NepTrainKitMainWindow(FluentWindow):
 
     def initWindow(self) -> None:
         """Configure top-level window parameters such as size and title."""
-        self.resize(1200, 700)
+        desktop = self.screen().availableGeometry()
+        self.resize(min(1360, desktop.width() - 32), min(820, desktop.height() - 32))
         self.setWindowIcon(_application_icon())
         self.setWindowTitle('NepTrainKit')
-        desktop = QApplication.screens()[0].availableGeometry()
-        width, height = desktop.width(), desktop.height()
-        self.move(width // 2 - self.width() // 2, height // 2 - self.height() // 2)
+        self.move(
+            desktop.x() + (desktop.width() - self.width()) // 2,
+            desktop.y() + (desktop.height() - self.height()) // 2,
+        )
 
     def closeEvent(self, event) -> None:
         """Drain workers before destroying their Qt owners."""
@@ -835,23 +839,40 @@ def global_exception_handler(exc_type, exc_value, exc_traceback) -> None:
 def set_light_theme(app: QApplication) -> None:
     """Apply a light colour palette to ``app``."""
     palette = QPalette()
-    palette.setColor(QPalette.ColorRole.Window, QColor(240, 240, 240))
-    palette.setColor(QPalette.ColorRole.WindowText, Qt.GlobalColor.black)
-    palette.setColor(QPalette.ColorRole.Base, Qt.GlobalColor.white)
-    palette.setColor(QPalette.ColorRole.AlternateBase, QColor(245, 245, 245))
-    palette.setColor(QPalette.ColorRole.Text, Qt.GlobalColor.black)
-    palette.setColor(QPalette.ColorRole.Button, QColor(230, 230, 230))
-    palette.setColor(QPalette.ColorRole.ButtonText, Qt.GlobalColor.black)
+    palette.setColor(QPalette.ColorRole.Window, QColor(colors.CANVAS_BG))
+    palette.setColor(QPalette.ColorRole.WindowText, QColor(colors.TEXT_PRIMARY))
+    palette.setColor(QPalette.ColorRole.Base, QColor(colors.SURFACE))
+    palette.setColor(QPalette.ColorRole.AlternateBase, QColor(colors.SURFACE_SUBTLE))
+    palette.setColor(QPalette.ColorRole.Text, QColor(colors.TEXT_PRIMARY))
+    palette.setColor(QPalette.ColorRole.Button, QColor(colors.SURFACE_SUBTLE))
+    palette.setColor(QPalette.ColorRole.ButtonText, QColor(colors.TEXT_PRIMARY))
     palette.setColor(QPalette.ColorRole.Highlight, QColor(colors.ACCENT))
     palette.setColor(QPalette.ColorRole.HighlightedText, Qt.GlobalColor.white)
-    palette.setColor(QPalette.ColorRole.ToolTipBase, Qt.GlobalColor.white)
-    palette.setColor(QPalette.ColorRole.ToolTipText, Qt.GlobalColor.black)
+    palette.setColor(QPalette.ColorRole.ToolTipBase, QColor(colors.SURFACE))
+    palette.setColor(QPalette.ColorRole.ToolTipText, QColor(colors.TEXT_PRIMARY))
     app.setPalette(palette)
     app.setStyle("Fusion")
 
 
+def _load_theme_stylesheet() -> str:
+    """Load ``theme.qss`` from disk first for live styling updates, with resource fallback."""
+    disk_qss = Path(__file__).resolve().parent / "src" / "qss" / "theme.qss"
+    if disk_qss.is_file():
+        try:
+            return disk_qss.read_text(encoding="utf-8")
+        except Exception:
+            pass
+    theme_file = QFile(":/theme/src/qss/theme.qss")
+    if theme_file.open(QFile.OpenModeFlag.ReadOnly):
+        theme = theme_file.readAll().data().decode("utf-8")  # pyright: ignore[reportArgumentType]
+        theme_file.close()
+        return theme
+    return ""
+
+
 def configure_app(app: QApplication) -> None:
     """Apply the same theme, font, stylesheet, and translator used by the desktop app."""
+    setThemeColor(colors.ACCENT, save=False)
     set_light_theme(app)
     app.setApplicationName("NepTrainKit")
     install_translator(app)
@@ -872,21 +893,20 @@ def configure_app(app: QApplication) -> None:
     font.setFamilies(families)
     # Fluent controls set their own font, independently of QApplication.
     setFontFamilies(families, save=False)
-    font.setPointSize(12)
+    font.setPointSize(11)
     app.setFont(font)
     keep_created_styles_alive()
     ensure_fluent_tooltips(app)
 
-    theme_file = QFile(":/theme/src/qss/theme.qss")
-    if theme_file.open(QFile.OpenModeFlag.ReadOnly):
-        theme = theme_file.readAll().data().decode("utf-8")  # pyright: ignore[reportArgumentType]
-        theme_file.close()
+    theme = _load_theme_stylesheet()
+    if theme:
         app.setStyleSheet(theme)
 
 
 def create_app(argv: list[str] | None = None) -> QApplication:
     """Create or configure the shared Qt application instance."""
     setTheme(Theme.LIGHT)
+    setThemeColor(colors.ACCENT, save=False)
     app = QApplication.instance()
     if app is None:
         app = QApplication(sys.argv if argv is None else argv)

@@ -2,30 +2,36 @@
 
 import os
 
-from PySide6.QtCore import Qt, QAbstractItemModel, QModelIndex, Signal, QPoint, QUrl
-from PySide6.QtGui import QCursor, QColor, QIcon, QDesktopServices, QShortcut, QKeySequence
-from PySide6.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, QHeaderView
+from PySide6.QtCore import QModelIndex, QPoint, Qt, QUrl, Signal
+from PySide6.QtGui import QDesktopServices, QIcon, QKeySequence, QShortcut
+from PySide6.QtWidgets import QHBoxLayout, QHeaderView, QVBoxLayout, QWidget
 from qfluentwidgets import (
     Action,
     BodyLabel,
     CaptionLabel,
+    FluentIcon,
     MessageBox,
     PrimaryPushButton,
     PushButton,
     RoundMenu,
-    TreeItemDelegate,
     TreeView,
 )
 
 from NepTrainKit import palette
 from NepTrainKit.core import MessageManager
 from NepTrainKit.core.dataset import DatasetManager
-from NepTrainKit.core.dataset.services import ProjectItem, ModelItem
+from NepTrainKit.core.dataset.services import ModelItem, ProjectItem
 from NepTrainKit.core.types import ModelTypeIcon
-from NepTrainKit.ui.messages import translate_runtime_error
 from NepTrainKit.ui.dialogs import call_path_dialog
-from NepTrainKit.ui.widgets import TreeModel, TreeItem, TagDelegate
-from NepTrainKit.ui.widgets import ModelInfoMessageBox, AdvancedModelSearchDialog, TagManageDialog
+from NepTrainKit.ui.messages import translate_runtime_error
+from NepTrainKit.ui.widgets import (
+    AdvancedModelSearchDialog,
+    ModelInfoMessageBox,
+    TagDelegate,
+    TagManageDialog,
+    TreeItem,
+    TreeModel,
+)
 
 
 class ModelItemWidget(QWidget, DatasetManager):
@@ -48,6 +54,8 @@ class ModelItemWidget(QWidget, DatasetManager):
     projectChangedSignal = Signal(int)
     modelsChanged = Signal(int)
     importRequested = Signal(str)
+    validateModelRequested = Signal(int)
+    compareModelRequested = Signal(int)
 
     def __init__(self, parent=None):
         """Configure the backing model, view, shortcuts, and context menu."""
@@ -62,24 +70,24 @@ class ModelItemWidget(QWidget, DatasetManager):
 
         self._model = TreeModel()
         self._view.setModel(self._model)
-        self._model.setHeader([
-            "ID",
-            self.tr("Name"),
-            self.tr("Size"),
-            "E(meV/atom)",
-            "F(meV/Å)",
-            "V(meV/atom)",
-            self.tr("Tags"),
-            self.tr("Created at"),
-        ])
+        self._model.setHeader(
+            [
+                "ID",
+                self.tr("Name"),
+                self.tr("Size"),
+                "E(meV/atom)",
+                "F(meV/Å)",
+                "V(meV/atom)",
+                self.tr("Tags"),
+                self.tr("Created at"),
+            ]
+        )
         self._view.setItemDelegateForColumn(6, TagDelegate(self._model))
         header = self._view.header()
         header.setStretchLastSection(False)
         header.setMinimumSectionSize(48)
         for column in (0, 2, 7):
-            header.setSectionResizeMode(
-                column, QHeaderView.ResizeMode.ResizeToContents
-            )
+            header.setSectionResizeMode(column, QHeaderView.ResizeMode.ResizeToContents)
         # Unit headers such as ``E(meV/atom)`` were clipped by the Fluent
         # header padding; size the RMSE columns from their titles instead.
         header_metrics = header.fontMetrics()
@@ -99,6 +107,10 @@ class ModelItemWidget(QWidget, DatasetManager):
         toolbar.setSpacing(6)
         toolbar.addWidget(BodyLabel(self.tr("Models"), self))
         toolbar.addStretch(1)
+        self.validate_model_button = PushButton(FluentIcon.PLAY, "去验证当前势", self)
+        self.validate_model_button.setToolTip("在「验证与诊断」工作台中将该势函数作为当前势打开")
+        self.compare_model_button = PushButton(FluentIcon.ADD, "加入验证对比", self)
+        self.compare_model_button.setToolTip("将该势函数直接加入「验证与诊断」顶部对比势槽")
         self.new_model_button = PrimaryPushButton(self.tr("New model"), self)
         self.modify_model_button = PushButton(self.tr("Modify"), self)
         self.open_folder_button = PushButton(self.tr("Open folder"), self)
@@ -106,6 +118,8 @@ class ModelItemWidget(QWidget, DatasetManager):
         self.manage_tags_button = PushButton(self.tr("Manage tags"), self)
         self.search_button = PushButton(self.tr("Search"), self)
         for button in (
+            self.validate_model_button,
+            self.compare_model_button,
             self.new_model_button,
             self.modify_model_button,
             self.open_folder_button,
@@ -129,12 +143,10 @@ class ModelItemWidget(QWidget, DatasetManager):
         hint_layout = QVBoxLayout(self._view.viewport())
         hint_layout.addWidget(self.empty_hint, 0, Qt.AlignmentFlag.AlignCenter)
         self._model.modelReset.connect(self._refresh_empty_hint)
-        self.new_model_button.clicked.connect(
-            lambda: self.create_model(modify=False)
-        )
-        self.modify_model_button.clicked.connect(
-            lambda: self.create_model(modify=True)
-        )
+        self.validate_model_button.clicked.connect(self.send_to_validation)
+        self.compare_model_button.clicked.connect(self.add_to_comparison)
+        self.new_model_button.clicked.connect(lambda: self.create_model(modify=False))
+        self.modify_model_button.clicked.connect(lambda: self.create_model(modify=True))
         self.open_folder_button.clicked.connect(self.open_folder)
         self.delete_model_button.clicked.connect(self.remove_model)
         self.manage_tags_button.clicked.connect(self.manage_tags)
@@ -149,14 +161,25 @@ class ModelItemWidget(QWidget, DatasetManager):
         )
         self.search_shortcut.activated.connect(self.show_search_dialog)
 
-    def item_clicked(self, index: QModelIndex) -> None:
-        """Emit the selected project's identifier when an item is clicked.
+    def _selected_model_id(self) -> int | None:
+        index = self._current_index()
+        if not index.isValid():
+            return None
+        item = index.internalPointer()
+        return item.data(0) if item is not None else None
 
-        Parameters
-        ----------
-        index : QModelIndex
-            Index provided by the view for the triggered row.
-        """
+    def send_to_validation(self) -> None:
+        model_id = self._selected_model_id()
+        if model_id is not None:
+            self.validateModelRequested.emit(model_id)
+
+    def add_to_comparison(self) -> None:
+        model_id = self._selected_model_id()
+        if model_id is not None:
+            self.compareModelRequested.emit(model_id)
+
+    def item_clicked(self, index: QModelIndex) -> None:
+        """Emit the selected project's identifier when an item is clicked."""
         if not index.isValid():
             return
         item = index.internalPointer()
@@ -167,6 +190,15 @@ class ModelItemWidget(QWidget, DatasetManager):
         """Create and wire up the context menu for the model tree."""
         self._menu_pos = QPoint()
         self.menu = RoundMenu(parent=self)
+
+        validate_action = Action(FluentIcon.PLAY, "作为当前势打开验证", self.menu)
+        validate_action.triggered.connect(self.send_to_validation)
+        self.menu.addAction(validate_action)
+
+        compare_action = Action(FluentIcon.ADD, "加入验证对比槽", self.menu)
+        compare_action.triggered.connect(self.add_to_comparison)
+        self.menu.addAction(compare_action)
+        self.menu.addSeparator()
 
         create_action = Action(self.tr("New"), self.menu)
         create_action.triggered.connect(lambda: self.create_model(modify=False))
@@ -191,13 +223,7 @@ class ModelItemWidget(QWidget, DatasetManager):
         self._view.customContextMenuRequested.connect(self.show_menu)
 
     def show_menu(self, pos: QPoint) -> None:
-        """Display the context menu at the requested location.
-
-        Parameters
-        ----------
-        pos : QPoint
-            Position in viewport coordinates where the menu is requested.
-        """
+        """Display the context menu at the requested location."""
         self._menu_pos = pos
         index = self._view.indexAt(pos)
         if index.isValid():
@@ -217,6 +243,8 @@ class ModelItemWidget(QWidget, DatasetManager):
         has_selection = self._current_index().isValid()
         self.new_model_button.setEnabled(has_project)
         for button in (
+            self.validate_model_button,
+            self.compare_model_button,
             self.modify_model_button,
             self.open_folder_button,
             self.delete_model_button,
@@ -230,20 +258,7 @@ class ModelItemWidget(QWidget, DatasetManager):
         self.load_models_by_project(self.project)
 
     def _build_tree(self, model: ModelItem, parent: TreeItem) -> TreeItem:
-        """Convert a ModelItem into a TreeItem and attach it to the parent.
-
-        Parameters
-        ----------
-        model : ModelItem
-            Model to append to the tree.
-        parent : TreeItem
-            Parent tree node receiving the model entry.
-
-        Returns
-        -------
-        TreeItem
-            The tree node created for the provided model.
-        """
+        """Convert a ModelItem into a TreeItem and attach it to the parent."""
         child = TreeItem(
             (
                 model.model_id,
@@ -265,13 +280,7 @@ class ModelItemWidget(QWidget, DatasetManager):
         return child
 
     def load_models_by_project(self, project: ProjectItem | None) -> None:
-        """Refresh the tree with models that belong to the given project.
-
-        Parameters
-        ----------
-        project : ProjectItem
-            Project whose models will be displayed in the tree.
-        """
+        """Refresh the tree with models that belong to the given project."""
         self._model.clear()
         self.model_item_dict.clear()
         self.project = project
@@ -295,17 +304,15 @@ class ModelItemWidget(QWidget, DatasetManager):
                 )
             )
         else:
-            self.empty_hint.setText(self.tr("Select a project on the left to list its models, or drag a model folder here."))
+            self.empty_hint.setText(
+                self.tr(
+                    "Select a project on the left to list its models, or drag a model folder here."
+                )
+            )
         self.empty_hint.show()
 
     def add_models_to_table(self, models: list[ModelItem]) -> None:
-        """Populate the tree model with the supplied dataset entries.
-
-        Parameters
-        ----------
-        models : list of ModelItem
-            Models that will be appended to the tree model.
-        """
+        """Populate the tree model with the supplied dataset entries."""
         self._model.beginResetModel()
         for model in models:
             self._build_tree(model, self._model.rootItem)
@@ -366,8 +373,13 @@ class ModelItemWidget(QWidget, DatasetManager):
             return
         self.load_models_by_project(self.project)
         self.modelsChanged.emit(saved.id)
-        matches = self._model.match(self._model.index(0, 0), Qt.ItemDataRole.DisplayRole,
-                                    saved.id, 1, Qt.MatchFlag.MatchExactly | Qt.MatchFlag.MatchRecursive)
+        matches = self._model.match(
+            self._model.index(0, 0),
+            Qt.ItemDataRole.DisplayRole,
+            saved.id,
+            1,
+            Qt.MatchFlag.MatchExactly | Qt.MatchFlag.MatchRecursive,
+        )
         if matches:
             self._view.setCurrentIndex(matches[0])
             parent = matches[0].parent()
@@ -430,13 +442,7 @@ class ModelItemWidget(QWidget, DatasetManager):
                 )
 
     def on_search(self, params: dict) -> None:
-        """Run an advanced search and refresh the table with the results.
-
-        Parameters
-        ----------
-        params : dict
-            Filters provided by the advanced search dialog.
-        """
+        """Run an advanced search and refresh the table with the results."""
         models = self.model_service.search_models_advanced(**params)
         self._model.clear()
         self.model_item_dict.clear()

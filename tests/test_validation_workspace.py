@@ -83,21 +83,21 @@ def test_workspace_separates_navigation_checks_and_model_selection(scored):
     w.open_scorecard(scored.suite["id"], scored.new["id"])
     w.show()
     QApplication.processEvents()
-    assert w.pages.currentWidget() is w.overview
+    assert w.pages.currentWidget() is w.detail_scroll
     assert w.checked_ids == set() and w.selected_benchmarks() == []
-    root = w.topic_tree.topLevelItem(0)
-    volume = root.child(0)
-    w._browse_topic(volume)
-    assert w.pages.currentWidget() is w.item_table and len(w.visible_items()) == 1
+    volume = w.topic_picker.findData(group["id"])
+    w.topic_picker.setCurrentIndex(volume)
+    assert w.pages.currentWidget() is w.detail_scroll and len(w.visible_items()) == 1
     w.check_visible()
     assert w.checked_ids == {scored.eos["id"]}
-    w._browse_topic(root.child(1))
+    w.topic_picker.setCurrentIndex(w.topic_picker.count() - 1)
     w.check_visible()
     assert w.checked_ids == {scored.eos["id"], scored.efv["id"]}
     before = set(w.checked_ids)
+    w.topic_picker.setCurrentIndex(volume)
     w.open_item(scored.eos["id"])
     assert w.checked_ids == before and len(w.detail.eos_plots) == 1
-    assert w.pages.currentWidget() is w.page_widgets["details"]
+    assert w.pages.currentWidget() is w.detail_scroll
     w.comparison_picker.set_selected_ids([scored.old["id"]])
     assert len(w.run_jobs(model_ids=w.selected_model_ids())) == 4
     w.clear_checks()
@@ -121,7 +121,7 @@ def test_workspace_run_freezes_scope_and_does_not_force_navigation(scored):
         assert _wait_until(lambda: w._run_task is None)
         assert {c.args[1] for c in evaluate.call_args_list} == {scored.eos["id"]}
         assert len(evaluate.call_args_list) == len(w.selected_model_ids())
-        assert w.pages.currentWidget() is w.item_table
+        assert w.pages.currentWidget() is w.matrix_card
         assert w.checked_ids == {scored.efv["id"]}
     w.close()
     w.deleteLater()
@@ -144,9 +144,10 @@ def test_workspace_overview_does_not_load_curves_and_primary_switch_keeps_target
     from NepTrainKit.ui.views.validation_workspace import ValidationWorkspace
 
     w = ValidationWorkspace(service=scored.service)
+    w.open_scorecard(scored.suite["id"], scored.new["id"])
     with patch.object(scored.service, "run_details", side_effect=AssertionError("Overview must not load curve files")):
-        w.open_scorecard(scored.suite["id"], scored.new["id"])
-    assert not w.detail.eos_plots
+        w.show_page("overview")
+        w.show_page("items")
     before = set(w.selected_model_ids())
     w.model_combo.setCurrentIndex(w.model_combo.findData(scored.old["id"]))
     assert set(w.selected_model_ids()) == before
@@ -161,7 +162,7 @@ def test_workspace_diagnostic_editor_is_not_hidden_behind_overview(scored):
     w = ValidationWorkspace(service=scored.service)
     w.open_scorecard(scored.suite["id"], scored.new["id"])
     w.show_diagnostic_editor()
-    assert w.pages.currentWidget() is w.page_widgets["details"]
+    assert w.pages.currentWidget() is w.detail_scroll
     assert not w.editor_scroll.isHidden()
     w.close()
     w.deleteLater()
@@ -236,16 +237,16 @@ def test_topic_navigation_clears_management_selection_but_keeps_checks(scored):
     service.assign_group(scored.suite["id"], [scored.eos["id"]], topic["id"])
     w = ValidationWorkspace(service=service)
     w.open_scorecard(scored.suite["id"], scored.new["id"])
-    root = w.topic_tree.topLevelItem(0)
-    w.topic_tree.setCurrentItem(root.child(0))
+    w.show_page("items")
+    w.topic_picker.setCurrentIndex(w.topic_picker.findData(topic["id"]))
     w.item_table.selectRow(0)
     w.check_visible()
     assert w._management_ids() == [scored.eos["id"]]
-    w.topic_tree.setCurrentItem(root.child(1))
-    assert w.pages.currentWidget() is w.item_table
+    w.topic_picker.setCurrentIndex(w.topic_picker.count() - 1)
+    assert w.pages.currentWidget() is w.matrix_card
     assert not w._management_ids()
     assert w.checked_ids == {scored.eos["id"]}
-    assert not any(a.isEnabled() for a in w.topic_tree.actions())
+    assert not any(a.isEnabled() for a in w.topic_actions)
     w.close()
     w.deleteLater()
 
@@ -288,3 +289,40 @@ def test_folder_batch_creates_topics_without_predictions(scored, tmp_path):
     assert {i["group_name"] for i in scored.service.suite_items(suite["id"])} == {"EOS", "Accuracy"}
     dialog.accept()
     host.close()
+
+
+def test_clicking_compare_and_run_cells_has_independent_effects(scored):
+    from PySide6.QtTest import QTest
+    from NepTrainKit.ui.views.validation_workspace import ValidationWorkspace
+
+    w = ValidationWorkspace(service=scored.service)
+    w.resize(1320, 850)
+    w.open_scorecard(scored.suite["id"], scored.new["id"])
+    w.show()
+    QApplication.processEvents()
+    navigator = w.sidebar_item_list
+    assert navigator.isVisible() and w.detail_scroll.isVisible()
+    for row, column in ((0, 0), (1, 1)):
+        cell = navigator.item(row, column)
+        QTest.mouseClick(navigator.viewport(), Qt.MouseButton.LeftButton,
+                         pos=navigator.visualItemRect(cell).center())
+    assert w.checked_ids == {scored.efv["id"]}
+    assert w.detail._args[0]["id"] == scored.eos["id"]
+    navigator.setCurrentCell(1, 0)
+    assert w.detail._args[0]["id"] == scored.efv["id"]
+    w.resize(800, 650)
+    QApplication.processEvents()
+    assert navigator.isVisible() and w.detail.plot_pane.isVisible()
+    w.pane_button.click()
+    assert w.detail.inspector_panel.isVisible() and not w.detail.plot_pane.isVisible()
+    w.show_page("items")
+    assert w.item_table.isVisible()
+    assert w.item_table.item(1, w.check_column).checkState() == Qt.CheckState.Checked
+    w.resize(1360, 860)
+    QApplication.processEvents()
+    assert w.item_table.isVisible()
+    w.show_page("result")
+    assert w.detail.plot_pane.isVisible() and w.detail.inspector_panel.isVisible()
+    assert w.checked_ids == {scored.efv["id"]}
+    w.close()
+    w.deleteLater()

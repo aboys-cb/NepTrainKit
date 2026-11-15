@@ -20067,6 +20067,30 @@ Dataset SHA-256: {data}</source>
         <translation>关闭</translation>
     </message>
 
+    <message>
+        <source>Physical metrics</source>
+        <translation>定量指标</translation>
+    </message>
+    <message>
+        <source>Metric</source>
+        <translation>指标</translation>
+    </message>
+    <message>
+        <source>Response RMSE</source>
+        <translation>响应 RMSE</translation>
+    </message>
+    <message>
+        <source>Max response error</source>
+        <translation>最大响应误差</translation>
+    </message>
+    <message>
+        <source>Sign mismatches</source>
+        <translation>符号不一致</translation>
+    </message>
+    <message>
+        <source>Excluded groups</source>
+        <translation>排除组数</translation>
+    </message>
 </context>
 <context>
     <name>RuntimeMessage</name>
@@ -32893,6 +32917,38 @@ Type: {kind} · Elements: {elements}</source>
     <message>
         <source>This item selects an EOS subgroup. Keep its protocol when editing; create a new reference item for a different analysis.</source>
         <translation>此验证项引用一个 EOS 子组。编辑时保留协议；其他分析请另建验证项。</translation>
+    </message>
+    <message>
+        <source>Model comparison</source>
+        <translation>模型对照</translation>
+    </message>
+    <message>
+        <source>Physical metrics</source>
+        <translation>定量指标</translation>
+    </message>
+    <message>
+        <source>Back to comparison</source>
+        <translation>返回对照表</translation>
+    </message>
+    <message>
+        <source>Compare with</source>
+        <translation>选择对比势</translation>
+    </message>
+    <message>
+        <source>Current model</source>
+        <translation>当前势</translation>
+    </message>
+    <message>
+        <source>Actions</source>
+        <translation>列表操作</translation>
+    </message>
+    <message>
+        <source>Show curve</source>
+        <translation>查看曲线</translation>
+    </message>
+    <message>
+        <source>Results</source>
+        <translation>验证结果</translation>
     </message>
 </context>
 </TS>

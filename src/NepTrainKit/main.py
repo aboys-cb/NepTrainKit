@@ -187,9 +187,14 @@ class NepTrainKitMainWindow(FluentWindow):
             self.tr('Make Dataset'),
         )
         self.addSubInterface(
+            self.data_manager_interface.validation_page,
+            FluentIcon.COMPLETED,
+            self.tr('Model validation'),
+        )
+        self.addSubInterface(
             self.data_manager_interface,
             QIcon(':/images/src/images/dataset.svg'),
-            self.tr('Data Management'),
+            self.tr('Projects'),
         )
         self.addSubInterface(
             self.setting_interface,
@@ -217,7 +222,8 @@ class NepTrainKitMainWindow(FluentWindow):
         )
         self.data_manager_interface = DataManagerWidget(self)
         self.show_nep_interface.modelRegistryChanged.connect(self.data_manager_interface._on_registry_changed)
-        self.data_manager_interface.toolbarActionsChanged.connect(self._refresh_page_actions)
+        self.data_manager_interface.navigateRequested.connect(self.switchTo)
+        self.data_manager_interface.validation_page.toolbarActionsChanged.connect(self._refresh_page_actions)
         self.data_manager_interface.library_widget.samplingWorkflowRequested.connect(
             self.open_eos_sampling_workflow
         )
@@ -515,7 +521,6 @@ class NepTrainKitMainWindow(FluentWindow):
     def open_model_scorecard(self, suite_id: int | None, model_id: int | None = None, *, draft=None) -> None:
         """Show the validation scorecard requested by the viewer status chip."""
         self.data_manager_interface.open_scorecard(suite_id, model_id, draft=draft)
-        self.switchTo(self.data_manager_interface)
 
     def open_training_set_audit(
         self,

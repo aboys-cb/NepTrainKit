@@ -17155,6 +17155,14 @@ Done {done}    Pending {pending}    Failed {failed}    Unsupported {unsupported}
         <source>EOS supplementary sampling</source>
         <translation type="vanished">EOS 补充采样</translation>
     </message>
+    <message>
+        <source>Projects</source>
+        <translation>项目</translation>
+    </message>
+    <message>
+        <source>Model validation</source>
+        <translation>模型验证</translation>
+    </message>
 </context>
 <context>
     <name>NepTrainResultData</name>
@@ -32949,6 +32957,148 @@ Type: {kind} · Elements: {elements}</source>
     <message>
         <source>Results</source>
         <translation>验证结果</translation>
+    </message>
+    <message>
+        <source>Model validation</source>
+        <translation>模型验证</translation>
+    </message>
+    <message>
+        <source>Current model evaluated on {done} of {total} items</source>
+        <translation>当前势已计算 {done} / {total} 项</translation>
+    </message>
+    <message>
+        <source>{regressed} of {compared} comparable items regressed</source>
+        <translation>可对比 {compared} 项，退化 {regressed} 项</translation>
+    </message>
+    <message>
+        <source>No validation items</source>
+        <translation>暂无验证项</translation>
+    </message>
+    <message>
+        <source>Search topics or items…</source>
+        <translation>搜索主题或验证项…</translation>
+    </message>
+    <message>
+        <source>Historical RMSE</source>
+        <translation>历史 RMSE</translation>
+    </message>
+    <message>
+        <source>Unverified</source>
+        <translation>未校验</translation>
+    </message>
+    <message>
+        <source>Test</source>
+        <translation>测试</translation>
+    </message>
+    <message>
+        <source>Training</source>
+        <translation>训练</translation>
+    </message>
+    <message>
+        <source>No recorded RMSE</source>
+        <translation>暂无登记 RMSE</translation>
+    </message>
+    <message>
+        <source>Show or hide model curves</source>
+        <translation>显示或隐藏该势的曲线</translation>
+    </message>
+    <message>
+        <source>Comparison model</source>
+        <translation>对比势</translation>
+    </message>
+    <message>
+        <source>Baseline model</source>
+        <translation>基准势</translation>
+    </message>
+    <message>
+        <source>No current model selected</source>
+        <translation>未选当前势</translation>
+    </message>
+    <message>
+        <source>Save to a project to use as baseline</source>
+        <translation>临时势，存入项目后可设为基准</translation>
+    </message>
+    <message>
+        <source>Add models</source>
+        <translation>添加势</translation>
+    </message>
+    <message>
+        <source>Manage comparison models</source>
+        <translation>添加／管理对比势</translation>
+    </message>
+    <message>
+        <source>{count} frames</source>
+        <translation>{count} 帧</translation>
+    </message>
+    <message>
+        <source>No compatible validation items for {name}.</source>
+        <translation>当前套件没有与 {name} 元素兼容的验证项。</translation>
+    </message>
+</context>
+<context>
+    <name>ModelColorButton</name>
+    <message>
+        <source>Choose model color</source>
+        <translation>选择模型颜色</translation>
+    </message>
+</context>
+<context>
+    <name>ValidationModelPicker</name>
+    <message>
+        <source>Search project or model name</source>
+        <translation>搜索项目名或势函数名</translation>
+    </message>
+    <message>
+        <source>No matching models.</source>
+        <translation>没有匹配的势函数版本</translation>
+    </message>
+    <message>
+        <source>Choose model versions to compare</source>
+        <translation>选择参与对比的势函数版本</translation>
+    </message>
+    <message>
+        <source>Choose one role per version. You can compare several versions.</source>
+        <translation>每个版本只选一个角色。当前势和基准势各可选一个，对比势可选多个。</translation>
+    </message>
+    <message>
+        <source>Drop a NEP .txt file here to compare a temporary model.</source>
+        <translation>拖入 NEP 模型 .txt 文件即可加入临时势。</translation>
+    </message>
+    <message>
+        <source>Done</source>
+        <translation>完成选择</translation>
+    </message>
+    <message>
+        <source>Close</source>
+        <translation>关闭</translation>
+    </message>
+    <message>
+        <source>Current model</source>
+        <translation>当前势</translation>
+    </message>
+    <message>
+        <source>Baseline model</source>
+        <translation>基准势</translation>
+    </message>
+    <message>
+        <source>Comparison model</source>
+        <translation>对比势</translation>
+    </message>
+    <message>
+        <source>Hidden</source>
+        <translation>隐藏</translation>
+    </message>
+    <message>
+        <source>No compatible models in this suite.</source>
+        <translation>暂无可选势函数，可拖入模型开始对比。</translation>
+    </message>
+    <message>
+        <source>Set a baseline for a suite using a saved project model.</source>
+        <translation>请选择验证套件，并使用已存入项目的模型作为基准。</translation>
+    </message>
+    <message>
+        <source>The baseline can be changed after evaluation finishes.</source>
+        <translation>验证结束后可更换基准势。</translation>
     </message>
 </context>
 </TS>

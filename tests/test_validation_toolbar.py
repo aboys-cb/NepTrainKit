@@ -45,8 +45,10 @@ def toolbar(scored, monkeypatch):
     monkeypatch.setattr(manager_module, "ValidationWorkspace", lambda parent: ModelLibraryWidget(parent, scored.service))
     host = ToolbarHost()
     page = manager_module.DataManagerWidget(host)
-    page.toolbarActionsChanged.connect(host._refresh_page_actions)
+    page.validation_page.toolbarActionsChanged.connect(host._refresh_page_actions)
+    host.stackedWidget.addWidget(page.validation_page)
     host.stackedWidget.addWidget(page)
+    page.navigateRequested.connect(host.stackedWidget.setCurrentWidget)
     other = QWidget()
     host.stackedWidget.addWidget(other)
     host.resize(1180, 850)
@@ -86,7 +88,7 @@ def test_top_actions_dispatch_and_detach_on_page_and_tab_changes(toolbar, monkey
         host.save_dir_button.button.click()
         assert calls[-2:] == ["other-open", "other-save"]
         assert host.save_dir_button.toolTip() == "Save data from this page"
-        host.stackedWidget.setCurrentWidget(page)
+        host.stackedWidget.setCurrentWidget(page.validation_page)
         assert host.save_menu.actions() == [library.save_action, library.star_action, library.save_plan_action, library.export_package_action]
         page.show_projects()
         assert host.load_menu.actions() == [] and host.save_menu.actions() == []
@@ -117,7 +119,7 @@ def test_top_favourite_and_save_state_follow_model_and_validation(toolbar, monke
     host.stackedWidget.setCurrentWidget(toolbar.other)
     assert _wait_until(lambda: library._run_task is None)
     assert not host.save_dir_button.isEnabled() and host.save_menu.actions() == []
-    host.stackedWidget.setCurrentWidget(toolbar.page)
+    host.stackedWidget.setCurrentWidget(toolbar.page.validation_page)
     assert host.save_dir_button.isEnabled()
     host.save_dir_button.button.click()
     assert calls == ["save"]
@@ -292,10 +294,9 @@ def test_navigation_reuses_scorecard_and_plot_without_evaluation(toolbar):
          patch.object(library, '_update_detail', wraps=library._update_detail) as render:
         for _ in range(3):
             host.stackedWidget.setCurrentWidget(toolbar.other)
-            host.stackedWidget.setCurrentWidget(page)
+            host.stackedWidget.setCurrentWidget(page.validation_page)
             page.show_projects()
-            page.tabs.setCurrentItem('validation')
-            page.stack.setCurrentWidget(library)
+            host.stackedWidget.setCurrentWidget(page.validation_page)
             QApplication.processEvents()
         evaluate.assert_not_called()
         predictor.assert_not_called()
@@ -320,7 +321,7 @@ def test_navigation_does_not_close_diagnostic_editor(toolbar):
     with patch.object(library, '_update_detail', wraps=library._update_detail) as render:
         host.stackedWidget.setCurrentWidget(toolbar.other)
         QApplication.processEvents()
-        host.stackedWidget.setCurrentWidget(toolbar.page)
+        host.stackedWidget.setCurrentWidget(toolbar.page.validation_page)
         QApplication.processEvents()
         assert library.diagnostic_editor.isVisible()
         assert library.editor_scroll.isVisible() and library.controls_panel.isHidden()
@@ -364,7 +365,7 @@ def test_navigation_loads_changed_library_without_reusing_old_rows(toolbar, tmp_
     service = ValidationService(Library(tmp_path / 'new-library'))
     library._service = service
     with patch.object(service, 'evaluate') as evaluate:
-        host.stackedWidget.setCurrentWidget(toolbar.page)
+        host.stackedWidget.setCurrentWidget(toolbar.page.validation_page)
         QApplication.processEvents()
         assert library._library_root == service.library.root
         assert library.current_suite_id() is None and library.current_model_row() is None

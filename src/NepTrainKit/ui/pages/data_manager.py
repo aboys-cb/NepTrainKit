@@ -3,8 +3,7 @@
 # @Time    : 2025/8/27 17:18
 # @email    : 1747193328@qq.com
 from PySide6.QtCore import Qt, Signal
-from PySide6.QtWidgets import QGridLayout, QHBoxLayout, QSplitter, QStackedWidget, QWidget
-from qfluentwidgets import SegmentedWidget
+from PySide6.QtWidgets import QVBoxLayout, QSplitter, QWidget
 
 from NepTrainKit.core import MessageManager
 from NepTrainKit.core.dataset.seed import seed_nep_data_git
@@ -29,52 +28,66 @@ def _dropped_models(mime_data):
     )
 
 
-class DataManagerWidget(QWidget):
-    """Model library: validation scorecard plus the project and model registry.
+class _ModelDropPage(QWidget):
+    modelsDropped = Signal(list)
 
-    Parameters
-    ----------
-    parent : QWidget | None
-        Optional owner widget that holds this page.
-    """
+    def dragEnterEvent(self, event):
+        """Accept TXT files or folders containing recognisable NEP model headers."""
+        if _dropped_models(event.mimeData()):
+            event.acceptProposedAction()
+        else:
+            event.ignore()
 
+    def dropEvent(self, event):
+        """Review the detected file, then save its bytes as a model snapshot."""
+        paths = _dropped_models(event.mimeData())
+        if not paths:
+            event.ignore()
+            return
+        event.acceptProposedAction()
+        self.modelsDropped.emit(paths)
+
+
+class ValidationPage(_ModelDropPage):
     toolbarActionsChanged = Signal()
 
     def __init__(self, parent=None):
-        """Initialise database services and connect child widgets.
-
-        Parameters
-        ----------
-        parent : QWidget | None
-            Optional owner widget that holds this page.
-        """
         super().__init__(parent)
         self._parent = parent
-        self.setObjectName("DataManagerWidget")
+        self.setObjectName("ValidationPage")
         self.setAcceptDrops(True)
-        # The data manager and model validation share the library database.
-        self._db = get_library().database
-        self.model_service = ModelService(self._db)
-        self.project_service = ProjectService(self._db)
-        self.tag_service = TagService(self._db)
-        self.init_ui()
-        seed_nep_data_git(self._db, self.project_service, self.model_service)
+        self.library_widget = ValidationWorkspace(self)
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.addWidget(self.library_widget)
+        self.library_widget.toolbarContextChanged.connect(self.toolbarActionsChanged)
+        for action in (
+            self.library_widget.import_action,
+            self.library_widget.save_action,
+            self.library_widget.import_files_action,
+            self.library_widget.import_folder_action,
+            self.library_widget.star_action,
+            self.library_widget.import_package_action,
+            self.library_widget.export_package_action,
+            self.library_widget.diagnostic_action,
+            self.library_widget.edit_diagnostic_action,
+            self.library_widget.save_plan_action,
+        ):
+            action.changed.connect(self.toolbarActionsChanged)
 
     def toolbar_actions(self):
-        """Expose validation defaults only while its tab is selected."""
-        if self.stack.currentWidget() is self.library_widget:
-            library = self.library_widget
-            editing = not library.editor_scroll.isHidden()
-            temporary = library.current_suite_id() is not None and library.current_suite_id() < 0
-            return {
-                "open": library.import_action,
-                "save": library.save_plan_action if editing or temporary else library.save_action,
-                "save_menu": library.save_action if temporary else library.export_package_action,
-            }
-        return {}
+        """Expose validation defaults only for the validation page."""
+        library = self.library_widget
+        editing = not library.editor_scroll.isHidden()
+        temporary = library.current_suite_id() is not None and library.current_suite_id() < 0
+        return {
+            "open": library.import_action,
+            "save": library.save_plan_action if editing or temporary else library.save_action,
+            "save_menu": library.save_action if temporary else library.export_package_action,
+        }
 
     def _sync_toolbar_actions(self, *_args):
-        active = self.isVisible() and self.stack.currentWidget() is self.library_widget
+        active = self.isVisible()
         for menu_name, actions in (
             (
                 "load_menu",
@@ -115,21 +128,36 @@ class DataManagerWidget(QWidget):
         super().hideEvent(event)
         self._sync_toolbar_actions()
 
-    def dragEnterEvent(self, event):
-        """Accept TXT files or folders containing recognisable NEP model headers."""
-        if _dropped_models(event.mimeData()):
-            event.acceptProposedAction()
-        else:
-            event.ignore()
 
-    def dropEvent(self, event):
-        """Review the detected file, then save its bytes as a model snapshot."""
-        paths = _dropped_models(event.mimeData())
-        if not paths:
-            event.ignore()
-            return
-        event.acceptProposedAction()
-        self._import_models(paths)
+class DataManagerWidget(_ModelDropPage):
+    """Project registry and model handoff to the independent validation page."""
+
+    navigateRequested = Signal(QWidget)
+
+    def __init__(self, parent=None):
+        """Initialise database services and connect child widgets.
+
+        Parameters
+        ----------
+        parent : QWidget | None
+            Optional owner widget that holds this page.
+        """
+        super().__init__(parent)
+        self._parent = parent
+        self.setObjectName("DataManagerWidget")
+        self.setAcceptDrops(True)
+        # The data manager and model validation share the library database.
+        self._db = get_library().database
+        self.model_service = ModelService(self._db)
+        self.project_service = ProjectService(self._db)
+        self.tag_service = TagService(self._db)
+        self.validation_page = ValidationPage(parent or self)
+        self.validation_page.hide()
+        self.library_widget = self.validation_page.library_widget
+        self.modelsDropped.connect(self._import_models)
+        self.validation_page.modelsDropped.connect(self._import_models)
+        self.init_ui()
+        seed_nep_data_git(self._db, self.project_service, self.model_service)
 
     def import_model_path(self, path):
         paths = find_model_files(path)
@@ -163,7 +191,17 @@ class DataManagerWidget(QWidget):
         MessageManager.send_success_message(self.tr("Model imported: {name}").format(name=record["name"]))
 
     def show_projects(self):
-        """Switch to the project registry tab."""
+        """Open the registry and refresh its project list."""
+        if self.isVisible():
+            self._refresh_projects()
+        else:
+            self.navigateRequested.emit(self)
+
+    def showEvent(self, event):
+        super().showEvent(event)
+        self._refresh_projects()
+
+    def _refresh_projects(self):
         database = get_library().database
         if database.path != self._db.path:
             self._db = database
@@ -178,18 +216,15 @@ class DataManagerWidget(QWidget):
             self.data_item_widget.project = None
             self.data_item_widget._model.clear()
             self.data_item_widget._update_action_state()
-        self.tabs.setCurrentItem("projects")
-        self.stack.setCurrentWidget(self.splitter)
         self.project_widget.load_all_projects()
         project = getattr(self.data_item_widget, "project", None)
         if project is not None:
             self.data_item_widget.load_models_by_project(project)
 
     def open_scorecard(self, suite_id, model_id=None, *, draft=None):
-        """Switch to the validation tab with ``suite_id`` and ``model_id`` selected."""
+        """Open the validation page with ``suite_id`` and ``model_id`` selected."""
         self.library_widget.open_scorecard(suite_id, model_id, draft=draft)
-        self.tabs.setCurrentItem("validation")
-        self.stack.setCurrentWidget(self.library_widget)
+        self.navigateRequested.emit(self.validation_page)
 
     def validate_registered_model(self, model_id: int) -> None:
         """Open the selected registered model directly as the Current Model in the validation workbench."""
@@ -198,8 +233,7 @@ class DataManagerWidget(QWidget):
 
     def compare_registered_model(self, model_id: int) -> None:
         """Add the selected registered model to the comparison dock in the validation workbench."""
-        self.tabs.setCurrentItem("validation")
-        self.stack.setCurrentWidget(self.library_widget)
+        self.navigateRequested.emit(self.validation_page)
         current_id = self.library_widget.model_combo.currentData()
         if current_id is None or current_id == model_id:
             self.library_widget.open_scorecard(self.library_widget.current_suite_id(), model_id)
@@ -226,8 +260,8 @@ class DataManagerWidget(QWidget):
                 MessageManager.send_info_message("模型已登记，但暂不能用于验证：" + reason)
 
     def init_ui(self):
-        """Build the validation scorecard and the project/model split view."""
-        self.gridLayout = QGridLayout(self)
+        """Build the project and model split view."""
+        self.gridLayout = QVBoxLayout(self)
         self.gridLayout.setObjectName("DataManagerWidget_gridLayout")
         self.gridLayout.setContentsMargins(0, 0, 0, 0)
 
@@ -257,39 +291,6 @@ class DataManagerWidget(QWidget):
         self.splitter.setStretchFactor(0, 1)
         self.splitter.setStretchFactor(1, 8)
 
-        self.library_widget = ValidationWorkspace(self)
+        self.gridLayout.addWidget(self.splitter)
         self.data_item_widget.modelsChanged.connect(self._on_registry_changed)
         self.project_widget.projectsChanged.connect(self._on_registry_changed)
-        self.stack = QStackedWidget(self)
-        self.stack.addWidget(self.library_widget)
-        self.stack.addWidget(self.splitter)
-        self.tabs = SegmentedWidget(self)
-        self.tabs.addItem(
-            "validation", "验证与诊断", lambda: self.stack.setCurrentWidget(self.library_widget)
-        )
-        self.tabs.addItem("projects", self.tr("Projects"), self.show_projects)
-        self.tabs.setCurrentItem("validation")
-
-        tab_row = QHBoxLayout()
-        tab_row.setContentsMargins(12, 6, 12, 2)
-        tab_row.addWidget(self.tabs)
-        tab_row.addStretch(1)
-        self.gridLayout.addLayout(tab_row, 0, 0, 1, 1)
-        self.gridLayout.addWidget(self.stack, 1, 0, 1, 1)
-
-        self.setLayout(self.gridLayout)
-        self.stack.currentChanged.connect(self._sync_toolbar_actions)
-        self.library_widget.toolbarContextChanged.connect(self.toolbarActionsChanged)
-        for action in (
-            self.library_widget.import_action,
-            self.library_widget.save_action,
-            self.library_widget.import_files_action,
-            self.library_widget.import_folder_action,
-            self.library_widget.star_action,
-            self.library_widget.import_package_action,
-            self.library_widget.export_package_action,
-            self.library_widget.diagnostic_action,
-            self.library_widget.edit_diagnostic_action,
-            self.library_widget.save_plan_action,
-        ):
-            action.changed.connect(self.toolbarActionsChanged)

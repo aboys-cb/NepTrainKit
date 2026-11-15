@@ -1156,10 +1156,15 @@ class ValidationService:
                 {
                     "model_id": model_id,
                     "name": model["name"],
+                    "content_hash": model["content_hash"],
                     "project_name": project_names.get(model["project_id"], ""),
                     "temporary": model["project_id"] is None,
                     "is_baseline": model_id == baseline_id,
                     "starred": model["starred"],
+                    "energy": model["energy"],
+                    "force": model["force"],
+                    "model_kind": model["model_kind"],
+                    "data_size": model["data_size"],
                     "cells": cells,
                     "regressions": sum(1 for cell in cells if cell.get("verdict") == "worse"),
                     "total_sets": len(sets),
@@ -1172,6 +1177,7 @@ class ValidationService:
         if draft is not None:
             rows.append({
                 "model_id": 0, "name": draft.name, "project_name": "", "temporary": True,
+                "content_hash": draft.content_hash,
                 "is_baseline": False, "starred": False, "regressions": 0,
                 "cells": [{"value": None, "status": "missing", "error": "", "run_id": None, "verdict": None} for _ in columns],
                 "total_sets": len(sets), "completed_sets": 0, "failed_sets": 0,

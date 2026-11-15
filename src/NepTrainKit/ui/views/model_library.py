@@ -12,6 +12,7 @@ from PySide6.QtWidgets import (
     QFileDialog,
     QFrame,
     QGridLayout,
+    QMenu,
     QHBoxLayout,
     QHeaderView,
     QScrollArea,
@@ -31,7 +32,6 @@ from qfluentwidgets import (
     MessageBox,
     PrimarySplitPushButton,
     PushButton,
-    RoundMenu,
     TableView,
     TableWidget,
     TransparentPushButton,
@@ -137,6 +137,16 @@ class ScorecardTableModel(QAbstractTableModel):
             return self.tr("{set} · {protocol}").format(set=column["set_name"], protocol=column["protocol"])
         return None
 
+    def model_name(self, row, *, include_baseline=True):
+        name = f"★ {row['name']}" if row["starred"] else row["name"]
+        if row["model_id"] == 0:
+            name = self.tr("{name} (unsaved)").format(name=name)
+        elif row.get("temporary"):
+            name = self.tr("{name} (temporary)").format(name=name)
+        elif row.get("project_name"):
+            name = f"{row['project_name']} / {name}"
+        return self.tr("{name} (baseline model)").format(name=name) if include_baseline and row["is_baseline"] else name
+
     def data(self, index, role=Qt.ItemDataRole.DisplayRole):
         row = self.row(index.row()) if index.isValid() else None
         if row is None:
@@ -144,14 +154,7 @@ class ScorecardTableModel(QAbstractTableModel):
         column = self.column(index.column())
         if column is None:
             if role == Qt.ItemDataRole.DisplayRole:
-                name = f"★ {row['name']}" if row["starred"] else row["name"]
-                if row["model_id"] == 0:
-                    name = self.tr("{name} (unsaved)").format(name=name)
-                elif row.get("temporary"):
-                    name = self.tr("{name} (temporary)").format(name=name)
-                elif row.get("project_name"):
-                    name = f"{row['project_name']} / {name}"
-                return self.tr("{name} (baseline model)").format(name=name) if row["is_baseline"] else name
+                return self.model_name(row)
             if role == Qt.ItemDataRole.FontRole and row["is_baseline"]:
                 font = QFont()
                 font.setBold(True)
@@ -350,6 +353,7 @@ def summarize_model_status(service, model_id: int, preferred_suite_id: int | Non
 class RunDetailPanel(QWidget):
     """Protocol details of one set, overlaying every selected model."""
 
+    seriesVisibilityChanged = Signal(object, bool)
     groupFocused = Signal(str)
     allGroupsRequested = Signal()
     comparisonRemoved = Signal(int)
@@ -366,6 +370,7 @@ class RunDetailPanel(QWidget):
         self._groups = None
         self._total_groups = 0
         self._series_styles = {}
+        self.model_colors = {}
         self._hidden_series = set()
         self._curves = {}
         self._adaptive_layout = False
@@ -722,9 +727,9 @@ class RunDetailPanel(QWidget):
 
         protocol = protocol_for_set(benchmark)
         headers = [self.tr("Metric")]
-        for index, (_, name, _, _) in enumerate(entries):
+        for key, name, _, _ in entries:
             # Keep units in the row and compact role labels above the numbers.
-            headers.append(self.tr("Current model") if index == 0 else name.split(" / ")[-1].split(" (")[0].split("（")[0].strip())
+            headers.append(self.tr("Current model") if key == self._current_key else name.split(" / ")[-1].split(" (")[0].split("（")[0].strip())
         self.multi_model_table.setColumnCount(len(headers))
         self.multi_model_table.setHorizontalHeaderLabels(headers)
         for column, (_, name, _, _) in enumerate(entries, 1):
@@ -769,6 +774,7 @@ class RunDetailPanel(QWidget):
 
     def reset_series(self):
         self._series_styles.clear()
+        self.model_colors.clear()
         self._hidden_series.clear()
 
     def _series_pen(self, key):
@@ -787,7 +793,7 @@ class RunDetailPanel(QWidget):
                 styles[index % len(styles)],
             )
         color, style = self._series_styles[key]
-        return self._pg.mkPen(color, width=2.8 if key == self._current_key else 1.8, style=style)
+        return self._pg.mkPen(self.model_colors.get(key, color), width=2.8 if key == self._current_key else 1.8, style=style)
 
     def _rebuild_legend(self, groups):
         while self.legend_flow.count():
@@ -798,12 +804,16 @@ class RunDetailPanel(QWidget):
         self.legend_buttons = {}
         entries = groups[0][2] if groups else []
         diagnostic = bool(groups and groups[0][1]["protocol"] == "diagnostic")
-        self._current_key = entries[0][0] if entries else None
+        if not self._adaptive_layout:
+            self._current_key = entries[0][0] if entries else None
         keys = ([] if groups and groups[0][1]["protocol"] == "diagnostic" else [None]) + [
             entry[0] for entry in entries
         ]
-        self._hidden_series.intersection_update(keys)
-        self.legend_panel.setVisible(bool(groups))
+        if self._adaptive_layout:
+            keys = [key for key in keys if key is None]
+        else:
+            self._hidden_series.intersection_update(keys)
+        self.legend_panel.setVisible(bool(groups and keys))
         for key in keys if groups else []:
             if key is None:
                 label = self.tr("Reference")
@@ -856,7 +866,7 @@ class RunDetailPanel(QWidget):
             font.setStrikeOut(key in self._hidden_series)
             button.setFont(font)
             button.setToolTip(label + "\n" + self.tr("Click to hide or show this curve in every chart."))
-            button.toggled.connect(lambda checked, series=key: self._set_series_visible(series, checked))
+            button.toggled.connect(lambda checked, series=key: self.set_series_visible(series, checked))
             row.addWidget(button)
             if key is not None and key != self._current_key and not self._adaptive_layout:
                 pin_btn = TransparentToolButton(
@@ -884,17 +894,48 @@ class RunDetailPanel(QWidget):
         self._curves.setdefault(key, []).append(curve)
         curve.setVisible(key not in self._hidden_series)
 
-    def _set_series_visible(self, key, visible):
-        button = self.legend_buttons[key]
-        font = button.font()
-        font.setStrikeOut(not visible)
-        button.setFont(font)
+    def series_visible(self, key):
+        return key not in self._hidden_series
+
+    def set_series_color(self, key, color):
+        self.model_colors[key] = color.name()
+        for curve in self._curves.get(key, ()):
+            if curve.opts["pen"] is not None:
+                curve.setPen(self._series_pen(key))
+            if curve.opts["symbol"] is not None:
+                curve.setSymbolBrush(color)
+                if curve.opts["symbolPen"] is not None:
+                    curve.setSymbolPen(color)
+
+    def set_current_series(self, key):
+        previous = self._current_key
+        if previous == key:
+            return
+        self._current_key = key
+        for model in (previous, key):
+            if model is not None:
+                for curve in self._curves.get(model, ()):
+                    if curve.opts["pen"] is not None:
+                        curve.setPen(self._series_pen(model))
+        if self._args[0]:
+            self._update_inspector(self._groups or [("", *self._args)])
+
+    def set_series_visible(self, key, visible):
+        button = self.legend_buttons.get(key)
+        if button is not None:
+            button.blockSignals(True)
+            button.setChecked(visible)
+            button.blockSignals(False)
+            font = button.font()
+            font.setStrikeOut(not visible)
+            button.setFont(font)
         if visible:
             self._hidden_series.discard(key)
         else:
             self._hidden_series.add(key)
         for curve in self._curves.get(key, []):
             curve.setVisible(visible)
+        self.seriesVisibilityChanged.emit(key, visible)
 
     def resizeEvent(self, event):
         super().resizeEvent(event)
@@ -1254,7 +1295,7 @@ class ModelLibraryWidget(QWidget):
             self.tr("Runs the current model and the ticked comparison models; hiding a curve does not untick it.")
         )
         self.run_selected_button.clicked.connect(self._on_run_clicked)
-        self.run_menu = RoundMenu(parent=self)
+        self.run_menu = QMenu(self)
         self.run_current_action = Action(FluentIcon.PLAY, "仅验证当前势", self)
         self.run_all_action = Action(FluentIcon.PLAY, "验证全库兼容势（含其他项目）", self)
         self.run_current_action.triggered.connect(self.run_current)
@@ -1688,7 +1729,7 @@ class ModelLibraryWidget(QWidget):
             Config.set("validation", CONFIG_SUITE, suite_id)
         self._load_scorecard()
 
-    def _load_scorecard(self, model_id: int | None = None) -> None:
+    def _load_scorecard(self, model_id: int | None = None, *, comparison_ids=None, update_detail=True) -> None:
         suite_id = self.current_suite_id()
         service = self.service()
         self._benchmarks = service.suite_sets(suite_id) if suite_id is not None else []
@@ -1762,11 +1803,12 @@ class ModelLibraryWidget(QWidget):
             else ""
         )
         self.tolerance_label.setVisible(bool(self.tolerance_label.text()) and baseline is not None)
-        comparison_ids = (
-            self.comparison_picker.selected_ids()
-            if self._displayed_suite_id == suite_id
-            else [suite.get("baseline_model_id")]
-        )
+        current_id = self._scorecard_current_id(model_id, comparison_ids)
+        if comparison_ids is None:
+            comparison_ids = (self.comparison_picker.selected_ids() if self._displayed_suite_id == suite_id
+                              else [suite.get("baseline_model_id")])
+        if model_id is not None and current_id is None and baseline and model_id == baseline["model_id"]:
+            comparison_ids = [*comparison_ids, model_id]
         self._displayed_suite_id = suite_id
         self.model_combo.blockSignals(True)
         self.model_combo.clear()
@@ -1777,14 +1819,17 @@ class ModelLibraryWidget(QWidget):
             self.model_combo.addItem(self._empty_model_placeholder(), userData=None)
         self.model_combo.setEnabled(bool(self.model._rows))
         self.model_combo.setToolTip(self._model_combo_hint())
-        selected = self.model_combo.findData(model_id)
-        if selected >= 0:
-            self.model_combo.setCurrentIndex(selected)
+        self.model_combo.setCurrentIndex(self.model_combo.findData(current_id))
         self.model_combo.blockSignals(False)
         self._update_comparison_options(comparison_ids)
         self._load_groups(update_detail=False)
-        self._on_selection_changed()
+        self._on_selection_changed(update_detail=update_detail)
         self.scorecardChanged.emit()
+
+    def _scorecard_current_id(self, requested, comparison_ids):
+        if self.model.row_of_model(requested) >= 0:
+            return requested
+        return self.model._rows[0]["model_id"] if self.model._rows else None
 
     def open_scorecard(
         self,
@@ -1829,9 +1874,9 @@ class ModelLibraryWidget(QWidget):
         index = self.model.row_of_model(self.model_combo.currentData())
         return self.model.row(index)
 
-    def _model_label(self, index):
+    def _model_label(self, index, *, include_baseline=True):
         row = self.model.row(index)
-        label = self.model.data(self.model.index(index, 0))
+        label = self.model.model_name(row, include_baseline=include_baseline)
         if (
             sum(
                 item["name"] == row["name"] and item.get("project_name") == row.get("project_name")
@@ -1884,7 +1929,7 @@ class ModelLibraryWidget(QWidget):
             selected_ids = self.comparison_picker.selected_ids()
         options = []
         for index, row in enumerate(self.model._rows):
-            if row["model_id"] in (0, self.model_combo.currentData()):
+            if row["model_id"] == self.model_combo.currentData():
                 continue
             cells = list(
                 {
@@ -1906,6 +1951,9 @@ class ModelLibraryWidget(QWidget):
         return list(
             dict.fromkeys(([current["model_id"]] if current else []) + self.comparison_picker.selected_ids())
         )
+
+    def comparison_curve_ids(self):
+        return self.selected_model_ids()
 
     def _on_model_changed(self, *_args):
         self._update_comparison_options()
@@ -2006,7 +2054,7 @@ class ModelLibraryWidget(QWidget):
             else None
         )
         rows = []
-        for model_id in self.selected_model_ids():
+        for model_id in self.comparison_curve_ids():
             row = self.model.row(self.model.row_of_model(model_id))
             if row and row not in rows:
                 rows.append(row)
@@ -2039,7 +2087,7 @@ class ModelLibraryWidget(QWidget):
                 entries.append(
                     (
                         row["model_id"],
-                        self._model_label(self.model.row_of_model(row["model_id"])),
+                        self._model_label(self.model.row_of_model(row["model_id"]), include_baseline=not self.detail._adaptive_layout),
                         run,
                         details,
                     )
@@ -2532,7 +2580,9 @@ class ModelLibraryWidget(QWidget):
                 return None
             self._draft = None
             jobs = [(record["id"] if model_id == 0 else model_id, set_id) for model_id, set_id in jobs]
-            self.refresh(model_id=record["id"])
+            primary = self.model_combo.currentData()
+            comparisons = [record["id"] if key == 0 else key for key in self.comparison_picker.selected_ids()]
+            self._load_scorecard(record["id"] if primary == 0 else primary, comparison_ids=comparisons)
         self._run_records = []
         self._run_names = {
             job: f"{service.get_model(job[0])['name']} · {service.get_set(job[1])['name']}" for job in jobs

@@ -326,3 +326,308 @@ def test_clicking_compare_and_run_cells_has_independent_effects(scored):
     assert w.checked_ids == {scored.efv["id"]}
     w.close()
     w.deleteLater()
+
+
+def test_comparison_cards_control_curves_independently_of_run_scope(scored):
+    from PySide6.QtTest import QTest
+    from NepTrainKit.ui.views.validation_workspace import ValidationWorkspace
+
+    w = ValidationWorkspace(service=scored.service)
+    w.resize(800, 650)
+    w.open_scorecard(scored.suite["id"], scored.new["id"])
+    w.show()
+    QApplication.processEvents()
+    viewport = w.card_scroll.viewport()
+
+    def click_visible(button):
+        QApplication.processEvents()
+        center = button.rect().center()
+        assert button.isVisible() and viewport.rect().contains(button.mapTo(viewport, center))
+        QTest.mouseClick(button, Qt.MouseButton.LeftButton, pos=center)
+
+    new, old, fresh = [model["id"] for model in (scored.new, scored.old, scored.fresh)]
+    w.check_visible()
+    w.comparison_picker.set_selected_ids([fresh])
+    assert list(w.cards) == [new, old, fresh]
+    assert set(w.selected_model_ids()) == {new, fresh}
+    assert w.controls_panel.geometry().topLeft() == w.rect().topLeft()
+    assert w.controls_panel.width() == w.width()
+    assert w.cards[old].pin.accessibleName() == "Baseline model"
+    w.cards[old].pin.click()
+    assert scored.service.get_suite(scored.suite["id"])["baseline_model_id"] == old
+    assert w.cards[fresh].metrics.text() == "No recorded RMSE"
+    w.cards[old].eye.click()
+    assert not w.detail._curves[old][0].isVisible()
+    assert w.cards[old].graphicsEffect().opacity() == 0.5
+    w.open_item(scored.efv["id"])
+    assert not w.cards[old].eye.isChecked() and not w.detail._curves[old][0].isVisible()
+    w.cards[old].eye.click()
+    assert w.cards[old].eye.isChecked()
+    assert w.cards[old].graphicsEffect() is None
+    click_visible(w.cards[fresh].remove)
+    assert list(w.cards) == [new, old]
+    assert w.selected_model_ids() == [new] and len(w.checked_ids) == 2
+    w.card_scroll.ensureWidgetVisible(w.cards[new].pin)
+    curve = w.detail._curves[new][0]
+    click_visible(w.cards[new].pin)
+    assert scored.service.get_suite(scored.suite["id"])["baseline_model_id"] == new
+    assert w.current_model_row() is None
+    assert w.detail._curves[new][0] is curve
+    assert w.detail.multi_model_table.horizontalHeaderItem(1).text() != "Current model"
+    assert w.role_dialog is None and list(w.cards) == [new, old]
+    w.card_scroll.ensureWidgetVisible(w.cards[old].remove)
+    click_visible(w.cards[old].remove)
+    QApplication.processEvents()
+    assert list(w.cards) == [new] and viewport.width() > 0
+    assert w.cards[new].isVisible() and w.cards[new].width() > 0
+    assert old not in w.detail._curves and w.detail._curves[new][0].isVisible()
+    assert w._focused_reference == scored.efv["id"] and len(w.checked_ids) == 2
+    w.open_scorecard(scored.suite["id"], new)
+    assert w.current_model_row() is None and w.selected_model_ids() == [new]
+    w.edit_models.click()
+    buttons = w.role_dialog.buttons
+    assert buttons[new]["baseline"].isChecked() and not buttons[new]["current"].isChecked()
+    buttons[new]["current"].click()
+    assert w.model_combo.currentData() == new
+    assert scored.service.get_suite(scored.suite["id"])["baseline_model_id"] is None
+    w.role_dialog.buttons[new]["hidden"].click()
+    w.refresh()
+    assert not w.cards and not w.selected_model_ids()
+    w.role_dialog.buttons[old]["compare"].click()
+    assert list(w.cards) == [old] and w.current_model_row() is None
+    w.close()
+    w.deleteLater()
+
+
+def test_model_picker_search_matches_project_or_version_without_changing_selection(scored):
+    from NepTrainKit.core.validation.service import ModelDraft
+    from NepTrainKit.ui.views.validation_workspace import ValidationWorkspace
+    from test_validation_framework import MODEL_HEADER
+
+    added = scored.service.save_model(ModelDraft((MODEL_HEADER + "variant").encode(), "variant.txt"),
+                                      project_name="BFO candidates", name="spin-final")
+    key = added["id"]
+    w = ValidationWorkspace(service=scored.service)
+    w.open_scorecard(scored.suite["id"], scored.new["id"])
+    w.show()
+    w.edit_models.click()
+    picker = w.role_dialog
+    original = list(w.cards)
+    for text in (" bFo ", "IN-FIN"):
+        picker.search.setText(text)
+        assert [k for k, buttons in picker.buttons.items() if buttons["compare"].isVisible()] == [key]
+        assert list(w.cards) == original
+    picker.buttons[key]["compare"].click()
+    assert list(w.cards) == original + [key] and picker.search.text() == "IN-FIN"
+    picker.search.setText("no such version")
+    assert picker.empty_label.isVisible() and key in w.cards
+    picker.search.clear()
+    assert not picker.empty_label.isVisible() and all(b["compare"].isVisible() for b in picker.buttons.values())
+    picker.done_button.click()
+    w.close()
+    w.deleteLater()
+
+
+def test_model_color_buttons_update_live_curves_and_remember_the_version(scored):
+    from PySide6.QtGui import QColor
+    from PySide6.QtWidgets import QColorDialog
+    from NepTrainKit.ui.views.validation_workspace import ValidationWorkspace
+
+    w = ValidationWorkspace(service=scored.service)
+    key, other = scored.new["id"], scored.old["id"]
+    w.open_scorecard(scored.suite["id"], key)
+    w.show()
+    w.open_item(scored.eos["id"])
+    curve = w.detail._curves[key][0]
+    other_color = w.detail._series_pen(other).color()
+    buttons = w.cards[key]
+    w.edit_models.click()
+    picker = w.role_dialog
+    with patch.object(QColorDialog, "getColor", return_value=QColor("#be5577")):
+        picker.color_buttons[key].click()
+    assert curve.opts["pen"].color() == buttons.color_button.color == QColor("#be5577")
+    picker.done_button.click()
+    with patch.object(QColorDialog, "getColor", return_value=QColor("#117755")):
+        buttons.color_button.click()
+    assert curve is w.detail._curves[key][0] and curve.opts["pen"].color() == QColor("#117755")
+    assert w.detail._series_pen(other).color() == other_color
+    w.open_item(scored.efv["id"])
+    assert w.detail._curves[key][0].opts["symbolBrush"] == QColor("#117755")
+    w.edit_models.click()
+    with patch.object(QColorDialog, "getColor", return_value=QColor()):
+        picker.color_buttons[key].click()
+    assert picker.color_buttons[key].color == QColor("#117755")
+    w.close()
+    w.deleteLater()
+    reopened = ValidationWorkspace(service=scored.service)
+    reopened.open_scorecard(scored.suite["id"], key)
+    assert reopened.cards[key].color_button.color == QColor("#117755")
+    reopened.close()
+    reopened.deleteLater()
+
+
+def test_model_strip_wraps_after_four_complete_cards(scored, tmp_path):
+    from NepTrainKit.ui.views.validation_workspace import ValidationWorkspace
+    from test_validation_ui import _capture
+
+    extra = [_capture(scored.service, tmp_path, name) for name in ("candidate-four", "candidate-five")]
+    w = ValidationWorkspace(service=scored.service)
+    w.resize(1360, 700)
+    w.open_scorecard(scored.suite["id"], scored.new["id"])
+    w.comparison_picker.set_selected_ids([r["id"] for r in (scored.old, scored.fresh, *extra)])
+    w.show()
+    QApplication.processEvents()
+    reserved = w.width() - w.card_scroll.width()
+    for strip_width, columns in ((1500, 4), (970, 3)):
+        w.resize(reserved + strip_width, 700)
+        QApplication.processEvents()
+        cards = list(w.cards.values())
+        assert [c.y() == 0 for c in cards] == [True] * columns + [False] * (5 - columns)
+        assert cards[columns].x() == cards[0].x()
+        assert len({c.width() for c in cards}) == 1
+        assert all(c.geometry().right() < w.card_scroll.viewport().width() for c in cards)
+        assert w.card_scroll.horizontalScrollBar().maximum() == 0
+    w.close()
+    w.deleteLater()
+
+
+def test_pinning_a_comparison_keeps_cards_columns_and_plot_in_place(scored):
+    from PySide6.QtCore import QPoint
+    from NepTrainKit.ui.views.validation_workspace import ValidationWorkspace
+
+    w = ValidationWorkspace(service=scored.service)
+    w.resize(800, 650)
+    current, old, new = [r["id"] for r in (scored.new, scored.old, scored.fresh)]
+    w.open_scorecard(scored.suite["id"], current)
+    w.show()
+    w.open_item(scored.eos["id"])
+    w.comparison_picker.set_selected_ids([new])
+    w.resize(1700, 650)
+    QApplication.processEvents()
+    cards = w.cards.copy()
+    assert len({card.y() for card in cards.values()}) == 1
+    one_row = w.controls_panel.height()
+    assert "evaluated" in w.suite_combo.toolTip()
+    w.resize(550, 650)
+    QApplication.processEvents()
+    card_height = max(card.height() for card in cards.values())
+    assert one_row < w.controls_panel.height() <= one_row + card_height + 4 + w.card_scroll.horizontalScrollBar().sizeHint().height()
+    assert w.card_scroll.verticalScrollBar().maximum() > 0
+    w.card_scroll.ensureWidgetVisible(cards[new].pin)
+    viewport = w.card_scroll.viewport()
+
+    def pin_positions():
+        return [card.pin.mapTo(viewport, QPoint(0, 0)) for card in w.cards.values()]
+
+    positions = pin_positions()
+    plot = w.detail.eos_plots[0]
+    w.cards[new].pin.click()
+    QApplication.processEvents()
+    assert scored.service.get_suite(scored.suite["id"])["baseline_model_id"] == new
+    assert list(w.cards) == [current, old, new] and w.cards == cards
+    assert pin_positions() == positions
+    assert w.cards[new].pin.accessibleName() == "Baseline model" and w.cards[old].remove.isVisible()
+    assert w.detail.eos_plots[0] is plot and [entry[0] for entry in w.detail._args[1]] == list(cards)
+    assert [w.overview.horizontalHeaderItem(i).text().split(" · ")[0] for i in (2, 3, 4)] == [
+        scored.new["name"], scored.old["name"], scored.fresh["name"]]
+    w.edit_models.click()
+    w.role_dialog.buttons[old]["current"].click()
+    header = w.item_table.horizontalHeader()
+    assert [header.logicalIndex(i) for i in (3, 4, 5)] == [7, 5, 8]
+    assert list(w.cards) == [current, old, new] and w.cards == cards
+    w.close()
+    w.deleteLater()
+
+
+def test_role_picker_updates_cards_baseline_and_temporary_models(scored, tmp_path):
+    from PySide6.QtCore import QMimeData, QPointF, QUrl
+    from PySide6.QtGui import QDropEvent
+    from test_validation_framework import MODEL_HEADER
+    from test_validation_ui import _wait_until
+    from NepTrainKit.ui.views.validation_workspace import ValidationWorkspace
+
+    w = ValidationWorkspace(service=scored.service)
+    w.resize(950, 700)
+    w.open_scorecard(scored.suite["id"], scored.new["id"])
+    w.show()
+    w.check_visible()
+    checked = w.checked_ids.copy()
+    current, baseline, fresh = [r["id"] for r in (scored.new, scored.old, scored.fresh)]
+    with patch.object(scored.service, "evaluate", side_effect=AssertionError("Selection must not predict")):
+        w.edit_models.click()
+        dlg = w.role_dialog
+        assert dlg.isWindow() and dlg.isVisible() and not dlg.isModal()
+        assert QApplication.activeModalWidget() is None and w.isEnabled()
+        assert dlg.buttons[current]["current"].isChecked()
+        assert dlg.buttons[baseline]["baseline"].isChecked() and dlg.buttons[fresh]["hidden"].isChecked()
+        dlg.buttons[current]["compare"].click()
+        assert w.current_model_row() is None and dlg.buttons[current]["compare"].isChecked()
+        w.cards[current].eye.click()
+        dlg.buttons[current]["compare"].click()
+        assert not w.detail.series_visible(current)
+        w.refresh()
+        assert w.current_model_row() is None and current in w.cards
+        dlg.buttons[current]["hidden"].click()
+        assert current not in w.cards
+        dlg.buttons[current]["current"].click()
+        dlg.buttons[current]["hidden"].click()
+        assert w.current_model_row() is None and current not in w.cards
+        dlg.buttons[current]["current"].click()
+        dlg.buttons[fresh]["baseline"].click()
+        assert scored.service.get_suite(scored.suite["id"])["baseline_model_id"] == fresh
+        assert dlg.buttons[baseline]["compare"].isChecked()
+        assert all(sum(b.isChecked() for b in buttons.values()) == 1 for buttons in dlg.buttons.values())
+        dlg.buttons[baseline]["current"].click()
+        assert w.current_model_row()["model_id"] == baseline
+        assert dlg.buttons[current]["compare"].isChecked()
+        dlg.buttons[fresh]["hidden"].click()
+        assert scored.service.get_suite(scored.suite["id"])["baseline_model_id"] is None
+        assert fresh not in w.cards
+        dlg.buttons[fresh]["compare"].click()
+        assert fresh in w.cards and dlg.buttons[fresh]["compare"].isChecked()
+        path = tmp_path / "candidate.txt"
+        path.write_text(MODEL_HEADER + "temporary")
+        mime = QMimeData()
+        mime.setUrls([QUrl.fromLocalFile(str(path))])
+        event = QDropEvent(QPointF(0, 0), Qt.DropAction.CopyAction, mime, Qt.MouseButton.LeftButton, Qt.KeyboardModifier.NoModifier)
+        dlg.dropEvent(event)
+        assert event.isAccepted()
+        tmp_model = scored.service.find_model_by_file(path)
+        assert tmp_model["project_id"] is None
+        assert dlg.buttons[tmp_model["id"]]["compare"].isChecked()
+        assert not dlg.buttons[tmp_model["id"]]["baseline"].isEnabled()
+        dlg.done_button.click()
+        assert _wait_until(lambda: not dlg.isVisible())
+        w.edit_models.click()
+        assert dlg.buttons[tmp_model["id"]]["compare"].isChecked()
+        assert w.checked_ids == checked
+    dlg.close()
+    w.close()
+    w.deleteLater()
+
+
+def test_draft_can_run_as_comparison_without_replacing_current_model(scored):
+    from NepTrainKit.core.validation.service import ModelDraft
+    from NepTrainKit.ui.views.validation_workspace import ValidationWorkspace
+    from test_validation_ui import _wait_until
+
+    w = ValidationWorkspace(service=scored.service)
+    current = scored.new["id"]
+    draft = ModelDraft(scored.service.model_file(current).read_bytes() + b"\nnew version", "test.txt")
+    w.open_scorecard(scored.suite["id"], draft=draft)
+    w.show()
+    w.edit_models.click()
+    w.role_dialog.buttons[current]["current"].click()
+    assert w.role_dialog.buttons[0]["compare"].isChecked()
+    assert not w.role_dialog.buttons[0]["baseline"].isEnabled()
+    w.role_dialog.done_button.click()
+    assert _wait_until(lambda: not w.role_dialog.isVisible())
+    w.checked_ids = {scored.eos["id"]}
+    assert w.run_selected() is not None
+    assert _wait_until(lambda: w._run_task is None)
+    captured = scored.service.find_model_by_hash(draft.content_hash)
+    assert captured and captured["project_id"] is None
+    assert w.model_combo.currentData() == current
+    assert captured["id"] in w.comparison_picker.selected_ids()
+    w.close()
+    w.deleteLater()

@@ -5,14 +5,15 @@ from __future__ import annotations
 from pathlib import Path
 import uuid
 
-from PySide6.QtCore import QCoreApplication, Qt
+from PySide6.QtCore import QCoreApplication, QSize, Qt
 from PySide6.QtGui import QColor
 from PySide6.QtWidgets import (
     QDialog,
     QDialogButtonBox,
     QFrame,
+    QGraphicsOpacityEffect,
     QScrollArea,
-    QBoxLayout,
+    QSizePolicy,
     QHBoxLayout,
     QHeaderView,
     QInputDialog,
@@ -31,10 +32,10 @@ from qfluentwidgets import (
     SegmentedWidget,
     CaptionLabel,
     FluentIcon,
+    AdaptiveFlowLayout,
     ListWidget,
     MessageBox,
     PushButton,
-    RoundMenu,
     SearchLineEdit,
     TransparentPushButton,
     TableWidget,
@@ -42,11 +43,14 @@ from qfluentwidgets import (
 )
 
 from NepTrainKit import palette
+from NepTrainKit.config import Config
 from NepTrainKit.core import MessageManager
 from NepTrainKit.core.validation.protocols import protocol_for_set
+from NepTrainKit.core.validation.service import ModelDraft, parse_model_header
 from NepTrainKit.ui.messages import translate_runtime_message
 from NepTrainKit.ui.views.model_library import VERDICT_COLORS, ModelLibraryWidget, format_metric
 from NepTrainKit.ui.widgets.validation_dialogs import BenchmarkImportDialog
+from NepTrainKit.ui.widgets.validation_model_picker import ModelColorButton, ValidationModelPicker, model_role
 
 
 class ComparisonTable(TableWidget):
@@ -73,11 +77,146 @@ class ComparisonTable(TableWidget):
             event.accept()
 
 
+class _ModelCard(QFrame):
+    def __init__(self, workspace, key):
+        super().__init__(workspace.card_scroll.widget())
+        self.setObjectName("comparisonModelCard")
+        self.setStyleSheet(f"#comparisonModelCard {{ background: white; border: 1px solid {palette.BORDER_STRONG}; border-radius: 8px; }}")
+        body = QVBoxLayout(self)
+        body.setContentsMargins(6, 2, 6, 3)
+        body.setSpacing(0)
+        self.heading = QHBoxLayout()
+        self.heading.setSpacing(3)
+        body.addLayout(self.heading)
+        self.color_button = ModelColorButton(self)
+        self.color_button.colorChanged.connect(lambda color: workspace._set_model_color(key, color))
+        self.heading.addWidget(self.color_button)
+        self.name = BodyLabel(self)
+        self.short_title = ""
+        self.name.setStyleSheet(f"font-size: 13px; font-weight: 600; color: {palette.TEXT_PRIMARY};")
+        self.name.setTextFormat(Qt.TextFormat.PlainText)
+        self.name.setSizePolicy(QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Preferred)
+        self.heading.addWidget(self.name, 1)
+        self.badge = CaptionLabel(self)
+        self.badge.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        roles = (workspace.tr("Current model"), workspace.tr("Baseline model"), workspace.tr("Comparison model"))
+        self.badge.setFixedWidth(max(self.badge.fontMetrics().horizontalAdvance(role) for role in roles) + 8)
+        self.heading.addWidget(self.badge)
+        self.metrics = CaptionLabel(self)
+        self.metrics.setStyleSheet(f"color: {palette.TEXT_SECONDARY}; font-size: 11px;")
+        self.metrics.setSizePolicy(QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Preferred)
+        body.addWidget(self.metrics)
+        self.pin = self.action(FluentIcon.PIN, workspace.tr("Set baseline model"))
+        self.normal_pin_style = self.pin.styleSheet()
+        self.pin.clicked.connect(lambda: workspace._choose_model_role(key, "baseline", reveal=False))
+        self.eye = self.action(FluentIcon.VIEW, workspace.tr("Show or hide model curves"))
+        self.eye.setCheckable(True)
+        self.eye.toggled.connect(lambda shown: workspace.detail.set_series_visible(key, shown))
+        self.remove = self.action(FluentIcon.CLOSE, workspace.tr("Remove comparison model"))
+        self.remove.clicked.connect(lambda: workspace.comparison_picker.remove_id(key))
+        policy = self.remove.sizePolicy()
+        policy.setRetainSizeWhenHidden(True)
+        self.remove.setSizePolicy(policy)
+
+    def set_contents(self, title, short_title, role, colors, metrics, color):
+        self.short_title = short_title
+        self.name.setToolTip(title)
+        self.badge.setText(role)
+        foreground, background = colors
+        self.badge.setStyleSheet(f"background: {background}; color: {foreground}; padding: 1px 4px; border-radius: 3px;")
+        self.metrics.setToolTip(metrics)
+        self._fit_labels()
+        self.color_button.set_color(color)
+        self.color_button.setAccessibleName(f"{title} · {self.color_button.toolTip()}")
+        self.setAccessibleName(f"{title} · {role}")
+
+    def _fit_labels(self):
+        font = self.name.fontMetrics()
+        width = self.name.contentsRect().width()
+        title = self.name.toolTip()
+        if font.horizontalAdvance(title) > width:
+            title = self.short_title
+        self.name.setText(font.elidedText(title, Qt.TextElideMode.ElideMiddle, width))
+        self.metrics.setText(self.metrics.fontMetrics().elidedText(
+            self.metrics.toolTip(), Qt.TextElideMode.ElideRight, self.metrics.contentsRect().width()))
+
+    def resizeEvent(self, event):
+        super().resizeEvent(event)
+        self._fit_labels()
+
+    def action(self, icon, label):
+        button = TransparentToolButton(icon, self)
+        button.setFixedSize(22, 22)
+        button.setIconSize(QSize(14, 14))
+        button.setToolTip(label)
+        button.setAccessibleName(label)
+        self.heading.addWidget(button)
+        return button
+
+    def show_visibility(self, visible):
+        self.eye.blockSignals(True)
+        self.eye.setChecked(visible)
+        self.eye.setIcon(FluentIcon.VIEW if visible else FluentIcon.HIDE)
+        self.eye.blockSignals(False)
+        if visible:
+            self.setGraphicsEffect(None)
+        elif self.graphicsEffect() is None:
+            fade = QGraphicsOpacityEffect(self)
+            fade.setOpacity(0.5)
+            self.setGraphicsEffect(fade)
+
+
+class _ModelStrip(QScrollArea):
+    """Wrap cards in reading order, showing up to two rows at a time."""
+
+    def __init__(self, parent):
+        super().__init__(parent)
+        self.setFrameShape(QFrame.Shape.NoFrame)
+        self.setSizePolicy(QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Fixed)
+        content = QWidget()
+        self.flow = AdaptiveFlowLayout(content)
+        self.flow.setWidgetMaximumWidth(360)
+        self.flow.setContentsMargins(0, 0, 0, 0)
+        self.flow.setHorizontalSpacing(8)
+        self.flow.setVerticalSpacing(4)
+        self.setWidget(content)
+        content.setAutoFillBackground(False)
+        self.viewport().setAutoFillBackground(False)
+
+    def fit_cards(self):
+        if not self.flow.count():
+            return
+        cards = [self.flow.itemAt(i).widget() for i in range(self.flow.count())]
+        # Keep the role, all actions and a recognizable part of the model name visible.
+        readable = max(card.minimumSizeHint().width() + 10 * card.name.fontMetrics().averageCharWidth()
+                       for card in cards)
+        available = self.width()
+        gap = self.flow.horizontalSpacing()
+        slots = min(4, len(cards))
+        self.flow.setWidgetMinimumWidth(max(readable, (available - (slots - 1) * gap) // slots))
+        two_rows = 2 * max(card.sizeHint().height() for card in cards) + self.flow.verticalSpacing()
+        if self.flow.heightForWidth(max(available, readable)) > two_rows:
+            available -= self.verticalScrollBar().sizeHint().width()
+            self.flow.setWidgetMinimumWidth(max(readable, (available - (slots - 1) * gap) // slots))
+        width = max(available, readable)
+        height = self.flow.heightForWidth(width)
+        self.widget().resize(width, height)
+        self.flow.setGeometry(self.widget().rect())
+        scrollbar = self.horizontalScrollBar().sizeHint().height() if width > available else 0
+        self.setFixedHeight(min(height, two_rows) + scrollbar)
+
+    def resizeEvent(self, event):
+        super().resizeEvent(event)
+        if event.size().width() != event.oldSize().width():
+            self.fit_cards()
+
+
 class ValidationWorkspace(ModelLibraryWidget):
     """Navigation never mutates the independent set of checked run targets."""
 
     def __init__(self, parent=None, service=None):
         self._workspace_ready = False
+        self._color_rows = None
         super().__init__(parent, service)
         self.checked_ids = set()
         self.topic_id = "all"
@@ -86,14 +225,18 @@ class ValidationWorkspace(ModelLibraryWidget):
         self._topics = []
         self._focused_reference = None
         self._rendering = False
-        self._target_models = []
         self._search_filter = ""
 
         # Enable adaptive plot sizing and the right-hand multi-model quantitative inspector in the workspace
         self.detail.set_adaptive_layout(True)
+        self.detail.header_layout.insertWidget(1, self.detail.legend_panel)
 
         # Reuse the existing plot and inspector below the comparison matrix.
         root = self.layout()
+        root.itemAt(0).layout().setContentsMargins(0, 0, 0, 0)
+        self.controls_panel.setStyleSheet(
+            f"#validationControls {{ background: {palette.SURFACE}; border: 0; border-bottom: 1px solid {palette.BORDER}; }}"
+        )
         detail_page = QFrame(self)
         detail_page.setObjectName("comparisonDetails")
         detail_page.setStyleSheet(f"#comparisonDetails {{background: {palette.SURFACE}; border: 1px solid {palette.BORDER}; border-radius: 10px;}}")
@@ -160,7 +303,7 @@ class ValidationWorkspace(ModelLibraryWidget):
         suite_field.deleteLater()
 
         self.sidebar_search = SearchLineEdit(self.sidebar)
-        self.sidebar_search.setPlaceholderText("搜索主题或验证项…")
+        self.sidebar_search.setPlaceholderText(self.tr("Search topics or items…"))
         self.sidebar_search.textChanged.connect(self._on_sidebar_search)
         side.addWidget(self.sidebar_search)
 
@@ -308,7 +451,7 @@ class ValidationWorkspace(ModelLibraryWidget):
         self.clear_checked_button = PushButton(self.tr("Clear checks"), self.footer_container)
         self.clear_checked_button.clicked.connect(self.clear_checks)
         self.manage_button = PushButton(FluentIcon.EDIT, self.tr("Manage selected items"), self.footer_container)
-        self.manage_menu = RoundMenu(parent=self)
+        self.manage_menu = QMenu(self)
         self.manage_actions = {}
         for label, method in [
             ("Open details", self.open_selected_item),
@@ -330,7 +473,8 @@ class ValidationWorkspace(ModelLibraryWidget):
         self.import_workspace_button = PushButton(
             FluentIcon.ADD, self.tr("Add reference data…"), self.footer_container
         )
-        import_menu = RoundMenu(parent=self)
+        # These actions also live in the global Fluent menu, which owns their item bindings.
+        import_menu = QMenu(self)
         for action in (
             self.import_action,
             self.import_files_action,
@@ -372,47 +516,296 @@ class ValidationWorkspace(ModelLibraryWidget):
         self.property_combo.hide()
         self.scope_combo.hide()
         self.curves_button.hide()
-        self._workspace_ready = True
         self.baseline_label.hide()
-        self.model_fields = fields
-        self.model_options = QWidget(self.controls_panel)
-        options = QHBoxLayout(self.model_options)
-        options.setContentsMargins(0, 0, 0, 0)
+        # The shared workbench owns the selectors and their signals.
+        selectors = QWidget(self.controls_panel)
+        selector_layout = QHBoxLayout(selectors)
         while fields.count():
-            options.addLayout(fields.takeAt(0).layout(), 1)
-        self.model_summary = TransparentPushButton(self.controls_panel)
-        self.model_summary.setCheckable(True)
-        self.model_summary.clicked.connect(lambda _: self._adapt_window())
-        fields.addWidget(self.model_summary)
-        fields.addWidget(self.model_options, 1)
-        run_controls = QHBoxLayout()
-        run_controls.addStretch()
-        run_controls.addWidget(self.scope_hint)
-        run_controls.addWidget(self.run_selected_button)
-        fields.addLayout(run_controls)
+            selector_layout.addLayout(fields.takeAt(0).layout())
+        selectors.hide()
+        self.role_dialog = None
+        self._picker_rows = None
+        self.scope_hint.hide()
+        self.cards = {}
+        self._card_context = None
+        self._card_rows = None
+        self._card_state = None
+        self.card_scroll = _ModelStrip(self.controls_panel)
+        self.detail.seriesVisibilityChanged.connect(self._sync_card_visibility)
+        self.edit_models = PushButton("+  " + self.tr("Add models"), self.controls_panel)
+        self.edit_models.setAccessibleName(self.tr("Manage comparison models"))
+        self.edit_models.setToolTip(self.tr("Manage comparison models"))
+        self.edit_models.setMinimumHeight(30)
+        self.edit_models.setStyleSheet(f"PushButton {{ color: {palette.ACCENT_PRESSED}; border: 1px dashed {palette.ACCENT}; border-radius: 6px; padding: 3px 9px; background: {palette.ACCENT_SOFT}; }}")
+        self.edit_models.clicked.connect(self._open_role_dialog)
+        fields.setSpacing(8)
+        fields.addWidget(self.card_scroll, 1)
+        fields.addWidget(self.edit_models)
+        fields.addWidget(self.run_selected_button)
+        self.controls_panel.layout().setContentsMargins(12, 5, 12, 5)
+        self.controls_panel.layout().setSpacing(0)
         self.sidebar.setMinimumWidth(164)
         self.sidebar.setMaximumWidth(420)
         self.setMinimumWidth(500)
-        self._compact = None
-        self._adapt_window()
-        self.controls_panel.layout().setSpacing(0)
-        self.controls_panel.layout().setContentsMargins(14, 9, 14, 9)
+        self._workspace_ready = True
+        self._present_workspace()
+        self.run_summary.hide()
+        self._update_header(None)
         self.show_page("result")
+
+    def _update_header(self, baseline):
+        suite_name = self.suite_combo.currentText() or self.tr("Model validation")
+        current = self.current_model_row()
+        self._update_cards(baseline)
+
+        done, compared, regressed, failed = set(), set(), set(), set()
+        for column, cell in zip(self.model._columns, current["cells"] if current else ()):
+            key = column["set_id"]
+            if cell.get("status") == "succeeded":
+                done.add(key)
+                if cell.get("verdict") in ("better", "same", "worse"):
+                    compared.add(key)
+                if cell.get("verdict") == "worse":
+                    regressed.add(key)
+            elif cell.get("status") == "failed":
+                failed.add(key)
+        parts = [self.tr("Current model evaluated on {done} of {total} items").format(
+            done=len(done), total=len(self._items)) if current else self.tr("No current model selected")]
+        if compared and baseline != self.model_combo.currentData():
+            parts.append(self.tr("{regressed} of {compared} comparable items regressed").format(
+                regressed=len(regressed), compared=len(compared)))
+        if failed:
+            parts.append(self.tr("{count} failed").format(count=len(failed)))
+        summary = "   ·   ".join(parts) if self._items else self.tr("No validation items")
+        self.suite_combo.setToolTip(f"{suite_name}\n{summary}")
+
+    def comparison_curve_ids(self):
+        current = self.model_combo.currentData()
+        base = next((row["model_id"] for row in self.model._rows if row["is_baseline"]), None)
+        active = list(dict.fromkeys(key for key in (current, base, *self.selected_model_ids()) if key is not None))
+        if (self._library_root, self.current_suite_id()) != self._card_context:
+            return active
+        retained = [key for key in self.cards if key in active]
+        return list(dict.fromkeys([*retained, *active]))
+
+    def _update_cards(self, baseline):
+        keys = self.comparison_curve_ids()
+        primary = self.model_combo.currentData()
+        state = (tuple(keys), primary, baseline, self.current_suite_id(), self._run_task is None)
+        context = (self._library_root, self.current_suite_id())
+        if self._card_context == context and self._card_rows is self.model._rows and self._card_state == state:
+            return
+        new_comparisons = [key for key in keys if key not in self.cards and key not in (primary, baseline)]
+        for key in list(self.cards):
+            if context == self._card_context and key in keys:
+                continue
+            card = self.cards.pop(key)
+            self.card_scroll.flow.removeWidget(card)
+            card.hide()
+            card.deleteLater()
+        self._card_context = context
+        for key in keys:
+            row = self.model.row(self.model.row_of_model(key))
+            if row is None:
+                continue
+            is_current, is_base = key == primary, key == baseline
+            if is_current:
+                role = self.tr("Current model")
+                colors = (palette.INFO, palette.INFO_SOFT)
+            elif is_base:
+                role = self.tr("Baseline model")
+                colors = (palette.WARNING_STRONG, palette.WARNING_SOFT)
+            else:
+                role = self.tr("Comparison model")
+                colors = (palette.TEXT_SECONDARY, palette.SURFACE_SUBTLE)
+            title = " / ".join(filter(None, (row["project_name"], row["name"])))
+            if key not in self.cards:
+                card = _ModelCard(self, key)
+                self.cards[key] = card
+                self.card_scroll.flow.addWidget(card)
+            card = self.cards[key]
+            short_title = row["name"] if row["project_name"] == self.suite_combo.currentText() else title
+            card.set_contents(title, short_title, role, colors, self._card_metrics(row), self.detail._series_pen(key).color())
+            pin_color = QColor(Qt.GlobalColor.white) if is_base else palette.TEXT_SECONDARY
+            card.pin.setIcon(FluentIcon.PIN.colored(pin_color, pin_color))
+            card.pin.setStyleSheet(f"QToolButton {{ background: {palette.WARNING_STRONG}; border: 0; border-radius: 5px; }}" if is_base else card.normal_pin_style)
+            label = self.tr("Baseline model") if is_base else self.tr("Set baseline model")
+            card.pin.setAccessibleName(label)
+            card.pin.setToolTip(self.tr("Save to a project to use as baseline") if row["temporary"] else label)
+            card.pin.setEnabled(is_base or (not row["temporary"] and self.current_suite_id() is not None and self._run_task is None))
+            card.show_visibility(self.detail.series_visible(key))
+            card.remove.setVisible(not is_current and not is_base)
+            card.show()
+            card.layout().activate()
+        self.card_scroll.setVisible(bool(self.cards))
+        self.card_scroll.fit_cards()
+        if new_comparisons:
+            self.card_scroll.ensureWidgetVisible(self.cards[new_comparisons[-1]].remove, 5, 0)
+        self._card_rows, self._card_state = self.model._rows, state
+
+    def _open_role_dialog(self):
+        if self.role_dialog is None:
+            self.role_dialog = ValidationModelPicker(self.window())
+            self.role_dialog.roleRequested.connect(self._choose_model_role)
+            self.role_dialog.colorRequested.connect(self._set_model_color)
+            self.role_dialog.filesDropped.connect(self._add_temporary_models)
+        self._picker_rows = None
+        self._sync_role_dialog()
+        self.role_dialog.show_picker()
+
+    def hideEvent(self, event):
+        super().hideEvent(event)
+        if getattr(self, "role_dialog", None) is not None:
+            self.role_dialog.close()
+
+    def _sync_role_dialog(self):
+        if self.role_dialog is None:
+            return
+        rows = self.model._rows
+        if self._picker_rows is not rows:
+            versions = []
+            for row in rows:
+                key = row["model_id"]
+                name = " / ".join(filter(None, (row["project_name"], row["name"])))
+                kind = row.get("model_kind") or ""
+                if key == 0 and self._draft:
+                    kind = parse_model_header(self._draft.data)[0]
+                details = [kind.upper()] if kind else []
+                if row["temporary"]:
+                    details.append(self.tr("Save to a project to use as baseline"))
+                if row.get("data_size") is not None:
+                    details.append(self.tr("{count} frames").format(count=row["data_size"]))
+                details.append(self._card_metrics(row))
+                versions.append((key, name, " · ".join(details), self.detail._series_pen(key).color().name()))
+            order = (list(self.role_dialog.buttons) if self.role_dialog.isVisible()
+                     else self.comparison_curve_ids())
+            position = {key: index for index, key in enumerate(order)}
+            versions.sort(key=lambda version: position.get(version[0], len(order)))
+            self.role_dialog.set_models(versions)
+            self._picker_rows = rows
+        current = self.model_combo.currentData()
+        baseline = next((r["model_id"] for r in rows if r["is_baseline"]), None)
+        eligible = {r["model_id"] for r in rows if not r["temporary"]} if self.current_suite_id() is not None else set()
+        self.role_dialog.set_roles(current, baseline, self.comparison_picker.selected_ids(), eligible,
+                                   running=self._run_task is not None)
+        self.role_dialog.setAcceptDrops(self._run_task is None)
+
+    def _set_model_color(self, key, color):
+        row = self.model.row(self.model.row_of_model(key))
+        if row is None:
+            return
+        Config.set(f"validation_colors:{self._library_root}", f"{key}:{row['content_hash']}", color.name())
+        self.detail.set_series_color(key, color)
+        if key in self.cards:
+            self.cards[key].color_button.set_color(color)
+        if self.role_dialog is not None and key in self.role_dialog.color_buttons:
+            self.role_dialog.color_buttons[key].set_color(color)
+
+    def _choose_model_role(self, key, role, *, reveal=True):
+        row = self.model.row(self.model.row_of_model(key))
+        if row is None:
+            return
+        current = self.model_combo.currentData()
+        base = next((r["model_id"] for r in self.model._rows if r["is_baseline"]), None)
+        selected = self.selected_model_ids()
+        if role == model_role(key, current, base, selected):
+            return
+        next_base = base
+        if key == base and self._run_task is not None:
+            self._sync_role_dialog()
+            return
+        if key == current and role != "current":
+            current = None
+        if role == "baseline":
+            if self._run_task or self.current_suite_id() is None or row["temporary"]:
+                self._sync_role_dialog()
+                return
+            next_base = key
+            if base is not None and base not in selected:
+                selected.append(base)
+        elif role == "current":
+            current = key
+            if key == base:
+                next_base = None
+        elif key == base:
+            next_base = None
+        if role == "hidden":
+            selected = [model for model in selected if model != key]
+        elif key not in selected:
+            selected.append(key)
+        if next_base != base:
+            try:
+                self.service().set_baseline(self.current_suite_id(), next_base)
+            except (OSError, ValueError) as error:
+                MessageManager.send_error_message(str(error))
+                self._sync_role_dialog()
+                return
+        if reveal and role != "hidden":
+            self.detail.set_series_visible(key, True)
+        if next_base != base:
+            same_curves = role == "baseline" and key in self.cards
+            if same_curves:
+                self.detail.set_current_series(current)
+            self._load_scorecard(current, comparison_ids=selected, update_detail=not same_curves)
+        else:
+            self.model_combo.blockSignals(True)
+            self.model_combo.setCurrentIndex(self.model.row_of_model(current))
+            self.model_combo.blockSignals(False)
+            self._update_comparison_options(selected)
+            self._load_groups(update_detail=False)
+            self._on_selection_changed()
+
+    def _add_temporary_models(self, paths):
+        if self._run_task is not None:
+            return
+        selected = self.selected_model_ids()
+        current = self.model_combo.currentData()
+        added = []
+        for path in paths:
+            try:
+                draft = ModelDraft.from_file(path)
+                elements = set(parse_model_header(draft.data)[1])
+                if self._items and not any(set(item["elements"]) <= elements for item in self._items):
+                    raise ValueError(self.tr("No compatible validation items for {name}.").format(name=path.name))
+                key = self.service().capture_model(draft, temporary=True)["id"]
+                added.append(key)
+                self.detail.set_series_visible(key, True)
+            except (OSError, ValueError) as error:
+                MessageManager.send_error_message(str(error))
+        if added:
+            self._load_scorecard(current, comparison_ids=selected + added)
+
+    def _card_metrics(self, row):
+        values = []
+        for field, symbol, unit in (("force", "F", "meV/Å"), ("energy", "E", "meV/atom")):
+            value = row.get(field)
+            if value is not None:
+                values.append(f"{symbol} {value:.3g} {unit}")
+        if not values:
+            return self.tr("No recorded RMSE")
+        source = self.service().imported_accuracy(row["model_id"])
+        group = source.get("group")
+        reported = source.get("metrics", {})
+        matches = all(row.get(k) == reported.get(k + "_rmse") for k in ("force", "energy"))
+        if matches and group in ("train", "test"):
+            label = self.tr("Training") if group == "train" else self.tr("Test")
+            if source.get("status") != "verified":
+                label += " · " + self.tr("Unverified")
+        else:
+            label = self.tr("Historical RMSE")
+        return label + " " + " · ".join(values)
+
+    def _sync_card_visibility(self, key, shown):
+        if key in self.cards:
+            self.cards[key].show_visibility(shown)
 
     def resizeEvent(self, event):
         super().resizeEvent(event)
-        if hasattr(self, "_compact"):
-            self._adapt_window()
-
-    def _adapt_window(self):
-        self._compact = self.width() < 1050
-        self.model_summary.setVisible(self._compact)
-        self.model_options.setVisible(not self._compact or self.model_summary.isChecked())
-        self.model_fields.setDirection(QBoxLayout.Direction.TopToBottom if self._compact and self.model_summary.isChecked() else QBoxLayout.Direction.LeftToRight)
-        self._present_workspace()
+        if hasattr(self, "edit_models"):
+            self._present_workspace()
 
     def _present_workspace(self):
-        if not hasattr(self, "_compact"):
+        if not hasattr(self, "edit_models"):
             return
         result = self.pages.currentWidget() is self.detail_scroll
         editing = not self.editor_scroll.isHidden()
@@ -423,9 +816,8 @@ class ValidationWorkspace(ModelLibraryWidget):
         for button in (self.select_visible_button, self.clear_checked_button, self.manage_button):
             button.hide()
         self.footer_container.setVisible(not editing)
-        self.model_summary.setText((self.model_combo.currentText() or self.tr("Current model")) + "  ▾")
-        self.scope_hint.setVisible(self.width() >= 760)
-        narrow = self.width() - self.sidebar.width() < 880
+        self.edit_models.setText("+" if self.width() < 700 else "+  " + self.tr("Add models"))
+        narrow = self.main_panel.width() < 970
         self.pane_button.setVisible(result and focused and narrow and not editing)
         metrics = narrow and self.pane_button.isChecked()
         self.pane_button.setText(self.tr("Show curve") if metrics else self.tr("Physical metrics"))
@@ -458,8 +850,18 @@ class ValidationWorkspace(ModelLibraryWidget):
         self._render_workspace()
         self._focus_first_visible()
 
-    def _load_scorecard(self, model_id=None):
-        super()._load_scorecard(model_id)
+    def _scorecard_current_id(self, requested, comparison_ids):
+        row = self.model.row(self.model.row_of_model(requested))
+        if row is not None:
+            return None if row["is_baseline"] else requested
+        same_suite = self._displayed_suite_id == self.current_suite_id()
+        was_empty = self.model_combo.count() > 0 and self.model_combo.currentIndex() < 0
+        if requested is None and (comparison_ids is not None or (same_suite and was_empty)):
+            return None
+        return next((r["model_id"] for r in self.model._rows if not r["is_baseline"]), None)
+
+    def _load_scorecard(self, model_id=None, *, comparison_ids=None, update_detail=True):
+        super()._load_scorecard(model_id, comparison_ids=comparison_ids, update_detail=update_detail)
         if self._workspace_ready:
             self._reload_workspace()
 
@@ -494,10 +896,11 @@ class ValidationWorkspace(ModelLibraryWidget):
         self._focus_first_visible()
 
     def _focus_first_visible(self):
-        if self.pages.currentWidget() is self.detail_scroll and not self._focused_reference and self.editor_scroll.isHidden():
-            items = self.visible_items()
-            if items:
-                self.open_item(items[0]["id"])
+        if self.pages.currentWidget() is self.detail_scroll and self.editor_scroll.isHidden():
+            if self._focused_reference and not self.curves_button.isChecked():
+                self.open_item(self._focused_reference)
+            elif not self._focused_reference and self.visible_items():
+                self.open_item(self.visible_items()[0]["id"])
 
     def _browse_topic(self, index):
         if index < 0:
@@ -566,11 +969,9 @@ class ValidationWorkspace(ModelLibraryWidget):
         if not self._workspace_ready or self._rendering:
             return
         self._rendering = True
-        selected = self.selected_model_ids()
-        self._target_models = list(selected)
+        models = self.comparison_curve_ids()
         suite_id = self.current_suite_id()
         baseline = self.service().get_suite(suite_id).get("baseline_model_id") if suite_id is not None else None
-        models = list(dict.fromkeys(selected + ([baseline] if baseline else [])))
         self.overview.blockSignals(True)
         self.overview.clearContents()
         self.overview.setColumnCount(2 + len(models))
@@ -678,10 +1079,15 @@ class ValidationWorkspace(ModelLibraryWidget):
         self.item_table.horizontalHeaderItem(self.check_column).setToolTip(self.tr("Evaluate checked items"))
         header = self.item_table.horizontalHeader()
         # Keep model values adjacent, with run checkboxes separate from navigation.
-        for position, column in enumerate([self.check_column, 0, 2, 5, *range(7, self.check_column), 6]):
+        model_columns = {key: column for column, key in enumerate(extra_models, 7)}
+        model_columns[current] = 5
+        ordered_columns = [model_columns[key] for key in models] or [5]
+        for position, column in enumerate([self.check_column, 0, 2, *ordered_columns, 6]):
             header.moveSection(header.visualIndex(column), position)
         for column in (1, 3, 4):
             self.item_table.setColumnHidden(column, True)
+        for column in (5, 6):
+            self.item_table.setColumnHidden(column, current is None and bool(extra_models))
         self.item_table.setColumnHidden(self.check_column, False)
         self.item_table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.ResizeToContents)
         self.item_table.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeMode.Stretch)
@@ -766,7 +1172,7 @@ class ValidationWorkspace(ModelLibraryWidget):
             nav_item.setData(Qt.ItemDataRole.UserRole, item["id"])
             nav_item.setToolTip(item["name"])
             self.sidebar_item_list.setItem(row, 0, nav_item)
-            self.sidebar_item_list.setItem(row, 1, check.clone())
+            self.sidebar_item_list.setItem(row, 1, QTableWidgetItem(check))
             if item["id"] == self._focused_reference:
                 self.sidebar_item_list.setCurrentCell(row, 0)
 
@@ -774,6 +1180,9 @@ class ValidationWorkspace(ModelLibraryWidget):
         self.item_table.blockSignals(False)
         self._rendering = False
         self.matrix_title.setText(self.tr("Model comparison") + f"  ·  {len(items)}")
+        self._update_header(baseline)
+        if self.role_dialog is not None and self.role_dialog.isVisible():
+            self._sync_role_dialog()
         self.context_hint.setText("")
         self._management_state()
         self._present_workspace()
@@ -874,6 +1283,7 @@ class ValidationWorkspace(ModelLibraryWidget):
         self._present_workspace()
 
     def _update_detail(self):
+        self.detail._current_key = self.model_combo.currentData()
         if self._workspace_ready and self.curves_button.isChecked():
             row = next((i for i, item in enumerate(self.metrics_model.benchmarks)
                         if item["id"] == self._focused_reference), None)
@@ -899,11 +1309,23 @@ class ValidationWorkspace(ModelLibraryWidget):
         if not self._workspace_ready:
             return super()._on_model_changed(*_args)
         primary = self.model_combo.currentData()
-        self._update_comparison_options([key for key in self._target_models if key != primary])
-        self._load_groups(update_detail=False)
-        self._on_selection_changed()
+        if primary is not None and self._card_state is not None:
+            self.model_combo.blockSignals(True)
+            self.model_combo.setCurrentIndex(self.model.row_of_model(self._card_state[1]))
+            self.model_combo.blockSignals(False)
+            self._choose_model_role(primary, "current")
 
     def _on_selection_changed(self, *, update_detail=True):
+        if self._color_rows is not self.model._rows:
+            saved = Config.get_section(f"validation_colors:{self._library_root}")
+            colors = {}
+            for row in self.model._rows:
+                key, digest = row["model_id"], row["content_hash"]
+                color = saved.get(f"{key}:{digest}") or saved.get(f"0:{digest}")
+                if color and QColor(color).isValid():
+                    colors[key] = color
+            self.detail.model_colors = colors
+            self._color_rows = self.model._rows
         super()._on_selection_changed(update_detail=update_detail)
         if self._workspace_ready:
             self._render_workspace()
@@ -918,6 +1340,7 @@ class ValidationWorkspace(ModelLibraryWidget):
         self.property_combo.hide()
         self.scope_combo.hide()
         self.curves_button.hide()
+        self.run_selected_button.setToolTip(self.scope_hint.text() + "\n" + self.scope_hint.toolTip())
         if self._run_task is None:
             self.run_selected_button.setText(self.tr("Evaluate checked items"))
         # Changing the view/next selection cannot change the frozen active job list.

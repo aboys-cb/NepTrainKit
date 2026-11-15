@@ -283,6 +283,8 @@ def redraw_reference_responses(panel):
                         pen=None if grouped_points else panel._series_pen(key),
                         symbol="o",
                         symbolSize=4,
+                        symbolBrush=panel._series_pen(key).color(),
+                        symbolPen=panel._series_pen(key).color(),
                         name=name + label,
                     )
                     panel._register_curve(key, curve)

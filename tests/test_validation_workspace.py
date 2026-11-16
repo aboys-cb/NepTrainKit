@@ -1001,3 +1001,58 @@ def test_curve_values_align_measured_points_and_keep_distinct_model_ids(monkeypa
     show_curve_values(panel, SimpleNamespace(axis_titles=("X", "ΔE (meV/atom)"), listDataItems=lambda: curves))
     panel.close()
     panel.deleteLater()
+
+
+def test_validation_tab_navigation_reuses_plots_and_invalidates_changed_data(scored):
+    from PySide6.QtCore import QEvent
+    from PySide6.QtTest import QTest
+    from shiboken6 import isValid
+    from test_validation_ui import _wait_until
+    from NepTrainKit.ui.views.validation_workspace import ValidationWorkspace
+
+    w = ValidationWorkspace(service=scored.service)
+    with patch.object(scored.service, "run_details", wraps=scored.service.run_details) as reads:
+        w.refresh(scored.suite["id"], scored.new["id"])
+        w.resize(1200, 800)
+        w.show()
+        QApplication.processEvents()
+        assert w.pages.currentWidget() is w.matrix_card and not w.detail.eos_plots
+        w.show_page("result")
+        w.show_page("items")
+        QTest.qWait(40)
+        reads.assert_not_called()
+
+        w.open_item(scored.eos["id"])
+        chart, = w.detail.eos_plots
+        w.show_page("gallery")
+        assert _wait_until(lambda: w.gallery.loaded == {0, 1})
+        icons = [w.gallery.item(i).icon().cacheKey() for i in range(2)]
+        reads.reset_mock()
+        w.show_page("items")
+        w.show_page("gallery")
+        QTest.qWait(40)
+        assert [w.gallery.item(i).icon().cacheKey() for i in range(2)] == icons
+        w.show_page("result")
+        QTest.qWait(40)
+        assert w.detail.eos_plots == [chart]
+        reads.assert_not_called()
+
+        w.show_page("items")
+        old_checkbox = w.sidebar_item_list.item(0, 1)
+        w.comparison_picker.set_selected_ids([scored.fresh["id"]])
+        assert not isValid(old_checkbox)
+        assert not w.gallery.loaded
+        reads.assert_not_called()
+        w.show_page("result")
+        assert _wait_until(lambda: w.detail.eos_plots != [chart])
+        assert w.detail._args[0]["id"] == scored.eos["id"]
+        assert {entry[0] for entry in w.detail._args[1]} == {scored.new["id"], scored.old["id"], scored.fresh["id"]}
+        w.show_page("gallery")
+        assert _wait_until(lambda: w.gallery.loaded == {0, 1})
+        old_icon = w.gallery.item(0).icon().cacheKey()
+        QApplication.sendEvent(w.gallery, QEvent(QEvent.Type.DevicePixelRatioChange))
+        assert not w.gallery.loaded
+        assert _wait_until(lambda: w.gallery.loaded == {0, 1})
+        assert w.gallery.item(0).icon().cacheKey() != old_icon
+    w.close()
+    w.deleteLater()

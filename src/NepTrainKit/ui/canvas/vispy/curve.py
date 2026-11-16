@@ -110,9 +110,12 @@ class _Curve(QObject):
         self.opts = {"pen": pen, "symbol": symbol, "symbolPen": pen}
         self.label = name
         self.size = size
-        self.line = scene.visuals.Line(parent=plot.view.scene, method="gl")
+        self.line = scene.visuals.Line(parent=plot.view.scene, method="gl", antialias=True)
         self.points = scene.visuals.Markers(parent=plot.view.scene)
         self.polygon = scene.visuals.Mesh(parent=plot.view.scene)
+        # Coplanar strokes and markers overlap in drawing order.
+        for visual in (self.line, self.points, self.polygon):
+            visual.update_gl_state(depth_test=False)
         self.visible = True
         self.refresh()
 
@@ -173,7 +176,8 @@ class VispyCurvePlot(QWidget):
         colors.setColor(QPalette.ColorRole.Window, QColor(palette.PLOT_BACKGROUND))
         self.setPalette(colors)
         self.setAutoFillBackground(True)
-        self.canvas = scene.SceneCanvas(keys=None, show=False, size=(280, 160), bgcolor=palette.PLOT_BACKGROUND)
+        self.canvas = scene.SceneCanvas(keys=None, show=False, size=(280, 160),
+                                       bgcolor=palette.PLOT_BACKGROUND, config={"samples": 4})
         layout = QVBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
         layout.setSpacing(0)

@@ -1,6 +1,6 @@
 """Scrollable previews of saved validation results."""
 
-from PySide6.QtCore import QSize, QTimer, Qt, Signal
+from PySide6.QtCore import QEvent, QSize, QTimer, Qt, Signal
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QListWidget, QListWidgetItem
 
@@ -40,10 +40,32 @@ class ValidationGallery(QListWidget):
         if self.isVisible():
             self.itemOpened.emit(self.records[self.row(item)]["id"])
 
-    def set_records(self, records):
-        scroll = self.verticalScrollBar().value() if records == self.records else 0
-        self.clear()
+    def invalidate(self):
+        for index in self.loaded:
+            self.item(index).setIcon(QIcon())
         self.loaded.clear()
+
+    def showEvent(self, event):
+        super().showEvent(event)
+        self.timer.start(16)
+
+    def hideEvent(self, event):
+        self.timer.stop()
+        super().hideEvent(event)
+
+    def event(self, event):
+        if event.type() == QEvent.Type.DevicePixelRatioChange and hasattr(self, "timer"):
+            self.invalidate()
+            self.timer.start(16)
+        return super().event(event)
+
+    def set_records(self, records):
+        if records == self.records:
+            if self.isVisible():
+                self.timer.start(16)
+            return
+        self.loaded.clear()
+        self.clear()
         self.records = records
         for record in records:
             view = presentation_for(record["protocol"])
@@ -56,7 +78,7 @@ class ValidationGallery(QListWidget):
             item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
         self._fit()
         self.doItemsLayout()
-        self.verticalScrollBar().setValue(scroll)
+        self.verticalScrollBar().setValue(0)
 
     def resizeEvent(self, event):
         super().resizeEvent(event)
@@ -72,15 +94,13 @@ class ValidationGallery(QListWidget):
         self.setGridSize(QSize(cell, plot_height + 35))
         size = QSize(plot_width, plot_height)
         if size != self.iconSize():
-            for index in self.loaded:
-                self.item(index).setIcon(QIcon())
-            self.loaded.clear()
+            self.invalidate()
             self.setIconSize(size)
         hint = QSize(cell - 8, plot_height + 25)
         for i in range(self.count()):
             if self.item(i).sizeHint() != hint:
                 self.item(i).setSizeHint(hint)
-        self.timer.start(0)
+        self.timer.start(16)
 
     def _load_visible(self):
         if not self.isVisible():
@@ -101,5 +121,5 @@ class ValidationGallery(QListWidget):
                 item.setToolTip("\n".join(filter(None, (self.records[i]["name"], axes))))
                 item.setIcon(QIcon(image))
                 self.loaded.add(i)
-                self.timer.start(0)
+                self.timer.start(16)
                 break

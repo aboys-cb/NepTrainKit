@@ -423,6 +423,7 @@ def redraw_reference_responses(panel):
                     else panel._pg.mkPen(palette.PLOT_AXIS, width=1.5, style=Qt.PenStyle.DashLine),
                     symbol="o",
                     symbolSize=5,
+                    antialias=True,
                     name=panel.tr("Reference") + label,
                 )
                 panel._register_curve(None, curve)
@@ -435,6 +436,7 @@ def redraw_reference_responses(panel):
                         pen=None if grouped_points else panel._series_pen(key),
                         symbol="o",
                         symbolSize=4,
+                        antialias=True,
                         symbolBrush=panel._series_pen(key).color(),
                         symbolPen=panel._series_pen(key).color(),
                         name=name + label,

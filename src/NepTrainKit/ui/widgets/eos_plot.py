@@ -112,7 +112,7 @@ def _plot_group(panel, plot, readout, benchmark, entries, residual, relative, *,
         curve = plot.plot(
             summary["volumes"], reference, pen=panel._series_pen(None),
             symbol=symbol, symbolBrush=palette.PLOT_AXIS, symbolPen=palette.PLOT_AXIS,
-            symbolSize=EOS_POINT_SIZE if panel._adaptive_layout else 5, name=panel.tr("Reference"), antialias=True,
+            symbolSize=EOS_POINT_SIZE if panel._adaptive_layout else 5, name=panel.tr("Reference"),
         )
         curve.setProperty("groupId", benchmark["id"])
         panel._register_curve(None, curve)
@@ -139,7 +139,7 @@ def _plot_group(panel, plot, readout, benchmark, entries, residual, relative, *,
         pen = panel._series_pen(key)
         curve = plot.plot(volumes, energies, pen=pen, name=escape(name),
                           symbol=symbol if panel._adaptive_layout or benchmark["id"] in panel.group_markers else None, symbolSize=EOS_POINT_SIZE if panel._adaptive_layout else 7,
-                          symbolBrush=pen.color(), symbolPen=pen.color(), antialias=True)
+                          symbolBrush=pen.color(), symbolPen=pen.color())
         curve.setProperty("groupId", benchmark["id"])
         panel._register_curve(key, curve)
         if panel._adaptive_layout:

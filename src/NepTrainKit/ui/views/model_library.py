@@ -1083,6 +1083,7 @@ class RunDetailPanel(QWidget):
                     [low, high],
                     [low, high],
                     pen=pg.mkPen(palette.PLOT_LINE, style=Qt.PenStyle.DashLine),
+                    antialias=True,
                 ),
             )
 

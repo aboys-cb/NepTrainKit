@@ -135,7 +135,7 @@ def redraw_diagnostics(panel):
             if run['status'] != 'succeeded':
                 failed += 1
                 continue
-            curve = plot.plot(details['x'], details['relative_energy'], pen=panel._series_pen(key),
+            curve = plot.plot(details['x'], details['relative_energy'], pen=panel._series_pen(key), antialias=True,
                               symbol='o', symbolSize=3, symbolBrush=panel._series_pen(key).color(), symbolPen=None)
             panel._register_curve(key, curve)
             curves.append((curve, details))

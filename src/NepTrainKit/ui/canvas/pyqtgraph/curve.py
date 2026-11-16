@@ -18,6 +18,9 @@ class PyqtgraphCurvePlot(pg.PlotWidget):
     def __init__(self, parent):
         super().__init__(parent, background=palette.PLOT_BACKGROUND, axisItems={side: _CurveAxis(side) for side in ("left", "bottom")})
 
+    def plot(self, *args, antialias=True, **kwargs):
+        return self.plotItem.plot(*args, antialias=antialias, **kwargs)
+
     def configure(self, xlabel, ylabel, legend, zero_pen=None):
         if legend and self.plotItem.legend is None:
             self.addLegend(offset=(8, 3), colCount=2, labelTextSize="11pt",

@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 import uuid
 
-from PySide6.QtCore import QCoreApplication, QEvent, QRect, QSize, Qt
+from PySide6.QtCore import QCoreApplication, QEvent, QRect, QSize, Qt, QTimer
 from PySide6.QtGui import QAction, QColor, QPainter
 from PySide6.QtWidgets import (
     QDialog,
@@ -295,6 +295,11 @@ class ValidationWorkspace(ModelLibraryWidget):
         self._items = []
         self._topics = []
         self._focused_reference = None
+        self._detail_dirty = True
+        self._curves_suspended = False
+        self._curve_timer = QTimer(self)
+        self._curve_timer.setSingleShot(True)
+        self._curve_timer.timeout.connect(self._show_current_curve)
         self._rendering = False
         self._search_filter = ""
 
@@ -654,7 +659,7 @@ class ValidationWorkspace(ModelLibraryWidget):
         self._present_workspace()
         self.run_summary.hide()
         self._update_header(None)
-        self.show_page("result")
+        self.show_page("items")
 
     def _update_header(self, baseline):
         suite_name = self.suite_combo.currentText() or self.tr("Model validation")
@@ -756,8 +761,17 @@ class ValidationWorkspace(ModelLibraryWidget):
         self._sync_role_dialog()
         self.role_dialog.show_picker()
 
+    def showEvent(self, event):
+        self._curves_suspended = False
+        super().showEvent(event)
+        if self._workspace_ready and self.pages.currentWidget() is self.result_page and self._detail_dirty:
+            self._curve_timer.start(16)
+
     def hideEvent(self, event):
         super().hideEvent(event)
+        if self._workspace_ready:
+            self._curves_suspended = True
+            self._curve_timer.stop()
         if hasattr(self, "groups"):
             self.groups.close_picker()
         if getattr(self, "role_dialog", None) is not None:
@@ -953,6 +967,10 @@ class ValidationWorkspace(ModelLibraryWidget):
             self.chart_options.setVisible(overflow)
 
     def _reload_gallery(self):
+        self.gallery.invalidate()
+        self._show_gallery()
+
+    def _show_gallery(self):
         if self.pages.currentWidget() is self.gallery:
             self.gallery.set_records(self.visible_items())
 
@@ -1075,9 +1093,7 @@ class ValidationWorkspace(ModelLibraryWidget):
             self.topic_id = "all"
             self._focused_reference = None
             self._workspace_suite = context
-            self.pages.setCurrentWidget(self.result_page)
-            self.view_picker.setCurrentItem("result")
-            self.compact_view_picker.setCurrentIndex(0)
+            self._detail_dirty = True
         self._items = self.service().suite_items(suite_id) if suite_id is not None else []
         families = {}
         for item in self._items:
@@ -1367,7 +1383,8 @@ class ValidationWorkspace(ModelLibraryWidget):
             nav_item.setToolTip(f"{item['name']}\n{subtitle} · {self.tr('Current model')}: {status}" if status else item["name"])
             nav_item.setToolTip(nav_item.toolTip() + "\n" + self.tr("Double-click to evaluate missing or failed models for this item."))
             self.sidebar_item_list.setItem(row, 0, nav_item)
-            self.sidebar_item_list.setItem(row, 1, check.clone())
+            # A native clone leaves a live PySide wrapper after Qt replaces the item.
+            self.sidebar_item_list.setItem(row, 1, QTableWidgetItem(check))
             if item["id"] == self._focused_reference:
                 self.sidebar_item_list.setCurrentCell(row, 0)
 
@@ -1381,7 +1398,7 @@ class ValidationWorkspace(ModelLibraryWidget):
             self._sync_role_dialog()
         self._management_state()
         self._present_workspace()
-        self._reload_gallery()
+        self._show_gallery()
 
     def _status_text(self, status):
         return {
@@ -1416,10 +1433,10 @@ class ValidationWorkspace(ModelLibraryWidget):
         self._render_workspace()
         self._update_run_scope()
 
-    def show_page(self, key):
+    def show_page(self, key, *, defer_curves=True):
         if not self._workspace_ready:
             return
-        entering = self.pages.currentWidget() is not self.page_widgets[key]
+        self._curve_timer.stop()
         if key != "result":
             self.groups.close_picker()
         self.pages.setCurrentWidget(self.page_widgets[key])
@@ -1427,10 +1444,20 @@ class ValidationWorkspace(ModelLibraryWidget):
         self.compact_view_picker.setCurrentIndex(self.compact_view_picker.findData(key))
         self._present_workspace()
         if key == "gallery":
-            self._reload_gallery()
+            self._show_gallery()
         if key == "result":
-            if entering and self._focused_reference and self.curves_button.isChecked() and self.editor_scroll.isHidden():
+            if defer_curves:
+                self._curve_timer.start(16)
+            else:
+                self._show_current_curve()
+
+    def _show_current_curve(self):
+        if self._curves_suspended or self.pages.currentWidget() is not self.result_page or not self.editor_scroll.isHidden():
+            return
+        if self._focused_reference and self.curves_button.isChecked():
+            if self._detail_dirty:
                 self._update_detail()
+        else:
             self._focus_first_visible()
 
     def _compare_cell(self, row, column):
@@ -1458,10 +1485,11 @@ class ValidationWorkspace(ModelLibraryWidget):
             self.item_table.selectRow(index)
         self.item_table.scrollToItem(self.item_table.item(index, 0))
         self._expand_curves()
+        self._detail_dirty = True
         if self.pages.currentWidget() is self.result_page:
             self._update_detail()
         else:
-            self.show_page("result")
+            self.show_page("result", defer_curves=False)
         self._present_workspace()
 
     def _group_marker_changed(self, key, symbol):
@@ -1535,8 +1563,12 @@ class ValidationWorkspace(ModelLibraryWidget):
 
     def _update_detail(self):
         self.detail._current_key = self.model_combo.currentData()
-        if self._workspace_ready and self.pages.currentWidget() is not self.result_page:
-            return
+        if self._workspace_ready:
+            self._curve_timer.stop()
+            if self._curves_suspended or self.pages.currentWidget() is not self.result_page:
+                self._detail_dirty = True
+                return
+            self._detail_dirty = False
         group_rows = None
         group_total = None
         if self._workspace_ready and self.curves_button.isChecked():
@@ -1563,7 +1595,7 @@ class ValidationWorkspace(ModelLibraryWidget):
 
     def open_scorecard(self, suite_id, model_id=None, *, draft=None):
         super().open_scorecard(suite_id, model_id, draft=draft, show_curves=False)
-        self.show_page("result")
+        self.show_page("result", defer_curves=False)
 
     def _on_model_changed(self, *_args):
         if not self._workspace_ready:
@@ -1588,6 +1620,7 @@ class ValidationWorkspace(ModelLibraryWidget):
             self._color_rows = self.model._rows
         super()._on_selection_changed(update_detail=update_detail)
         if self._workspace_ready:
+            self.gallery.invalidate()
             self._render_workspace()
             self._present_workspace()
 

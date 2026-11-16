@@ -934,10 +934,7 @@ class ValidationService:
                     if protocol.kind == "diagnostic":
                         evaluation = protocol.evaluate(predictor, frames)
                     else:
-                        from .predictions import CachedPrediction
-                        identity = {key: value for key, value in environment.items()
-                                    if key not in ("protocol", "mode", "analysis", "reference_label_counts")}
-                        shared = CachedPrediction(predictor, self.library.root / "cache" / "predictions", identity, refresh=force)
+                        shared = self._prediction_cache(environment, predictor, refresh=force)
                         evaluation = protocol.evaluate(shared, frames)
                         if shared.source:
                             evaluation.details["prediction_source"] = shared.source
@@ -1018,6 +1015,34 @@ class ValidationService:
             runs.append(self.evaluate(model_id, benchmark["id"], force=force))
         return runs
 
+    def _prediction_cache(self, environment, predictor=None, *, refresh=False):
+        from .predictions import CachedPrediction
+
+        identity = {key: value for key, value in environment.items()
+                    if key not in ("protocol", "mode", "analysis", "reference_label_counts")}
+        return CachedPrediction(predictor, self.library.root / "cache" / "predictions", identity, refresh=refresh)
+
+    def absolute_scan_energies(self, benchmark, run=None):
+        """Restore the absolute zero for older relative scans without evaluating a model."""
+        from types import SimpleNamespace
+
+        protocol = protocol_for_set(benchmark)
+        if run and (run.get("set_id") != benchmark["id"] or
+                    run["environment"].get("dataset_sha256") != benchmark["object_hash"]):
+            return None
+        try:
+            frames = self.set_frames(benchmark["id"])
+        except (OSError, ValueError):
+            return None
+        prediction = None
+        if run is not None:
+            env = run["environment"]
+            values = self._prediction_cache(env).read_arrays({"energy": (len(frames),)}, required={"energy"})
+            if values is None:
+                return None
+            prediction = SimpleNamespace(**values)
+        return protocol.absolute_scan_energies(frames, benchmark["summary"]["rows"], prediction)
+
     def run_details(self, run: dict) -> dict:
         if run["id"] in self._temporary_results:
             return self._temporary_results[run["id"]]
@@ -1082,10 +1107,13 @@ class ValidationService:
                 ranked, BenchmarkRun.id == ranked.c.id
             ).where(ranked.c.rank == 1))]
         latest = {}
+        versions = {}
         for run in records:
             model = models[run["model_id"]]
             identity = model["content_hash"] or model["id"]
             latest.setdefault((identity, run["set_id"], run["protocol_version"]), run)
+            key = (identity, run["set_id"])
+            versions[key] = max(versions.get(key, 0), run["protocol_version"])
         if include_compatible:
             # Show compatible snapshots before their first run, including newly opened models.
             model_ids.extend(
@@ -1100,6 +1128,7 @@ class ValidationService:
                 raise ValueError(f"Unknown model version: {model_id}")
 
         def cells_for(model_id):
+            identity = models[model_id]["content_hash"] or model_id
             runs = {}
             cells = []
             for column in columns:
@@ -1124,6 +1153,7 @@ class ValidationService:
                     {
                         "value": value,
                         "status": run["status"] if run else "missing",
+                        "previous_version": versions.get((identity, key)) if run is None else None,
                         "error": run["error"] if run else "",
                         "run_id": run["id"] if run else None,
                     }

@@ -385,6 +385,10 @@ def _apply(values, rows):
     return np.asarray([sum(values[i] * c for i, c in row["terms"]) for row in rows])
 
 
+def _scan_points(values, rows):
+    return [float(values[row["terms"][0][0]]) for row in rows]
+
+
 def _extremum(x, values):
     if len(x) < 3 or any(not isinstance(v, (int, float)) for v in x) or len(set(x)) != len(x):
         return {}
@@ -436,6 +440,11 @@ class ReferenceResponseProtocol(ValidationProtocol):
             return [Issue("error", str(error))]
         return [Issue("warning", f"Excluded group {g['group']}: {g['reason']}") for g in excluded]
 
+    def absolute_scan_energies(self, frames, rows, prediction=None):
+        frames = self._frames(frames)
+        values = _reference(frames, self.spec) if prediction is None else _predicted(prediction, frames, self.spec)
+        return _scan_points(values, rows)
+
     def summarize_reference(self, frames):
         frames = self._frames(frames)
         rows, series, excluded = _plan(frames, self.spec)
@@ -452,7 +461,8 @@ class ReferenceResponseProtocol(ValidationProtocol):
                 for row in rows
             ]
         else:
-            reference = _apply(_reference(frames, self.spec), rows).tolist()
+            raw_reference = _reference(frames, self.spec)
+            reference = _apply(raw_reference, rows).tolist()
         result = {
             "formula": frames[0].get_chemical_formula(),
             "analysis": self.spec.to_dict(),
@@ -466,6 +476,8 @@ class ReferenceResponseProtocol(ValidationProtocol):
             "role": self.spec.role,
             **({"label_counts": labels.counts} if self.spec.mode == "slices" else {}),
         }
+        if self.spec.mode == "scan" and self.spec.quantity == "energy" and self.spec.relative:
+            result["absolute_reference"] = _scan_points(raw_reference, rows)
         if self.spec.extract_exchange:
             from ..exchange import exchange_rows, evaluate_exchange
 
@@ -482,7 +494,8 @@ class ReferenceResponseProtocol(ValidationProtocol):
         prediction = predictor.predict(unlabelled_copies(frames))
         if self.spec.mode == "slices":
             return self._accuracy_slices(prediction, frames, summary)
-        predicted = _apply(_predicted(prediction, frames, self.spec), summary["rows"])
+        raw_prediction = _predicted(prediction, frames, self.spec)
+        predicted = _apply(raw_prediction, summary["rows"])
         reference = np.asarray(summary["reference"])
         error = predicted - reference
         metrics = {
@@ -492,6 +505,8 @@ class ReferenceResponseProtocol(ValidationProtocol):
             "excluded_groups": len(summary["excluded"]),
         }
         details = dict(summary, predicted=predicted.tolist(), errors=error.tolist())
+        if "absolute_reference" in summary:
+            details["absolute_predicted"] = _scan_points(raw_prediction, summary["rows"])
         if self.spec.extract_exchange:
             from ..exchange import exchange_rows, evaluate_exchange
 

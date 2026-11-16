@@ -393,12 +393,15 @@ def test_cli_reference_analysis_recipe(tmp_path, capsys):
     assert "four_state" in capsys.readouterr().out
 
 
-def test_numeric_details_dialog_exposes_curvature_and_slice_counts(accuracy_case, monkeypatch):
-    from PySide6.QtWidgets import QDialog
+def test_numeric_details_dialog_exposes_curvature_and_slice_counts(accuracy_case, monkeypatch, tmp_path):
+    import csv
+    from PySide6.QtWidgets import QDialog, QFileDialog, QTabWidget
     from NepTrainKit.ui.widgets.reference_response_plot import _show_values
     from NepTrainKit.ui.views.model_library import RunDetailPanel
-    from qfluentwidgets import TableWidget
+    from qfluentwidgets import PushButton, TableWidget
 
+    path = tmp_path / "visible.csv"
+    monkeypatch.setattr(QFileDialog, "getSaveFileName", lambda *_: (str(path), ""))
     case = accuracy_case
     for frame in case.frames:
         frame.info["group"] = "partial"
@@ -410,9 +413,15 @@ def test_numeric_details_dialog_exposes_curvature_and_slice_counts(accuracy_case
     def inspect(dialog):
         tables = dialog.findChildren(TableWidget)
         assert len(tables) == 2
-        stats = tables[-1]
+        tabs = dialog.findChild(QTabWidget)
+        tabs.setCurrentIndex(1)
+        stats = tabs.currentWidget()
         assert stats.rowCount() == 4 and stats.columnCount() == 7
         assert stats.item(3, 5).text() == "9" and stats.item(3, 6).text() == "9"
+        next(b for b in dialog.findChildren(PushButton) if b.text() == panel.tr("Export CSV")).click()
+        with path.open(encoding="utf-8-sig", newline="") as handle:
+            exported = list(csv.reader(handle))
+        assert len(exported) == 5 and exported[-1][-2:] == ["9", "9"]
         checked.append(True)
         return 0
 

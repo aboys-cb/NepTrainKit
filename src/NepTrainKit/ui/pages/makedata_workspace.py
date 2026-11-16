@@ -56,7 +56,8 @@ class MakeDataWorkspace(QWidget):
 
     def open_sampling(self, payload):
         name = payload["name"].rsplit(" / ", 1)[-1]
-        editor = self._add_editor(self.tr("EOS sampling · {name}").format(name=name))
+        title = self.tr("mEOS sampling · {name}") if payload.get("kind") == "mEOS" else self.tr("EOS sampling · {name}")
+        editor = self._add_editor(title.format(name=name))
         try:
             editor.load_sampling_draft(payload)
         except Exception:

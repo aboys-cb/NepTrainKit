@@ -55,6 +55,7 @@ INFO_BORDER = "#A5D8FF"
 # --- Plots ------------------------------------------------------------------
 # Defaults for the ``plot`` config section.  Users can still override every
 # value from Settings; see ``migrate_plot_palette`` in ``core.types``.
+PLOT_BACKGROUND = "#FFFFFF"
 PLOT_MARKER_EDGE = "#2F6FA8"
 PLOT_MARKER_FACE = "#FFFFFF"
 PLOT_LINE = "#9AA5AD"

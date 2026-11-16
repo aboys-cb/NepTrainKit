@@ -1106,6 +1106,22 @@
 <context>
     <name>BenchmarkImportDialog</name>
     <message>
+        <source>Validation type</source>
+        <translation>验证类型</translation>
+    </message>
+    <message>
+        <source>Reference file</source>
+        <translation>参考文件</translation>
+    </message>
+    <message>
+        <source>Import settings</source>
+        <translation>导入设置</translation>
+    </message>
+    <message>
+        <source>Data requirements</source>
+        <translation>数据要求</translation>
+    </message>
+    <message>
         <source>Import benchmark set</source>
         <translation type="vanished">导入基准集</translation>
     </message>
@@ -1163,11 +1179,11 @@
     </message>
     <message>
         <source>Suite</source>
-        <translation type="vanished">套件</translation>
+        <translation>套件</translation>
     </message>
     <message>
         <source>Import</source>
-        <translation type="vanished">导入</translation>
+        <translation>导入</translation>
     </message>
     <message>
         <location filename="../ui/widgets/validation_dialogs.py" line="314" />
@@ -15561,6 +15577,10 @@ Baseline model: {baseline}</source>
 <context>
     <name>MakeDataWidget</name>
     <message>
+        <source>mEOS sampling · {name}</source>
+        <translation>mEOS 采样 · {name}</translation>
+    </message>
+    <message>
         <source>Only .xyz .vasp .cif or json files are supported for import.</source>
         <translation type="vanished">仅支持导入 .xyz、.vasp、.cif 或 json 文件。</translation>
     </message>
@@ -15843,6 +15863,10 @@ Baseline model: {baseline}</source>
 </context>
 <context>
     <name>MakeDataWorkspace</name>
+    <message>
+        <source>mEOS sampling · {name}</source>
+        <translation>mEOS 采样 · {name}</translation>
+    </message>
     <message>
         <location filename="../ui/pages/makedata_workspace.py" line="32" />
         <source>Original workflow</source>
@@ -19621,6 +19645,94 @@ All child items will also be deleted.</source>
 <context>
     <name>RunDetailPanel</name>
     <message>
+        <source>No visible curve values.</source>
+        <translation>当前没有可见的曲线数值。</translation>
+    </message>
+    <message>
+        <source>{count} scan points</source>
+        <translation>{count} 个采样点</translation>
+    </message>
+    <message>
+        <source>{count} groups</source>
+        <translation>{count} 组</translation>
+    </message>
+    <message>
+        <source>Frame details</source>
+        <translation>帧明细</translation>
+    </message>
+    <message>
+        <source>Error statistics</source>
+        <translation>误差统计</translation>
+    </message>
+    <message>
+        <source>Minima and curvature</source>
+        <translation>极小值与曲率</translation>
+    </message>
+    <message>
+        <source>Exchange components</source>
+        <translation>交换分量</translation>
+    </message>
+    <message>
+        <source>Frame values</source>
+        <translation>帧数据</translation>
+    </message>
+    <message>
+        <source>Curve values</source>
+        <translation>曲线数值</translation>
+    </message>
+    <message>
+        <source>Absolute energy unavailable: </source>
+        <translation>缺少绝对能量：</translation>
+    </message>
+    <message>
+        <source>Shared axes · Color by model, marker by group</source>
+        <translation>共用坐标轴 · 颜色区分势函数，点形区分组</translation>
+    </message>
+    <message>
+        <source>Current group</source>
+        <translation>当前组</translation>
+    </message>
+    <message>
+        <source>Comparison group</source>
+        <translation>对照组</translation>
+    </message>
+    <message>
+        <source>Remove comparison group</source>
+        <translation>移除对照组</translation>
+    </message>
+    <message>
+        <source>Aligned ΔE</source>
+        <translation>去偏 ΔE</translation>
+    </message>
+    <message>
+        <source>EOS curve</source>
+        <translation>EOS 曲线</translation>
+    </message>
+    <message>
+        <source>Energy E(V)</source>
+        <translation>能量 E(V)</translation>
+    </message>
+    <message>
+        <source>Residual ΔE(V)</source>
+        <translation>残差 ΔE(V)</translation>
+    </message>
+    <message>
+        <source>Residual ΔE (meV/atom)</source>
+        <translation>残差 ΔE (meV/atom)</translation>
+    </message>
+    <message>
+        <source>Predicted {value:.6f} eV/atom</source>
+        <translation>预测 {value:.6f} eV/atom</translation>
+    </message>
+    <message>
+        <source>Reference {value:.6f} eV/atom</source>
+        <translation>参考 {value:.6f} eV/atom</translation>
+    </message>
+    <message>
+        <source>Hover to inspect values. Click to keep a reading.</source>
+        <translation>悬停查看数值，点击保留读数。</translation>
+    </message>
+    <message>
         <location filename="../ui/views/model_library.py" line="301" />
         <source>Remove constant offset</source>
         <translation>去除常数偏移</translation>
@@ -19759,8 +19871,8 @@ All child items will also be deleted.</source>
     </message>
     <message>
         <location filename="../ui/views/model_library.py" line="307" />
-        <source>Subtract each group's reference minimum from both its reference and model energies (eV/atom).</source>
-        <translation>每组参考曲线与模型曲线减去同一个参考最低能量（eV/atom）。</translation>
+        <source>Show energies relative to the group's reference state.</source>
+        <translation>以各组的参考态为能量零点。</translation>
     </message>
     <message>
         <source>Reference: dots / dashed · Current model: solid · Comparison model: dash-dot</source>
@@ -20098,6 +20210,22 @@ Dataset SHA-256: {data}</source>
     <message>
         <source>Excluded groups</source>
         <translation>排除组数</translation>
+    </message>
+    <message>
+        <source>Reference only</source>
+        <translation>仅参考值</translation>
+    </message>
+    <message>
+        <source>{name}: v{version} result · double-click the item to update</source>
+        <translation>{name}：已有 v{version} 结果，双击左侧验证项更新</translation>
+    </message>
+    <message>
+        <source>No paired prediction and reference values. Double-click the validation item to evaluate it.</source>
+        <translation>此组缺少配对的预测值和参考值。可双击左侧验证项计算。</translation>
+    </message>
+    <message>
+        <source>Show a model curve above to see its residuals.</source>
+        <translation>请在上方显示势函数曲线以查看残差。</translation>
     </message>
 </context>
 <context>
@@ -32598,6 +32726,66 @@ Type: {kind} · Elements: {elements}</source>
 <context>
     <name>ValidationWorkspace</name>
     <message>
+        <source>Group layout</source>
+        <translation>分组布局</translation>
+    </message>
+    <message>
+        <source>Separate plots</source>
+        <translation>分图</translation>
+    </message>
+    <message>
+        <source>Overlay groups</source>
+        <translation>合并</translation>
+    </message>
+    <message>
+        <source>Comparison metric</source>
+        <translation>对照指标</translation>
+    </message>
+    <message>
+        <source>Add comparison groups</source>
+        <translation>添加对照组</translation>
+    </message>
+    <message>
+        <source>Validation curve</source>
+        <translation>验证曲线</translation>
+    </message>
+    <message>
+        <source>Suite plots</source>
+        <translation>套件图集</translation>
+    </message>
+    <message>
+        <source>No plotted data</source>
+        <translation>暂无可绘制的数据</translation>
+    </message>
+    <message>
+        <source>EOS groups</source>
+        <translation>EOS 分组</translation>
+    </message>
+    <message>
+        <source>{group} · {count} frames</source>
+        <translation>{group} · {count} 帧</translation>
+    </message>
+    <message>
+        <source>All ({count})</source>
+        <translation>全部 ({count})</translation>
+    </message>
+    <message>
+        <source>Organize</source>
+        <translation>整理</translation>
+    </message>
+    <message>
+        <source>Search items, topics or protocols…</source>
+        <translation>搜索验证项、主题或协议…</translation>
+    </message>
+    <message>
+        <source>No matching items</source>
+        <translation>没有匹配的验证项</translation>
+    </message>
+    <message>
+        <source>{count} scan points</source>
+        <translation>{count} 个扫描点</translation>
+    </message>
+    <message>
         <source>Accuracy by group</source>
         <translation>分组精度</translation>
     </message>
@@ -33034,6 +33222,38 @@ Type: {kind} · Elements: {elements}</source>
         <source>No compatible validation items for {name}.</source>
         <translation>当前套件没有与 {name} 元素兼容的验证项。</translation>
     </message>
+    <message>
+        <source>Double-click to evaluate missing or failed models for this item.</source>
+        <translation>双击验证项，为缺少结果或上次失败的势计算此项。</translation>
+    </message>
+    <message>
+        <source>Chart options</source>
+        <translation>图表选项</translation>
+    </message>
+    <message>
+        <source>Comparison groups</source>
+        <translation>对照组</translation>
+    </message>
+    <message>
+        <source>Residual</source>
+        <translation>残差</translation>
+    </message>
+    <message>
+        <source>Energy</source>
+        <translation>能量</translation>
+    </message>
+    <message>
+        <source>Overlay groups on shared axes</source>
+        <translation>在同一坐标轴上叠加各组曲线</translation>
+    </message>
+    <message>
+        <source>Show residuals instead of energy</source>
+        <translation>切换能量曲线与相对参考值的残差</translation>
+    </message>
+    <message>
+        <source>Update needed</source>
+        <translation>待更新</translation>
+    </message>
 </context>
 <context>
     <name>ModelColorButton</name>
@@ -33043,7 +33263,78 @@ Type: {kind} · Elements: {elements}</source>
     </message>
 </context>
 <context>
+    <name>GroupMarkerButton</name>
+    <message>
+        <source>Group marker</source>
+        <translation>分组点形</translation>
+    </message>
+    <message>
+        <source>Circle</source>
+        <translation>圆形</translation>
+    </message>
+    <message>
+        <source>Triangle</source>
+        <translation>正三角</translation>
+    </message>
+    <message>
+        <source>Square</source>
+        <translation>方形</translation>
+    </message>
+    <message>
+        <source>Diamond</source>
+        <translation>菱形</translation>
+    </message>
+    <message>
+        <source>Inverted triangle</source>
+        <translation>倒三角</translation>
+    </message>
+    <message>
+        <source>Star</source>
+        <translation>星形</translation>
+    </message>
+    <message>
+        <source>Plus</source>
+        <translation>加号</translation>
+    </message>
+    <message>
+        <source>Cross</source>
+        <translation>叉号</translation>
+    </message>
+    <message>
+        <source>Hexagon</source>
+        <translation>六边形</translation>
+    </message>
+    <message>
+        <source>Pentagon</source>
+        <translation>五边形</translation>
+    </message>
+</context>
+<context>
     <name>ValidationModelPicker</name>
+    <message>
+        <source>Current group</source>
+        <translation>当前组</translation>
+    </message>
+    <message>
+        <source>Comparison group</source>
+        <translation>对照组</translation>
+    </message>
+    <message>
+        <source>Choose groups to compare</source>
+        <translation>选择参与对照的分组</translation>
+    </message>
+    <message>
+        <source>Choose one current group and any comparison groups.</source>
+        <translation>选择一个当前组，可添加多个对照组并排查看曲线。</translation>
+    </message>
+    <message>
+        <source>Search group name</source>
+        <translation>搜索成分、结构或分组名称</translation>
+    </message>
+    <message>
+        <source>No matching groups.</source>
+        <translation>没有匹配的分组。</translation>
+    </message>
     <message>
         <source>Search project or model name</source>
         <translation>搜索项目名或势函数名</translation>

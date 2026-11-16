@@ -2,10 +2,9 @@
 
 from __future__ import annotations
 
-import re
 
 from PySide6.QtCore import QAbstractTableModel, QEvent, QModelIndex, QSize, Qt, Signal
-from PySide6.QtGui import QColor, QFont, QIcon, QPainter, QPixmap
+from PySide6.QtGui import QColor, QFont, QIcon, QPainter, QPen, QPixmap
 from PySide6.QtWidgets import (
     QAbstractItemView,
     QApplication,
@@ -39,6 +38,9 @@ from qfluentwidgets import (
 )
 
 from NepTrainKit import palette
+from NepTrainKit.ui.widgets.validation_model_picker import GroupMarkerButton
+from NepTrainKit.ui.widgets.validation_presentation import presentation_for, uses_energy_chart
+from NepTrainKit.ui.widgets.eos_plot import EOS_REFERENCE_WIDTH, update_residual_placeholder
 from NepTrainKit.config import Config
 from NepTrainKit.core import MessageManager
 from NepTrainKit.core.validation import SetRejectedError, SetTooLargeError, ValidationService
@@ -212,10 +214,9 @@ class GroupMetricsTableModel(QAbstractTableModel):
         self.benchmarks = list(benchmarks)
         self.model_row = model_row
         self.kind = kind
-        keys = {
-            "eos": ("shape_rmse", "v0_error", "b0_error"),
-            "diagnostic": ("energy_span", "check_failures"),
-        }.get(kind, ("energy_rmse", "force_rmse"))
+        keys = ("energy_span", "check_failures") if kind == "diagnostic" else ("energy_rmse", "force_rmse")
+        if presentation_for(kind).choose_table_metric:
+            keys = tuple(metric.key for metric in get_protocol(kind).headline_metrics())
         if kind == "efv" and any(
             item.get("summary", {}).get("label_counts", {}).get("mforce", {}).get("components", 0)
             for item in self.benchmarks
@@ -273,15 +274,7 @@ class GroupMetricsTableModel(QAbstractTableModel):
         benchmark = self.benchmarks[index.row()]
         if index.column() == 0:
             if role == Qt.ItemDataRole.DisplayRole:
-                name = (
-                    (benchmark.get("source_ref") or {}).get("eos_group", {}).get("value")
-                    or benchmark["name"].rsplit(" / ", 1)[-1]
-                )
-                seed = re.search(r"_seed(\d+)$", name)
-                if seed and benchmark.get("summary", {}).get("formula"):
-                    digits = seed[1]
-                    suffix = "…" + digits[-4:] if len(digits) > 6 else digits
-                    name = f"{benchmark['summary']['formula']} · seed {suffix}"
+                name = presentation_for(benchmark["protocol"]).item_title(benchmark)
                 return f"G{index.row() + 1} · {name}"
             if role == Qt.ItemDataRole.ToolTipRole:
                 return benchmark["name"]
@@ -355,6 +348,8 @@ class RunDetailPanel(QWidget):
 
     seriesVisibilityChanged = Signal(object, bool)
     groupFocused = Signal(str)
+    groupRemoved = Signal(str)
+    markerRequested = Signal(str, str)
     allGroupsRequested = Signal()
     comparisonRemoved = Signal(int)
     samplingRequested = Signal(str)
@@ -362,10 +357,7 @@ class RunDetailPanel(QWidget):
 
     def __init__(self, parent=None):
         super().__init__(parent)
-        import NepTrainKit.ui.canvas.pyqtgraph  # noqa: F401 - shared pyqtgraph configuration
-        import pyqtgraph as pg
-
-        self._pg = pg
+        self.plot = None
         self._args = None
         self._groups = None
         self._total_groups = 0
@@ -373,12 +365,22 @@ class RunDetailPanel(QWidget):
         self.model_colors = {}
         self._hidden_series = set()
         self._curves = {}
+        self._eos_overlay = False
+        self._eos_residual = False
+        self.load_scan_energies = None
+        self.magnetic_selection = None
+        self.magnetic_can_focus = False
+        self.eos_current_id = None
+        self.group_markers = {}
         self._adaptive_layout = False
+        self._inspector_expanded = True
         self.legend_buttons = {}
         layout = QVBoxLayout(self)
         layout.setContentsMargins(12, 8, 12, 8)
         layout.setSpacing(6)
         header = QHBoxLayout()
+        # Attach before populating: the validation workspace later moves these widgets.
+        layout.addLayout(header)
         self.header_layout = header
         header.setSpacing(16)
         self.title_label = BodyLabel(self)
@@ -389,7 +391,7 @@ class RunDetailPanel(QWidget):
         self.relative_checkbox = CheckBox(self.tr("Relative energy"), self)
         self.relative_checkbox.setChecked(True)
         self.relative_checkbox.setToolTip(
-            self.tr("Subtract each group's reference minimum from both its reference and model energies (eV/atom).")
+            self.tr("Show energies relative to the group's reference state.")
         )
         self.relative_checkbox.stateChanged.connect(lambda _state: self._redraw())
         header.addWidget(self.title_label, 1)
@@ -411,7 +413,6 @@ class RunDetailPanel(QWidget):
         header.addWidget(self.wheel_zoom_checkbox)
         header.addWidget(self.relative_checkbox)
         header.addWidget(self.offset_checkbox)
-        layout.addLayout(header)
         self.info_label = CaptionLabel(self)
         self.info_label.setWordWrap(True)
         self.info_label.setStyleSheet(f"color:{palette.TEXT_SECONDARY};")
@@ -431,12 +432,6 @@ class RunDetailPanel(QWidget):
         plot_pane_layout = QVBoxLayout(self.plot_pane)
         plot_pane_layout.setContentsMargins(0, 0, 0, 0)
         plot_pane_layout.setSpacing(0)
-
-        self.plot = pg.PlotWidget(self.plot_pane)
-        self.plot.showGrid(x=True, y=True, alpha=0.2)
-        self.legend = self.plot.addLegend(offset=(-10, 10))
-        self.plot.setMinimumHeight(240)
-        plot_pane_layout.addWidget(self.plot, 1)
 
         self.grid_scroll = QScrollArea(self.plot_pane)
         self.grid_scroll.setWidgetResizable(True)
@@ -525,13 +520,25 @@ class RunDetailPanel(QWidget):
         self.eos_cards = []
         self.eos_plots = []
         self._grid_columns = 0
+        self.plot_pane.installEventFilter(self)
         self.show_runs(None, [])
+
+    @property
+    def _pg(self):
+        import NepTrainKit.ui.canvas.pyqtgraph  # shared style for the legacy plots
+        import pyqtgraph
+        return pyqtgraph
 
     def set_adaptive_layout(self, enabled: bool) -> None:
         """Enable full-width responsive plot cards and the side-by-side multi-model inspector."""
         self._adaptive_layout = bool(enabled)
-        self.inspector_panel.setVisible(self._adaptive_layout and bool(self._groups or (self._args and self._args[0])))
+        self.set_inspector_expanded(self._inspector_expanded)
         self._layout_cards()
+
+    def set_inspector_expanded(self, expanded: bool) -> None:
+        self._inspector_expanded = expanded
+        has_item = bool(self._groups or (self._args and self._args[0]))
+        self.inspector_panel.setVisible(self._adaptive_layout and expanded and has_item)
 
     def _emit_active_sampling(self) -> None:
         benchmark = (
@@ -548,13 +555,16 @@ class RunDetailPanel(QWidget):
         self._total_groups = 1 if benchmark else 0
         self._groups = (
             [("G1", benchmark, entries)]
-            if benchmark and benchmark["protocol"] in ("eos", "diagnostic", "response")
+            if benchmark and presentation_for(benchmark["protocol"]).draw_groups
             else None
         )
         self._redraw()
 
     def show_groups(self, groups, *, total_groups=None):
         """EOS curves across selected reference groups; entries are already per atom."""
+        if not groups:
+            self.show_runs(None, [])
+            return
         self._groups = groups
         self._total_groups = len(groups) if total_groups is None else total_groups
         self._args = (groups[0][1], groups[0][2]) if groups else (None, [])
@@ -569,24 +579,22 @@ class RunDetailPanel(QWidget):
         self._rebuild_legend(groups)
         self.relative_checkbox.setVisible(self._groups is not None)
         self.grid_scroll.setVisible(self._groups is not None)
-        self.plot.setVisible(self._groups is None)
+        if self.plot is None and self._groups is None and self._args[0]:
+            self.plot = self._pg.PlotWidget(self.plot_pane)
+            self.plot.showGrid(x=True, y=True, alpha=0.2)
+            self.legend = self.plot.addLegend(offset=(-10, 10))
+            self.plot.setMinimumHeight(240)
+            self.plot_pane.layout().insertWidget(0, self.plot, 1)
+        if self.plot is not None:
+            self.plot.setVisible(self._groups is None and bool(self._args[0]))
         self._update_inspector(groups)
         if self._groups is not None:
-            if self._groups and self._groups[0][1]["protocol"] == "response":
-                from NepTrainKit.ui.widgets.reference_response_plot import redraw_reference_responses
-
-                redraw_reference_responses(self)
-                return
-            if self._groups and self._groups[0][1]["protocol"] == "diagnostic":
-                from NepTrainKit.ui.widgets.diagnostic_plot import redraw_diagnostics
-
-                redraw_diagnostics(self)
-                return
-            self._redraw_eos()
+            presentation_for(self._groups[0][1]["protocol"]).draw_groups(self)
             return
         benchmark, entries = self._args
-        self.plot.clear()
-        self.legend.clear()
+        if self.plot is not None:
+            self.plot.clear()
+            self.legend.clear()
         self.offset_checkbox.setVisible(bool(benchmark) and benchmark["protocol"] == "eos")
         if not benchmark:
             self.title_label.setText(self.tr("Click a cell to see its details"))
@@ -717,7 +725,7 @@ class RunDetailPanel(QWidget):
         if not self._adaptive_layout or not groups:
             self.inspector_panel.hide()
             return
-        self.inspector_panel.show()
+        self.inspector_panel.setVisible(self._inspector_expanded)
         tag, benchmark, entries = groups[0]
         protocol_kind = benchmark.get("protocol", "eos")
         summary = benchmark.get("summary") or {}
@@ -737,8 +745,9 @@ class RunDetailPanel(QWidget):
         header_view = self.multi_model_table.horizontalHeader()
         header_view.setStretchLastSection(False)
         header_view.setSectionResizeMode(QHeaderView.ResizeMode.ResizeToContents)
-        header_view.setSectionResizeMode(0, QHeaderView.ResizeMode.Stretch)
-        header_view.setMinimumSectionSize(85)
+        header_view.setMinimumSectionSize(54)
+        header_view.setSectionResizeMode(0, QHeaderView.ResizeMode.Interactive)
+        self.multi_model_table.setColumnWidth(0, 170)
         rows_data = []
         for metric in protocol.metrics:
             values = []
@@ -778,8 +787,11 @@ class RunDetailPanel(QWidget):
         self._hidden_series.clear()
 
     def _series_pen(self, key):
+        eos = bool(self._adaptive_layout and self._groups and uses_energy_chart(self._groups[0][1]))
         if key is None:
-            return self._pg.mkPen(palette.PLOT_AXIS, width=1.5, style=Qt.PenStyle.DashLine)
+            pen = QPen(QColor(palette.PLOT_AXIS), EOS_REFERENCE_WIDTH if eos else 1.5, Qt.PenStyle.DashLine)
+            pen.setCosmetic(True)
+            return pen
         if key not in self._series_styles:
             index = len(self._series_styles)
             styles = (
@@ -793,7 +805,10 @@ class RunDetailPanel(QWidget):
                 styles[index % len(styles)],
             )
         color, style = self._series_styles[key]
-        return self._pg.mkPen(self.model_colors.get(key, color), width=2.8 if key == self._current_key else 1.8, style=style)
+        width = 2.8 if key == self._current_key else 1.8
+        pen = QPen(QColor(self.model_colors.get(key, color)), width + (0.9 if eos else 0), style)
+        pen.setCosmetic(True)
+        return pen
 
     def _rebuild_legend(self, groups):
         while self.legend_flow.count():
@@ -810,7 +825,8 @@ class RunDetailPanel(QWidget):
             entry[0] for entry in entries
         ]
         if self._adaptive_layout:
-            keys = [key for key in keys if key is None]
+            residual = self._eos_residual and groups and uses_energy_chart(groups[0][1])
+            keys = [key for key in keys if key is None and not residual]
         else:
             self._hidden_series.intersection_update(keys)
         self.legend_panel.setVisible(bool(groups and keys))
@@ -891,6 +907,7 @@ class RunDetailPanel(QWidget):
             self.legend_buttons[key] = button
 
     def _register_curve(self, key, curve):
+        curve.setProperty("modelId", key)
         self._curves.setdefault(key, []).append(curve)
         curve.setVisible(key not in self._hidden_series)
 
@@ -902,7 +919,7 @@ class RunDetailPanel(QWidget):
         for curve in self._curves.get(key, ()):
             if curve.opts["pen"] is not None:
                 curve.setPen(self._series_pen(key))
-            if curve.opts["symbol"] is not None:
+            if curve.opts["symbol"] is not None and hasattr(curve, "setSymbolBrush"):
                 curve.setSymbolBrush(color)
                 if curve.opts["symbolPen"] is not None:
                     curve.setSymbolPen(color)
@@ -935,6 +952,8 @@ class RunDetailPanel(QWidget):
             self._hidden_series.add(key)
         for curve in self._curves.get(key, []):
             curve.setVisible(visible)
+        for plot in self.eos_plots:
+            update_residual_placeholder(plot)
         self.seriesVisibilityChanged.emit(key, visible)
 
     def resizeEvent(self, event):
@@ -949,6 +968,8 @@ class RunDetailPanel(QWidget):
         plot.getViewBox().state["wheelScaleFactor"] = -0.03
 
     def eventFilter(self, obj, event):
+        if obj is self.plot_pane and event.type() == QEvent.Type.Resize and self._adaptive_layout:
+            self._layout_cards()
         if event.type() == QEvent.Type.Wheel and not self.wheel_zoom_checkbox.isChecked():
             # A graphics view consumes wheel events before the surrounding scroll area.
             pixels = event.pixelDelta()
@@ -966,16 +987,20 @@ class RunDetailPanel(QWidget):
         return super().eventFilter(obj, event)
 
     def _layout_cards(self):
-        limit = 2 if self._groups and self._groups[0][1]["protocol"] == "diagnostic" else 3
+        protocol = self._groups[0][1]["protocol"] if self._groups else None
+        adaptive_eos = self._adaptive_layout and self._groups and uses_energy_chart(self._groups[0][1])
+        single_eos = adaptive_eos and len(self.eos_cards) == 1
+        limit = 2 if adaptive_eos or protocol == "diagnostic" else 3
         available_width = self.plot_pane.width() if self._adaptive_layout and self.plot_pane.width() > 200 else self.width()
         columns = min(limit, max(1, (available_width - 30) // 360))
         if self._adaptive_layout:
             columns = min(columns, max(1, len(self.eos_cards)))
             width = max(320, (available_width - 24 - 14 * (columns - 1)) // columns)
             for card in self.eos_cards:
-                card.setMinimumWidth(280)
-                card.setMaximumWidth(min(520, width))
-                card.setFixedHeight(274)
+                if not adaptive_eos:
+                    card.setFixedSize(min(520, width), 274)
+                elif not single_eos:
+                    card.setMinimumHeight(308)
         elif limit == 2:
             columns = min(columns, max(1, len(self.eos_cards)))
         else:
@@ -987,186 +1012,42 @@ class RunDetailPanel(QWidget):
         self._grid_columns = columns
         while self.grid_layout.count():
             self.grid_layout.takeAt(0)
+        self.grid_layout.setContentsMargins(0, 0, 0 if adaptive_eos else 8, 0)
+        self.grid_layout.setSpacing(4 if adaptive_eos else 14)
+        fill_row = adaptive_eos and len(self.eos_cards) <= columns
+        alignment = Qt.AlignmentFlag(0) if fill_row else Qt.AlignmentFlag.AlignTop
+        self.grid_layout.setAlignment(alignment)
+        if self._adaptive_layout and len(self.eos_cards) == 1 and not single_eos:
+            alignment |= Qt.AlignmentFlag.AlignHCenter
+        elif not self._adaptive_layout and limit != 2:
+            alignment |= Qt.AlignmentFlag.AlignLeft
         for index, card in enumerate(self.eos_cards):
             self.grid_layout.addWidget(
                 card,
                 index // columns,
                 index % columns,
-                Qt.AlignmentFlag.AlignTop
-                if (limit == 2 or self._adaptive_layout)
-                else Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignLeft,
+                alignment,
             )
         for column in range(3):
             self.grid_layout.setColumnStretch(column, 1 if column < columns else 0)
 
-    def _redraw_eos(self):
-        for card in self.eos_cards:
-            self.grid_layout.removeWidget(card)
-            card.hide()
-            card.deleteLater()
-        self.eos_cards = []
-        self.eos_plots = []
-        self._grid_columns = 0
-        self.offset_checkbox.setVisible(bool(self._groups))
-        self.title_label.setText(self.tr("EOS · {count} groups").format(count=len(self._groups)))
-        relative = self.relative_checkbox.isChecked()
-        notes = [self.tr("Independent axes · Energy per atom")]
-        if relative:
-            notes.append(self.tr("Reference minimum = 0"))
-        if self.offset_checkbox.isChecked():
-            notes.append(self.tr("Constant offset removed; shape comparison"))
-        if len(self._groups) == 1:
-            benchmark = self._groups[0][1]
-            provenance = benchmark.get("provenance") or {}
-            if provenance.get("source_kind"):
-                notes.append(
-                    self.tr("Reference: {source}, {conditions}").format(
-                        source=provenance["source_kind"], conditions=provenance.get("conditions", "-")
-                    )
-                )
-            if provenance.get("notes") or provenance.get("conditions"):
-                notes.append(
-                    self.tr("Notes: {notes}").format(
-                        notes=provenance.get("notes") or provenance["conditions"]
-                    )
-                )
-        self.info_label.setText(" · ".join(notes))
-        for tag, benchmark, entries in self._groups:
-            summary = benchmark.get("summary") or {}
-            if not summary.get("volumes"):
-                continue
-            card = QFrame(self.grid_container)
-            card.setObjectName("eosGroupCard")
-            card.setStyleSheet(
-                f"#eosGroupCard {{ background: {palette.SURFACE}; border: 1px solid {palette.BORDER}; border-radius: 10px; }}"
-            )
-            card_layout = QVBoxLayout(card)
-            card_layout.setContentsMargins(12, 10, 12, 10)
-            card_layout.setSpacing(4)
-            heading = QHBoxLayout()
-            name = benchmark["name"].rsplit(" / ", 1)[-1]
-            formula = summary.get("formula")
-            badge = CaptionLabel(tag, card)
-            badge.setAlignment(Qt.AlignmentFlag.AlignCenter)
-            badge.setFixedSize(30, 26)
-            badge.setStyleSheet(
-                f"color: {palette.ACCENT}; background: {palette.ACCENT_SOFT}; border-radius: 5px; font-weight: 600;"
-            )
-            heading.addWidget(badge)
-            heading.setSpacing(8)
-            title = BodyLabel(formula or name, card)
-            title_font = title.font()
-            title_font.setBold(True)
-            title.setFont(title_font)
-            title.setWordWrap(True)
-            title.setToolTip(benchmark["name"])
-            heading.addWidget(title, 1)
-            reset = TransparentToolButton(FluentIcon.SYNC.colored(palette.ACCENT, palette.ACCENT), card)
-            reset.setObjectName("resetEosView")
-            reset.setToolTip(self.tr("Reset view: fit all visible curves"))
-            reset.setAccessibleName(self.tr("Reset view"))
-            heading.addWidget(reset)
-            focused = len(self._groups) == 1 and self._total_groups > 1
-            focus = TransparentToolButton(
-                (FluentIcon.ZOOM_OUT if focused else FluentIcon.ZOOM_IN).colored(
-                    palette.PLOT_LOADED_OVERLAY, palette.PLOT_LOADED_OVERLAY
-                ),
-                card,
-            )
-            focus.setObjectName("toggleEosGroupFocus")
-            focus.setToolTip(self.tr("Back to all groups") if focused else self.tr("Focus this group"))
-            focus.setAccessibleName(focus.toolTip())
-            if focused:
-                focus.clicked.connect(lambda _checked=False: self.allGroupsRequested.emit())
-            else:
-                focus.clicked.connect(lambda _checked=False, group=tag: self.groupFocused.emit(group))
-            focus.setVisible(self._total_groups > 1)
-            heading.addWidget(focus)
-            sample = TransparentToolButton(QIcon(":/images/src/images/make.svg"), card)
-            sample.setObjectName("eosSamplingButton")
-            sample.setToolTip(self.tr("Create sampling workflow"))
-            sample.setAccessibleName(sample.toolTip())
-            sample.clicked.connect(lambda _checked=False, set_id=benchmark["id"]: self.samplingRequested.emit(set_id))
-            heading.addWidget(sample)
-            card_layout.addLayout(heading)
-            status = [self.tr("{count} volume points").format(count=len(summary["volumes"]))]
-            if formula and name.startswith(formula + "_"):
-                branch = name[len(formula) + 1 :]
-                branch = re.sub(r"seed(\d{7,})", lambda match: "seed…" + match.group(1)[-4:], branch)
-                status.insert(0, branch.replace("_", " "))
-            warnings = list(summary.get("warnings", []))
-            if warnings:
-                status.append(self.tr("Fit warning"))
-            for _key, name, run, details in entries:
-                if not run:
-                    status.append(self.tr("{name}: not run").format(name=name))
-                elif run["status"] != "succeeded":
-                    status.append(self.tr("{name}: unavailable").format(name=name))
-                    warnings.append(run.get("error") or run["status"])
-                elif not details:
-                    status.append(self.tr("{name}: unavailable").format(name=name))
-            caption = CaptionLabel(" · ".join(status), card)
-            caption.setWordWrap(True)
-            caption.setMaximumHeight(caption.fontMetrics().lineSpacing() * 2)
-            caption.setStyleSheet(f"color: {palette.TEXT_SECONDARY};")
-            caption.setToolTip(
-                benchmark["name"]
-                + "\n"
-                + " · ".join(status)
-                + "\n"
-                + "\n".join(translate_runtime_message(w) for w in warnings)
-            )
-            card_layout.addWidget(caption)
-            plot = self._pg.PlotWidget(card)
-            self._configure_subplot(plot)
-            reset.clicked.connect(lambda _checked=False, target=plot: self._reset_plot_view(target))
-            plot.showGrid(x=True, y=True, alpha=0.12)
-            for axis_name in ("left", "bottom"):
-                axis = plot.getAxis(axis_name)
-                axis.setPen(self._pg.mkPen(palette.BORDER))
-                axis.setTextPen(self._pg.mkPen(palette.PLOT_AXIS))
-                axis.setStyle(maxTickLevel=0, maxTextLevel=0)
-            plot.setLabel("bottom", self.tr("Volume (Å³/atom)"))
-            plot.setLabel(
-                "left", self.tr("Relative energy (meV/atom)") if relative else self.tr("Energy (eV/atom)")
-            )
-            plot.setMinimumHeight(190)
-            plot.setMinimumWidth(0)
-            zero = min(summary["energies"]) if relative else 0.0
-            scale = 1000.0 if relative else 1.0
-            reference = [(value - zero) * scale for value in summary["energies"]]
-            curve = plot.plot(
-                summary["volumes"],
-                reference,
-                pen=self._pg.mkPen(palette.PLOT_AXIS, width=1.5, style=Qt.PenStyle.DashLine),
-                symbol="o",
-                symbolBrush=palette.PLOT_AXIS,
-                symbolPen=palette.PLOT_AXIS,
-                symbolSize=5,
-                name=self.tr("Reference"),
-                antialias=True,
-            )
-            self._register_curve(None, curve)
-            for key, name, run, details in entries:
-                if not run or run["status"] != "succeeded" or not details:
-                    continue
-                offset = details.get("offset_ev_atom", 0.0) if self.offset_checkbox.isChecked() else 0.0
-                energies = [(value - zero - offset) * scale for value in details.get("predicted", [])]
-                curve = plot.plot(
-                    details.get("volumes", []),
-                    energies,
-                    pen=self._series_pen(key),
-                    name=name,
-                    antialias=True,
-                )
-                self._register_curve(key, curve)
-            card_layout.addWidget(plot, 1)
-            if not self._adaptive_layout:
-                card.setFixedHeight(300)
-                card.setMaximumWidth(460)
-            self.eos_cards.append(card)
-            self.eos_plots.append(plot)
-        self._layout_cards()
+    def set_group_marker(self, key, symbol):
+        self.group_markers[key] = symbol
+        for card, plot in zip(self.eos_cards, self.eos_plots):
+            for marker in card.findChildren(GroupMarkerButton):
+                if marker.property("groupId") == key:
+                    marker.set_marker(symbol)
+            for curve in plot.listDataItems():
+                if curve.property("groupId") == key:
+                    curve.setSymbol(symbol)
+
+    def set_eos_overlay(self, enabled):
+        self._eos_overlay = bool(enabled)
+        self._redraw()
+
+    def _change_eos_view(self, index):
+        self._eos_residual = index == 1
+        self._redraw()
 
     @staticmethod
     def _reset_plot_view(plot):
@@ -1235,6 +1116,7 @@ class ModelLibraryWidget(QWidget):
         controls.setContentsMargins(12, 10, 12, 10)
         controls.setSpacing(8)
         fields = QHBoxLayout()
+        controls.addLayout(fields)
         fields.setSpacing(14)
         self.suite_combo = ComboBox(self)
         self.suite_combo.setMinimumWidth(150)
@@ -1349,6 +1231,7 @@ class ModelLibraryWidget(QWidget):
             (self.tr("Compare with"), self.comparison_picker, (), 3),
         ):
             field = QHBoxLayout()
+            fields.addLayout(field, stretch)
             field.setSpacing(6)
             caption = CaptionLabel(title, self)
             caption.setStyleSheet(f"color: {palette.TEXT_SECONDARY};")
@@ -1357,8 +1240,6 @@ class ModelLibraryWidget(QWidget):
             for button in buttons:
                 button.setFixedSize(28, 28)
                 field.addWidget(button)
-            fields.addLayout(field, stretch)
-        controls.addLayout(fields)
         self.import_action.triggered.connect(lambda: self.import_benchmark())
         self.star_action.triggered.connect(lambda: self.toggle_star())
         self.save_action.triggered.connect(lambda: self.save_current())
@@ -1372,6 +1253,7 @@ class ModelLibraryWidget(QWidget):
         self.tolerance_label.setStyleSheet(f"color:{palette.TEXT_SECONDARY};")
         self.tolerance_label.hide()
         actions = QHBoxLayout()
+        controls.addLayout(actions)
         actions.setSpacing(8)
         actions.addWidget(self.baseline_label, 1)
         actions.addWidget(self.tolerance_label, 1)
@@ -1382,7 +1264,6 @@ class ModelLibraryWidget(QWidget):
         actions.addWidget(self.scope_hint)
         actions.addWidget(self.curves_button)
         actions.addWidget(self.run_selected_button)
-        controls.addLayout(actions)
 
         # Visual Model Comparison Capsule Bar (shows active models, training RMSE, and 1-click baseline pin)
         self.capsule_panel = QWidget(self.controls_panel)
@@ -1426,6 +1307,7 @@ class ModelLibraryWidget(QWidget):
         hint_layout.addWidget(self.empty_hint, 0, Qt.AlignmentFlag.AlignCenter)
 
         self.detail = RunDetailPanel(self)
+        self.detail.load_scan_energies = lambda item, run: self.service().absolute_scan_energies(item, run)
         # Property selection remains available while plots are collapsed.
         actions.insertWidget(1, self.property_combo)
         self.property_combo.setAccessibleName("验证性质")
@@ -1433,7 +1315,7 @@ class ModelLibraryWidget(QWidget):
         self.detail.comparisonRemoved.connect(self.comparison_picker.remove_id)
         self.detail.baselineRequested.connect(self.set_baseline_for_model)
         self.detail.allGroupsRequested.connect(self._select_all_groups)
-        self.detail.groupFocused.connect(lambda tag: self.table.selectRow(int(tag[1:]) - 1))
+        self.detail.groupFocused.connect(self._focus_plot_group)
         self.detail.samplingRequested.connect(self.open_sampling)
         self.metrics_button = PushButton(
             FluentIcon.CHEVRON_RIGHT.colored(palette.PLOT_LOADED_OVERLAY, palette.PLOT_LOADED_OVERLAY),
@@ -1510,11 +1392,12 @@ class ModelLibraryWidget(QWidget):
         placeholder.addWidget(hint)
         placeholder.addStretch()
         layout.addWidget(self.curves_placeholder, 1)
-        metrics_footer = QHBoxLayout()
+        self.metrics_footer = QWidget(self)
+        metrics_footer = QHBoxLayout(self.metrics_footer)
         metrics_footer.setContentsMargins(12, 4, 12, 8)
         metrics_footer.addWidget(self.metrics_button)
         metrics_footer.addStretch(1)
-        layout.addLayout(metrics_footer)
+        layout.addWidget(self.metrics_footer)
         self._sync_curve_visibility()
 
     def _rebuild_model_capsules(self) -> None:
@@ -2036,14 +1919,17 @@ class ModelLibraryWidget(QWidget):
         if update_detail:
             self._update_detail()
 
-    def _update_detail(self) -> None:
+    def _focus_plot_group(self, tag):
+        self.table.selectRow(int(tag[1:]) - 1)
+
+    def _update_detail(self, *, group_rows=None, group_total=None) -> None:
         if not self.curves_button.isChecked():
             return  # Do not read result files or instantiate charts for an overview.
         benchmarks = self.metrics_model.benchmarks
         if not benchmarks:
             self.detail.show_runs(None, [])
             return
-        selected = sorted(index.row() for index in self.table.selectionModel().selectedRows())
+        selected = group_rows if group_rows is not None else sorted(index.row() for index in self.table.selectionModel().selectedRows())
         focused = len(selected) < len(benchmarks)
         self.all_groups_button.setEnabled(focused)
         self.all_groups_button.setVisible(focused or self.metrics_model.kind == "eos")
@@ -2058,49 +1944,52 @@ class ModelLibraryWidget(QWidget):
             row = self.model.row(self.model.row_of_model(model_id))
             if row and row not in rows:
                 rows.append(row)
-        service = self.service()
-        groups = []
-        for index in selected:
-            benchmark = benchmarks[index]
-            entries = []
-            for row in rows:
-                column = self.model.first_column_of_set(benchmark["id"])
-                cell = row["cells"][column - 1] if column > 0 else None
-                run = (
-                    service.latest_run(
-                        row["model_id"], benchmark["id"], protocol_version=protocol_for_set(benchmark).version
-                    )
-                    if row["model_id"]
-                    else None
-                )
-                if cell and cell["status"] == "missing":
-                    run = None
-                elif run is not None and cell and run["status"] != cell["status"]:
-                    run = dict(run, status=cell["status"], error=cell["error"])
-                details = {}
-                if run is not None and run["status"] == "succeeded":
-                    try:
-                        result = service.run_details(run)
-                        details = dict(result.get("details", {}), warnings=result.get("warnings", []))
-                    except OSError:
-                        pass
-                entries.append(
-                    (
-                        row["model_id"],
-                        self._model_label(self.model.row_of_model(row["model_id"]), include_baseline=not self.detail._adaptive_layout),
-                        run,
-                        details,
-                    )
-                )
-            groups.append((f"G{index + 1}", benchmark, entries))
+        groups = [(f"G{index + 1}", benchmarks[index], self._curve_entries(benchmarks[index], rows))
+                  for index in selected]
         if not groups:
             self.detail.show_runs(None, [])
-        elif self.metrics_model.kind in ("eos", "diagnostic", "response"):
-            self.detail.show_groups(groups, total_groups=len(benchmarks))
+        elif presentation_for(self.metrics_model.kind).draw_groups:
+            self.detail.show_groups(groups, total_groups=len(benchmarks) if group_total is None else group_total)
         elif groups:
             self.detail.show_runs(groups[0][1], groups[0][2])
         else:
             self.detail.show_runs(None, [])
+
+    def _curve_entries(self, benchmark, rows):
+        service = self.service()
+        entries = []
+        for row in rows:
+            column = self.model.first_column_of_set(benchmark["id"])
+            cell = row["cells"][column - 1] if column > 0 else None
+            run = (
+                service.latest_run(
+                    row["model_id"], benchmark["id"], protocol_version=protocol_for_set(benchmark).version
+                )
+                if row["model_id"]
+                else None
+            )
+            if cell and cell["status"] == "missing":
+                run = None
+            elif run is not None and cell and run["status"] != cell["status"]:
+                run = dict(run, status=cell["status"], error=cell["error"])
+            details = {}
+            if cell and cell.get("previous_version"):
+                details["previous_version"] = cell["previous_version"]
+            if run is not None and run["status"] == "succeeded":
+                try:
+                    result = service.run_details(run)
+                    details = dict(result.get("details", {}), warnings=result.get("warnings", []))
+                except OSError:
+                    pass
+            entries.append(
+                (
+                    row["model_id"],
+                    self._model_label(self.model.row_of_model(row["model_id"]), include_baseline=not self.detail._adaptive_layout),
+                    run,
+                    details,
+                )
+            )
+        return entries
 
     def eventFilter(self, watched, event):
         from PySide6.QtCore import QEvent
@@ -2207,30 +2096,35 @@ class ModelLibraryWidget(QWidget):
 
     # -- actions --------------------------------------------------------------
     def open_sampling(self, set_id):
-        from NepTrainKit.core.validation.sampling import sampling_payload
+        from NepTrainKit.core.validation.sampling import magnetic_sampling_payload, sampling_payload
+        from NepTrainKit.ui.widgets.reference_response_plot import is_magnetic_eos, magnetic_branches
 
         service = self._view_service()
         if service is None:
             return None
         try:
+            group_id = set_id
+            set_id = group_id.partition("/")[0]
             benchmark = service.get_set(set_id)
-            if benchmark["protocol"] != "eos":
+            if not uses_energy_chart(benchmark):
                 return None
             row = self.current_model_row()
             model = service.get_model(row["model_id"]) if row and row["model_id"] else None
-            run = (
-                service.latest_run(model["id"], set_id, protocol_version=get_protocol("eos").version)
-                if model
-                else None
-            )
-            details = service.run_details(run).get("details", {}) if run and run["status"] == "succeeded" else None
-            payload = sampling_payload(
-                service.set_frames(set_id),
-                benchmark,
-                details=details,
-                model=model,
-                run=run if details else None,
-            )
+            run = service.latest_run(model["id"], set_id, protocol_version=protocol_for_set(benchmark).version) if model else None
+            if not run or run["status"] != "succeeded":
+                run = None
+            frames = service.set_frames(set_id)
+            if is_magnetic_eos(benchmark):
+                branches = magnetic_branches(benchmark)
+                if group_id == set_id:
+                    group_id = self.detail.eos_current_id or branches[0][0]
+                branch = next((b for b in branches if b[0] == group_id), None)
+                if branch is None:
+                    raise ValueError(f"Unknown scan branch: {group_id}")
+                payload = magnetic_sampling_payload(frames, benchmark, branch, model, run)
+            else:
+                details = service.run_details(run).get("details", {}) if run else None
+                payload = sampling_payload(frames, benchmark, details, model, run)
             self.samplingWorkflowRequested.emit(payload)
             return payload
         except Exception as error:
@@ -2509,7 +2403,7 @@ class ModelLibraryWidget(QWidget):
             else self.tr("Open the menu above to start a diagnostic plan, or to import reference data.")
         )
 
-    def run_jobs(self, model_id=None, *, model_ids=None):
+    def run_jobs(self, model_id=None, *, model_ids=None, benchmarks=None):
         """One explicit experiment scope, shared by every model-selection action."""
         if self.current_suite_id() is None:
             return []
@@ -2518,11 +2412,13 @@ class ModelLibraryWidget(QWidget):
         rows = self.service().models()
         if self._draft is not None:
             rows.append({"id": 0, "elements": parse_model_header(self._draft.data)[1]})
+        if benchmarks is None:
+            benchmarks = self.selected_benchmarks()
         return [
             (model["id"], benchmark["id"])
             for model in rows
             if model_ids is None or model["id"] in model_ids
-            for benchmark in self.selected_benchmarks()
+            for benchmark in benchmarks
             if set(benchmark["elements"]) <= set(model["elements"] or ())
         ]
 

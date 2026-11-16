@@ -1,8 +1,10 @@
 """Live model-role selection in the validation workspace."""
 
-from PySide6.QtCore import QPoint, Qt, Signal
-from PySide6.QtGui import QColor
-from PySide6.QtWidgets import QBoxLayout, QColorDialog, QDialog, QFrame, QHBoxLayout, QPushButton, QScrollArea, QSizePolicy, QVBoxLayout, QWidget
+from functools import lru_cache
+
+from PySide6.QtCore import QPoint, QSize, Qt, Signal
+from PySide6.QtGui import QColor, QIcon, QPainter, QPixmap
+from PySide6.QtWidgets import QBoxLayout, QColorDialog, QDialog, QFrame, QHBoxLayout, QMenu, QPushButton, QToolButton, QScrollArea, QSizePolicy, QVBoxLayout, QWidget
 from qfluentwidgets import BodyLabel, CaptionLabel, PrimaryPushButton, SearchLineEdit, StrongBodyLabel
 
 from NepTrainKit import palette
@@ -42,26 +44,94 @@ class ModelColorButton(QPushButton):
             self.colorChanged.emit(color)
 
 
+GROUP_MARKERS = {
+    "o": "Circle", "t1": "Triangle", "s": "Square", "d": "Diamond",
+    "t": "Inverted triangle", "star": "Star", "+": "Plus", "x": "Cross",
+    "h": "Hexagon", "p": "Pentagon",
+}
+
+
+MARKER_GLYPHS = {"o": "●", "t1": "▲", "s": "■", "d": "◆", "t": "▼", "star": "★",
+                 "+": "✚", "x": "✖", "h": "⬢", "p": "⬟"}
+
+
+@lru_cache(maxsize=len(GROUP_MARKERS))
+def group_marker_icon(symbol):
+    pixmap = QPixmap(32, 32)
+    pixmap.setDevicePixelRatio(2)
+    pixmap.fill(Qt.GlobalColor.transparent)
+    painter = QPainter(pixmap)
+    painter.setRenderHint(QPainter.RenderHint.Antialiasing)
+    painter.setPen(QColor(palette.TEXT_SECONDARY))
+    font = painter.font()
+    font.setPixelSize(14)
+    painter.setFont(font)
+    painter.drawText(0, 0, 16, 16, Qt.AlignmentFlag.AlignCenter, MARKER_GLYPHS[symbol])
+    painter.end()
+    return QIcon(pixmap)
+
+
+def default_group_marker(index):
+    return tuple(GROUP_MARKERS)[index % len(GROUP_MARKERS)]
+
+
+class GroupMarkerButton(QToolButton):
+    markerChanged = Signal(str)
+
+    def __init__(self, symbol, parent):
+        super().__init__(parent)
+        self.setObjectName("groupMarker")
+        self.setFixedSize(24, 24)
+        self.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.setStyleSheet(f"QToolButton {{ color: {palette.TEXT_SECONDARY}; background: white; border: 1px solid {palette.BORDER}; border-radius: 5px; }} QToolButton:hover {{ border-color: {palette.ACCENT}; }} QToolButton::menu-indicator {{ image: none; }}")
+        self.setPopupMode(QToolButton.ToolButtonPopupMode.InstantPopup)
+        menu = QMenu(self)
+        self.setMenu(menu)
+        menu.aboutToShow.connect(self._populate_menu)
+        menu.triggered.connect(lambda action: self.markerChanged.emit(action.data()))
+        self.set_marker(symbol)
+
+    def set_marker(self, symbol):
+        self.symbol = symbol
+        name = GROUP_MARKERS[symbol]
+        self.setIcon(group_marker_icon(symbol))
+        self.setIconSize(QSize(16, 16))
+        label = self.tr("Group marker") + " · " + self.tr(name)
+        self.setToolTip(label)
+        self.setAccessibleName(label)
+
+    def _populate_menu(self):
+        menu = self.menu()
+        menu.clear()
+        for key, name in GROUP_MARKERS.items():
+            action = menu.addAction(group_marker_icon(key), self.tr(name))
+            action.setData(key)
+            action.setCheckable(True)
+            action.setChecked(key == self.symbol)
+
+
 class ValidationModelPicker(QDialog):
-    roleRequested = Signal(int, str)
+    roleRequested = Signal(object, str)
+    markerRequested = Signal(str, str)
     colorRequested = Signal(int, QColor)
     filesDropped = Signal(list)
 
-    def __init__(self, parent):
+    def __init__(self, parent, *, groups=False):
         super().__init__(parent, Qt.WindowType.Dialog | Qt.WindowType.WindowTitleHint | Qt.WindowType.WindowCloseButtonHint)
         self.setWindowModality(Qt.WindowModality.NonModal)
-        self.setAcceptDrops(True)
-        self.setWindowTitle(self.tr("Choose model versions to compare"))
+        self.groups = groups
+        self.setAcceptDrops(not groups)
+        self.setWindowTitle(self.tr("Choose groups to compare") if groups else self.tr("Choose model versions to compare"))
         self.setObjectName("validationModelPicker")
         self.setStyleSheet("#validationModelPicker { background: white; }")
         layout = QVBoxLayout(self)
         layout.setContentsMargins(16, 12, 16, 12)
         layout.setSpacing(8)
-        hint = CaptionLabel(self.tr("Choose one role per version. You can compare several versions."), self)
+        hint = CaptionLabel(self.tr("Choose one current group and any comparison groups.") if groups else self.tr("Choose one role per version. You can compare several versions."), self)
         hint.setWordWrap(True)
         layout.addWidget(hint)
         self.search = SearchLineEdit(self)
-        self.search.setPlaceholderText(self.tr("Search project or model name"))
+        self.search.setPlaceholderText(self.tr("Search group name") if groups else self.tr("Search project or model name"))
         self.search.setAccessibleName(self.search.placeholderText())
         layout.addWidget(self.search)
         self.scroll = QScrollArea(self)
@@ -82,12 +152,16 @@ class ValidationModelPicker(QDialog):
         footer = QHBoxLayout()
         tip = CaptionLabel(self.tr("Drop a NEP .txt file here to compare a temporary model."), self)
         tip.setWordWrap(True)
+        tip.setVisible(not groups)
         footer.addWidget(tip, 1)
+        if groups:
+            footer.addStretch(1)
         self.done_button = PrimaryPushButton(self.tr("Done"), self)
         self.done_button.clicked.connect(self.accept)
         footer.addWidget(self.done_button)
         layout.addLayout(footer)
         self.buttons = {}
+        self.marker_buttons = {}
         self.color_buttons = {}
         self.row_widgets = []
         self._models = None
@@ -99,6 +173,13 @@ class ValidationModelPicker(QDialog):
             "hidden": (self.tr("Hidden"), palette.TEXT_SECONDARY),
         }
 
+        if groups:
+            self.roles = {
+                "current": (self.tr("Current group"), palette.INFO),
+                "compare": (self.tr("Comparison group"), palette.ACCENT_PRESSED),
+                "hidden": self.roles["hidden"],
+            }
+
     def set_models(self, models):
         if self._models == models:
             return
@@ -109,6 +190,7 @@ class ValidationModelPicker(QDialog):
             frame.deleteLater()
         self.row_widgets.clear()
         self.buttons.clear()
+        self.marker_buttons.clear()
         self.color_buttons.clear()
         for key, name, summary, color in models:
             card = QFrame(self.list_widget)
@@ -117,12 +199,18 @@ class ValidationModelPicker(QDialog):
             layout = QBoxLayout(QBoxLayout.Direction.LeftToRight, card)
             layout.setContentsMargins(11, 8, 9, 8)
             identity = QHBoxLayout()
-            dot = ModelColorButton(card)
-            dot.set_color(color)
-            dot.setAccessibleName(f"{name} · {dot.toolTip()}")
-            dot.colorChanged.connect(lambda value, model=key: self.colorRequested.emit(model, value))
-            self.color_buttons[key] = dot
-            identity.addWidget(dot)
+            if self.groups:
+                marker = GroupMarkerButton(color, card)
+                marker.markerChanged.connect(lambda value, group=key: self.markerRequested.emit(group, value))
+                self.marker_buttons[key] = marker
+                identity.addWidget(marker)
+            else:
+                dot = ModelColorButton(card)
+                dot.set_color(color)
+                dot.setAccessibleName(f"{name} · {dot.toolTip()}")
+                dot.colorChanged.connect(lambda value, model=key: self.colorRequested.emit(model, value))
+                self.color_buttons[key] = dot
+                identity.addWidget(dot)
             text = QVBoxLayout()
             text.setSpacing(1)
             label = StrongBodyLabel(name, card)
@@ -169,6 +257,8 @@ class ValidationModelPicker(QDialog):
             card.setVisible(match)
             any_match |= match
         self.empty_label.setText(self.tr("No matching models.") if self._models else self.tr("No compatible models in this suite."))
+        if self.groups:
+            self.empty_label.setText(self.tr("No matching groups."))
         self.empty_label.setVisible(not any_match)
 
     def set_roles(self, current, baseline, comparisons, eligible, *, running):
@@ -176,7 +266,7 @@ class ValidationModelPicker(QDialog):
             active = model_role(key, current, baseline, comparisons)
             for role, button in buttons.items():
                 button.setChecked(role == active)
-                enabled = True
+                enabled = not (self.groups and key == current and role != "current")
                 tip = ""
                 if role == "baseline" and key not in eligible:
                     enabled = False

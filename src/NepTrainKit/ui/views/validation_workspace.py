@@ -5,14 +5,18 @@ from __future__ import annotations
 from pathlib import Path
 import uuid
 
-from PySide6.QtCore import QCoreApplication, QSize, Qt
-from PySide6.QtGui import QColor
+from PySide6.QtCore import QCoreApplication, QEvent, QRect, QSize, Qt
+from PySide6.QtGui import QAction, QColor, QPainter
 from PySide6.QtWidgets import (
     QDialog,
     QDialogButtonBox,
     QFrame,
     QGraphicsOpacityEffect,
+    QPushButton,
     QScrollArea,
+    QStyle,
+    QStyledItemDelegate,
+    QStyleOptionButton,
     QSizePolicy,
     QHBoxLayout,
     QHeaderView,
@@ -22,6 +26,7 @@ from PySide6.QtWidgets import (
     QStackedWidget,
     QSplitter,
     QTableWidgetItem,
+    QToolButton,
     QVBoxLayout,
     QWidget,
 )
@@ -37,20 +42,25 @@ from qfluentwidgets import (
     MessageBox,
     PushButton,
     SearchLineEdit,
-    TransparentPushButton,
     TableWidget,
     TransparentToolButton,
+    TogglePushButton,
 )
 
 from NepTrainKit import palette
 from NepTrainKit.config import Config
 from NepTrainKit.core import MessageManager
+from NepTrainKit.ui.messages import translate_runtime_message
 from NepTrainKit.core.validation.protocols import protocol_for_set
 from NepTrainKit.core.validation.service import ModelDraft, parse_model_header
-from NepTrainKit.ui.messages import translate_runtime_message
-from NepTrainKit.ui.views.model_library import VERDICT_COLORS, ModelLibraryWidget, format_metric
+from NepTrainKit.ui.views.model_library import ModelLibraryWidget, RunDetailPanel, format_metric
+from NepTrainKit.ui.widgets.layout import FlowLayout
+from NepTrainKit.ui.widgets.validation_gallery import ValidationGallery
+from NepTrainKit.ui.widgets.validation_presentation import presentation_for, uses_energy_chart
+from NepTrainKit.ui.widgets.reference_response_plot import is_magnetic_eos, magnetic_branches
+from NepTrainKit.ui.widgets.validation_group_comparison import ValidationGroupComparison
 from NepTrainKit.ui.widgets.validation_dialogs import BenchmarkImportDialog
-from NepTrainKit.ui.widgets.validation_model_picker import ModelColorButton, ValidationModelPicker, model_role
+from NepTrainKit.ui.widgets.validation_model_picker import ModelColorButton, ValidationModelPicker, group_marker_icon, model_role
 
 
 class ComparisonTable(TableWidget):
@@ -75,6 +85,67 @@ class ComparisonTable(TableWidget):
         else:
             item.setCheckState(Qt.CheckState.Unchecked if item.checkState() == Qt.CheckState.Checked else Qt.CheckState.Checked)
             event.accept()
+
+
+class _SuiteItemDelegate(QStyledItemDelegate):
+    """Paint a card across both columns while preserving native table hit targets."""
+
+    def paint(self, painter, option, index):
+        table = self.parent()
+        rect = option.rect
+        card = QRect(1, rect.y() + 3, table.viewport().width() - 3, rect.height() - 6)
+        selected = table.currentRow() == index.row()
+        painter.save()
+        painter.setClipRect(rect)
+        painter.setRenderHint(QPainter.RenderHint.Antialiasing)
+        painter.setPen(QColor(palette.ACCENT if selected else palette.BORDER))
+        painter.setBrush(QColor(palette.ACCENT_SOFT if selected else "white"))
+        painter.drawRoundedRect(card, 8, 8)
+        if index.column() == 1:
+            check = QStyleOptionButton()
+            check.initFrom(table)
+            checked = index.data(Qt.ItemDataRole.CheckStateRole) == Qt.CheckState.Checked.value
+            check.state |= QStyle.StateFlag.State_On if checked else QStyle.StateFlag.State_Off
+            check.rect = QRect(0, 0, 16, 16)
+            check.rect.moveCenter(rect.center())
+            table.style().drawPrimitive(QStyle.PrimitiveElement.PE_IndicatorCheckBox, check, painter, table)
+        else:
+            data = index.data(Qt.ItemDataRole.UserRole + 1)
+            if data:
+                subtitle, protocol, status, ink, fill = data
+                left, right = rect.left() + 1, card.right() - 11
+                font = option.font
+                font.setPixelSize(11)
+                painter.setFont(font)
+                small = painter.fontMetrics()
+                alignment = Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignLeft
+
+                def badge(text, top, foreground, background):
+                    width = small.horizontalAdvance(text) + 10
+                    box = QRect(right - width, top, width, 16)
+                    painter.setPen(Qt.PenStyle.NoPen)
+                    painter.setBrush(QColor(background))
+                    painter.drawRoundedRect(box, 4, 4)
+                    painter.setPen(QColor(foreground))
+                    painter.drawText(box, Qt.AlignmentFlag.AlignCenter, text)
+                    return box.left() - 5
+
+                end = badge(protocol, card.top() + 7, palette.TEXT_SECONDARY, palette.SURFACE_SUBTLE)
+                meta_end = badge(status, card.bottom() - 20, ink, fill) if status else right
+                painter.setPen(QColor(palette.TEXT_SECONDARY))
+                painter.drawText(QRect(left, card.bottom() - 20, meta_end - left, 16), alignment,
+                                 small.elidedText(subtitle, Qt.TextElideMode.ElideRight, meta_end - left))
+                font.setPixelSize(13)
+                font.setBold(True)
+                painter.setFont(font)
+                painter.setPen(QColor(palette.TEXT_PRIMARY))
+                marker = index.data(Qt.ItemDataRole.DecorationRole)
+                if marker:
+                    marker.paint(painter, QRect(left, card.top() + 8, 13, 13))
+                    left += 17
+                title = painter.fontMetrics().elidedText(index.data() or "", Qt.TextElideMode.ElideMiddle, end - left)
+                painter.drawText(QRect(left, card.top() + 5, end - left, 20), alignment, title)
+        painter.restore()
 
 
 class _ModelCard(QFrame):
@@ -228,10 +299,84 @@ class ValidationWorkspace(ModelLibraryWidget):
         self._search_filter = ""
 
         # Enable adaptive plot sizing and the right-hand multi-model quantitative inspector in the workspace
+        self.metrics_footer.hide()
         self.detail.set_adaptive_layout(True)
-        self.detail.header_layout.insertWidget(1, self.detail.legend_panel)
+        self.detail.set_inspector_expanded(False)
+        self.groups = ValidationGroupComparison(self)
+        self.groups.currentRequested.connect(self._set_current_group)
+        self.groups.changed.connect(self._update_detail)
+        self.groups.markerChanged.connect(self._group_marker_changed)
+        self.detail.markerRequested.connect(self.groups.set_marker)
+        self.detail.layout().setContentsMargins(0, 0, 0, 0)
+        self.chart_tools = QWidget(self.detail)
+        tools = QHBoxLayout(self.chart_tools)
+        tools.setContentsMargins(0, 0, 0, 0)
+        tools.setSpacing(8)
+        self.plot_switches = []
+        for label, icon, check in (
+            (self.detail.tr("Reference"), FluentIcon.VIEW, None),
+            (self.detail.relative_checkbox.text(), None, self.detail.relative_checkbox),
+            (self.detail.offset_checkbox.text(), FluentIcon.ALIGNMENT, self.detail.offset_checkbox),
+            (self.detail.wheel_zoom_checkbox.text(), FluentIcon.ZOOM_IN, self.detail.wheel_zoom_checkbox),
+        ):
+            action = QAction(label, self.chart_tools)
+            action.setCheckable(True)
+            action.setToolTip(label if check is None else label + "\n" + check.toolTip())
+            action.setChecked(self.detail.series_visible(None) if check is None else check.isChecked())
+            if icon:
+                action.setIcon(icon.icon())
+            else:
+                action.setIconText("E₀")
+            if check is None:
+                action.triggered.connect(lambda on: self.detail.set_series_visible(None, on))
+                self.detail.seriesVisibilityChanged.connect(lambda key, on, ref=action: ref.setChecked(on) if key is None else None)
+            else:
+                action.toggled.connect(check.setChecked)
+                check.toggled.connect(action.setChecked)
+            button = QToolButton(self.chart_tools)
+            button.setDefaultAction(action)
+            button.setAccessibleName(label)
+            button.setFixedSize(30, 30)
+            button.setIconSize(QSize(16, 16))
+            button.setStyleSheet(f"QToolButton {{ border: 1px solid transparent; border-radius: 5px; font-weight: 600; }}"
+                                 f"QToolButton:checked {{ background: {palette.ACCENT_SOFT}; border-color: {palette.ACCENT}; }}"
+                                 f"QToolButton:hover {{ background: {palette.SURFACE_HOVER}; border-color: {palette.BORDER_STRONG}; }}")
+            tools.addWidget(button)
+            self.plot_switches.append(button)
+        self.eos_grid_mode = TogglePushButton(self.tr("Residual"), self.chart_tools)
+        self.eos_grid_mode.setToolTip(self.tr("Show residuals instead of energy"))
+        self.eos_grid_mode.toggled.connect(self.detail._change_eos_view)
+        self.eos_grid_mode.toggled.connect(lambda _: self._present_workspace())
+        tools.addWidget(self.eos_grid_mode)
+        self.eos_layout = TogglePushButton(self.tr("Overlay groups"), self.chart_tools)
+        self.eos_layout.setToolTip(self.tr("Overlay groups on shared axes"))
+        self.eos_layout.toggled.connect(self.detail.set_eos_overlay)
+        tools.addWidget(self.eos_layout)
+        self.add_eos_groups = PushButton(FluentIcon.ADD, self.tr("Comparison groups"), self.chart_tools)
+        self.add_eos_groups.clicked.connect(self.groups.open_picker)
+        tools.addWidget(self.add_eos_groups)
+        self.chart_options = TransparentToolButton(FluentIcon.MORE, self.chart_tools)
+        self.chart_options.setToolTip(self.tr("Chart options"))
+        self.chart_options.setAccessibleName(self.chart_options.toolTip())
+        menu = QMenu(self.chart_options)
+        self.chart_options.setMenu(menu)
+        self.chart_options.setPopupMode(QToolButton.ToolButtonPopupMode.InstantPopup)
+        self.add_eos_groups.setToolTip(self.tr("Comparison groups"))
+        self.add_eos_groups.setAccessibleName(self.add_eos_groups.toolTip())
+        self.chart_options.setStyleSheet("QToolButton::menu-indicator { image: none; }")
+        menu.aboutToShow.connect(self._chart_options_menu)
+        tools.addWidget(self.chart_options)
+        self.chart_tools.hide()
+        self.detail.groupRemoved.connect(lambda key: self.groups.choose_role(key, "hidden"))
+        self.standard_options = QWidget(self.detail)
+        options = QHBoxLayout(self.standard_options)
+        options.setContentsMargins(0, 0, 0, 0)
+        for widget in (self.detail.legend_panel, self.detail.wheel_zoom_checkbox,
+                       self.detail.relative_checkbox, self.detail.offset_checkbox):
+            options.addWidget(widget)
+        self.detail.header_layout.addWidget(self.standard_options)
 
-        # Reuse the existing plot and inspector below the comparison matrix.
+        # Keep the shared detail and editor controls together above the comparison matrix.
         root = self.layout()
         root.itemAt(0).layout().setContentsMargins(0, 0, 0, 0)
         self.controls_panel.setStyleSheet(
@@ -239,10 +384,9 @@ class ValidationWorkspace(ModelLibraryWidget):
         )
         detail_page = QFrame(self)
         detail_page.setObjectName("comparisonDetails")
-        detail_page.setStyleSheet(f"#comparisonDetails {{background: {palette.SURFACE}; border: 1px solid {palette.BORDER}; border-radius: 10px;}}")
         detail_layout = QVBoxLayout(detail_page)
-        detail_layout.setContentsMargins(12, 8, 12, 6)
-        detail_layout.setSpacing(6)
+        detail_layout.setContentsMargins(0, 0, 0, 0)
+        detail_layout.setSpacing(0)
 
         while root.count() > 2:
             item = root.takeAt(2)
@@ -254,40 +398,23 @@ class ValidationWorkspace(ModelLibraryWidget):
         detail_layout.setStretch(detail_layout.indexOf(self.editor_scroll), 1)
         detail_layout.setStretch(detail_layout.indexOf(self.curves_placeholder), 1)
 
-        # Compact, structured left sidebar without stacked full-width bottom buttons
         self.sidebar = QFrame(self)
         self.sidebar.setObjectName("validationSidebar")
         self.sidebar.setStyleSheet(
-            f"#validationSidebar {{ background: {palette.SURFACE}; border: 1px solid {palette.BORDER}; border-radius: 10px; }}"
+            f"#validationSidebar {{ background: {palette.SURFACE}; border-right: 1px solid {palette.BORDER}; }}"
         )
-        self.sidebar.setMinimumWidth(205)
-        self.sidebar.setMaximumWidth(260)
         side = QVBoxLayout(self.sidebar)
-        side.setContentsMargins(10, 8, 10, 8)
-        side.setSpacing(6)
+        side.setContentsMargins(10, 7, 10, 6)
+        side.setSpacing(5)
 
         side_header = QHBoxLayout()
-        side_title = BodyLabel(self.tr("Validation suites"), self.sidebar)
-        side_font = side_title.font()
-        side_font.setBold(True)
-        side_title.setFont(side_font)
+        side_header.setSpacing(2)
+        side_title = CaptionLabel(self.tr("Validation suites"), self.sidebar)
+        side_title.setStyleSheet(f"color: {palette.TEXT_SECONDARY}; font-weight: bold;")
         side_header.addWidget(side_title, 1)
-        new_suite = TransparentToolButton(FluentIcon.ADD.colored(palette.ACCENT, palette.ACCENT), self.sidebar)
-        new_suite.setToolTip(self.tr("New suite"))
-        new_suite.setAccessibleName(self.tr("New suite"))
-        new_suite.setFixedSize(26, 26)
-        new_suite.clicked.connect(self.create_suite)
-        self.new_suite_button = new_suite
-        side_header.addWidget(new_suite)
-
-        self.new_topic_button = TransparentToolButton(
-            FluentIcon.FOLDER_ADD.colored(palette.ACCENT, palette.ACCENT), self.sidebar
-        )
-        self.new_topic_button.setToolTip(self.tr("New topic"))
-        self.new_topic_button.setAccessibleName(self.tr("New topic"))
-        self.new_topic_button.setFixedSize(26, 26)
-        self.new_topic_button.clicked.connect(self.create_topic)
-        side_header.addWidget(self.new_topic_button)
+        self.new_suite_button = QPushButton(FluentIcon.ADD.icon(), self.tr("New suite"), self.sidebar)
+        self.new_suite_button.clicked.connect(self.create_suite)
+        side_header.addWidget(self.new_suite_button)
         side.addLayout(side_header)
 
         fields = self.controls_panel.layout().itemAt(0).layout()
@@ -295,57 +422,84 @@ class ValidationWorkspace(ModelLibraryWidget):
         caption = suite_field.takeAt(0).widget()
         caption.hide()
         caption.deleteLater()
-        chooser = QHBoxLayout()
-        chooser.setSpacing(4)
-        chooser.addWidget(self.suite_combo, 1)
-        chooser.addWidget(self.refresh_button)
-        side.addLayout(chooser)
+        side.addWidget(self.suite_combo)
         suite_field.deleteLater()
-
-        self.sidebar_search = SearchLineEdit(self.sidebar)
-        self.sidebar_search.setPlaceholderText(self.tr("Search topics or items…"))
-        self.sidebar_search.textChanged.connect(self._on_sidebar_search)
-        side.addWidget(self.sidebar_search)
 
         self.topic_picker = ComboBox(self.sidebar)
         self.topic_picker.setAccessibleName(self.tr("Topic"))
         self.topic_picker.currentIndexChanged.connect(self._browse_topic)
-        side.insertWidget(2, self.topic_picker)
+        side.addWidget(self.topic_picker)
+        self.topic_chips = QWidget(self.sidebar)
+        self.topic_chips.setSizePolicy(QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Fixed)
+        self.topic_flow = FlowLayout(self.topic_chips, spacing=4)
+        self.topic_chips.setStyleSheet(
+            f"QPushButton {{ background: {palette.SURFACE_SUBTLE}; color: {palette.TEXT_SECONDARY}; "
+            f"border: 1px solid {palette.BORDER}; border-radius: 5px; padding: 3px 6px; font-size: 12px; }}"
+            f"QPushButton:hover, QPushButton:focus {{ border-color: {palette.ACCENT}; }}"
+            f"QPushButton:checked {{ background: {palette.ACCENT_PRESSED}; color: white; }}"
+        )
+        side.addWidget(self.topic_chips)
+        self.sidebar_search = SearchLineEdit(self.sidebar)
+        self.sidebar_search.setFixedHeight(29)
+        self.sidebar_search.setPlaceholderText(self.tr("Search items, topics or protocols…"))
+        self.sidebar_search.textChanged.connect(self._on_sidebar_search)
+        side.addWidget(self.sidebar_search)
 
         self.sidebar_item_list = ComparisonTable(self.sidebar)
         self.sidebar_item_list.setColumnCount(2)
         self.sidebar_item_list.setHorizontalHeaderLabels([self.tr("Validation item"), "✓"])
         self.sidebar_item_list.horizontalHeader().moveSection(1, 0)
         self.sidebar_item_list.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeMode.Stretch)
-        self.sidebar_item_list.setColumnWidth(1, 34)
+        self.sidebar_item_list.horizontalHeader().hide()
+        self.sidebar_item_list.setAlternatingRowColors(False)
+        self.sidebar_item_list.horizontalHeader().setMinimumSectionSize(26)
+        self.sidebar_item_list.setColumnWidth(1, 33)
+        self.sidebar_item_list.verticalHeader().setDefaultSectionSize(59)
+        self.sidebar_item_list.setStyleSheet(f"QTableView {{ background: {palette.SURFACE}; border: none; }}")
+        delegate = _SuiteItemDelegate(self.sidebar_item_list)
+        for column in (0, 1):
+            self.sidebar_item_list.setItemDelegateForColumn(column, delegate)
         self.sidebar_item_list.verticalHeader().hide()
         self.sidebar_item_list.setEditTriggers(TableWidget.EditTrigger.NoEditTriggers)
         self.sidebar_item_list.setSelectionBehavior(TableWidget.SelectionBehavior.SelectRows)
         self.sidebar_item_list.setSelectionMode(TableWidget.SelectionMode.SingleSelection)
         self.sidebar_item_list.currentCellChanged.connect(self._navigate_item)
+        self.sidebar_item_list.cellClicked.connect(
+            lambda row, col: self._navigate_item(row, col) if self.pages.currentWidget() is not self.result_page else None)
+        self.sidebar_item_list.cellDoubleClicked.connect(self._run_item_missing)
         self.sidebar_item_list.itemChanged.connect(self._navigator_checked)
         side.addWidget(self.sidebar_item_list, 1)
 
-        # Compact 2-button bottom row instead of 4 tall full-width buttons
+        self.empty_items = CaptionLabel(self.sidebar)
+        self.empty_items.setAlignment(Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignHCenter)
+        self.empty_items.setStyleSheet(f"color: {palette.TEXT_SECONDARY}; padding-top: 16px;")
+        side.addWidget(self.empty_items, 1)
+
+        self.new_topic_button = PushButton(self.tr("New topic"), self.sidebar)
+        self.new_topic_button.clicked.connect(self.create_topic)
         self.existing_button = PushButton(self.tr("Add existing items…"), self.sidebar)
         self.existing_button.setToolTip(self.tr("Add existing items…"))
         self.existing_button.clicked.connect(self.add_existing_items)
         self.organize_button = PushButton(self.tr("Group by source folders"), self.sidebar)
         self.organize_button.setToolTip(self.tr("Group by source folders"))
         self.organize_button.clicked.connect(self.organize_sources)
-        self.existing_button.setText(self.tr("Add existing items…"))
-        self.existing_button.hide()
-        self.organize_button.hide()
         self.suite_tools = QMenu(self.sidebar)
-        for button in (new_suite, self.new_topic_button, self.existing_button, self.organize_button):
-            action = self.suite_tools.addAction(button.toolTip(), button.click)
+        for button in (self.new_topic_button, self.existing_button, self.organize_button, self.refresh_button):
+            action = self.suite_tools.addAction(button.text() or button.toolTip(), button.click)
             button.hide()
             self.suite_tools.aboutToShow.connect(lambda a=action, b=button: a.setEnabled(b.isEnabled()))
         self.topic_actions = []
         for label, callback in (("Rename topic…", self.rename_topic), ("Remove topic", self.remove_topic)):
             self.topic_actions.append(self.suite_tools.addAction(self.tr(label), callback))
-        suite_tools_button = TransparentToolButton(FluentIcon.MORE, self.sidebar)
-        suite_tools_button.setAccessibleName(self.tr("Actions"))
+        suite_tools_button = QPushButton(FluentIcon.FOLDER.icon(), self.tr("Organize"), self.sidebar)
+        for button in (self.new_suite_button, suite_tools_button):
+            button.setFixedHeight(24)
+            button.setIconSize(QSize(12, 12))
+            button.setStyleSheet(
+                f"QPushButton {{ background: transparent; border: 1px solid transparent; border-radius: 4px; "
+                f"color: {palette.TEXT_SECONDARY}; padding: 1px 4px; font-size: 12px; }}"
+                f"QPushButton:hover, QPushButton:focus {{ background: {palette.SURFACE_HOVER}; border-color: {palette.BORDER}; }}"
+            )
         suite_tools_button.clicked.connect(lambda: self.suite_tools.exec(
             suite_tools_button.mapToGlobal(suite_tools_button.rect().bottomLeft())))
         side_header.addWidget(suite_tools_button)
@@ -353,30 +507,31 @@ class ValidationWorkspace(ModelLibraryWidget):
         main = QWidget(self)
         self.main_panel = main
         body = QVBoxLayout(main)
-        body.setContentsMargins(6, 4, 12, 8)
-        body.setSpacing(6)
+        body.setContentsMargins(0, 0, 0, 0)
+        body.setSpacing(0)
 
         top_bar = QHBoxLayout()
         top_bar.setSpacing(8)
+        top_bar.setContentsMargins(4, 2, 4, 2)
         self.view_picker = SegmentedWidget(main)
-        for label, key in (("Results", "result"), ("Model comparison", "items"),
-                           ("Overview", "overview"), ("Run history", "history")):
-            self.view_picker.addItem(key, self.tr(label), lambda page=key: self.show_page(page))
+        self.compact_view_picker = ComboBox(main)
+        self.compact_view_picker.setAccessibleName(self.tr("Results"))
+        for label, key in (("Validation curve", "result"), ("Overview", "items"), ("Suite plots", "gallery")):
+            self.view_picker.addItem(key, self.tr(label), lambda checked=False, page=key: self.show_page(page))
+            self.compact_view_picker.addItem(self.tr(label), userData=key)
+        self.compact_view_picker.activated.connect(lambda i: self.show_page(self.compact_view_picker.itemData(i)))
         top_bar.addWidget(self.view_picker)
+        top_bar.addWidget(self.compact_view_picker)
         top_bar.addStretch()
-        self.pane_button = PushButton(self.tr("Physical metrics"), main)
-        self.pane_button.setCheckable(True)
-        self.pane_button.toggled.connect(lambda _: self._present_workspace())
-        top_bar.addWidget(self.pane_button)
+        top_bar.addWidget(self.chart_tools)
         body.addLayout(top_bar)
+        for button in self.view_picker.items.values():
+            button.setFixedWidth(button.fontMetrics().horizontalAdvance(button.text()) + 26)
+        self.view_picker.setFixedWidth(sum(b.width() for b in self.view_picker.items.values()) + 2)
 
         self.pages = QStackedWidget(main)
         body.addWidget(self.pages, 1)
         self.page_widgets = {}
-        self.overview = TableWidget(self)
-        self.overview.setEditTriggers(TableWidget.EditTrigger.NoEditTriggers)
-        self.overview.cellDoubleClicked.connect(self._overview_open)
-        self.overview.itemChanged.connect(self._overview_checked)
         self.item_table = ComparisonTable(self)
         self.item_table.setColumnCount(7)
         self.item_table.setHorizontalHeaderLabels(
@@ -397,15 +552,8 @@ class ValidationWorkspace(ModelLibraryWidget):
         self.item_table.setSelectionMode(TableWidget.SelectionMode.ExtendedSelection)
         self.item_table.setEditTriggers(TableWidget.EditTrigger.NoEditTriggers)
         self.item_table.itemChanged.connect(self._item_checked)
-        self.item_table.cellClicked.connect(self._compare_cell)
         self.item_table.cellActivated.connect(self._compare_cell)
         self.item_table.itemSelectionChanged.connect(self._management_state)
-        self.history_table = TableWidget(self)
-        self.history_table.setColumnCount(5)
-        self.history_table.setHorizontalHeaderLabels(
-            [self.tr(label) for label in ("Validation item", "Model", "Status", "Recorded at", "Error")]
-        )
-        self.history_table.setEditTriggers(TableWidget.EditTrigger.NoEditTriggers)
         matrix_card = QFrame(self)
         matrix_card.setObjectName("validationMatrix")
         matrix_card.setStyleSheet(f"#validationMatrix {{background: {palette.SURFACE}; border: 1px solid {palette.BORDER}; border-radius: 10px;}}")
@@ -413,45 +561,33 @@ class ValidationWorkspace(ModelLibraryWidget):
         matrix_layout.setContentsMargins(14, 9, 14, 6)
         self.matrix_title = BodyLabel(matrix_card)
         font = self.matrix_title.font()
-        font.setPointSize(15)
+        font.setPixelSize(13)
         font.setBold(True)
         self.matrix_title.setFont(font)
-        matrix_layout.addWidget(self.matrix_title)
+        matrix_header = QHBoxLayout()
+        matrix_header.addWidget(self.matrix_title, 1)
+        self.table_metric = ComboBox(matrix_card)
+        self.table_metric.setAccessibleName(self.tr("Comparison metric"))
+        self.table_metric.currentIndexChanged.connect(self._render_workspace)
+        matrix_header.addWidget(self.table_metric)
+        matrix_layout.addLayout(matrix_header)
         matrix_layout.addWidget(self.item_table)
         self.matrix_card = matrix_card
         self.detail_scroll = QScrollArea(self)
         self.detail_scroll.setFrameShape(QFrame.Shape.NoFrame)
         self.detail_scroll.setWidgetResizable(True)
         self.detail_scroll.setWidget(detail_page)
-        for key, widget in [
-            ("overview", self.overview),
-            ("items", matrix_card),
-            ("result", self.detail_scroll),
-            ("history", self.history_table),
-        ]:
+        self.result_page = self.detail_scroll
+        self.gallery = ValidationGallery(self._plot_thumbnail, main)
+        self.gallery.itemOpened.connect(self.open_item)
+        self._thumbnail_renderer = None
+        for key, widget in (("result", self.result_page), ("items", matrix_card), ("gallery", self.gallery)):
             self.page_widgets[key] = widget
             self.pages.addWidget(widget)
-        for table in (self.overview, self.item_table, self.history_table):
-            table.setAlternatingRowColors(False)
-            table.verticalHeader().hide()
-            table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.ResizeToContents)
-            table.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeMode.Stretch)
-            table.verticalHeader().setDefaultSectionSize(36)
+        self.item_table.setAlternatingRowColors(False)
+        self.item_table.verticalHeader().hide()
+        self.item_table.verticalHeader().setDefaultSectionSize(36)
 
-        self.footer_container = QWidget(self)
-        footer_layout = QHBoxLayout(self.footer_container)
-        footer_layout.setContentsMargins(0, 2, 0, 0)
-        footer_layout.setSpacing(8)
-        self.context_hint = CaptionLabel(self.footer_container)
-        self.context_hint.setWordWrap(True)
-        self.context_hint.setStyleSheet(f"color: {palette.TEXT_SECONDARY};")
-
-        self.select_visible_button = PushButton(self.tr("Check visible items"), self.footer_container)
-        self.select_visible_button.clicked.connect(self.check_visible)
-        self.clear_checked_button = PushButton(self.tr("Clear checks"), self.footer_container)
-        self.clear_checked_button.clicked.connect(self.clear_checks)
-        self.manage_button = PushButton(FluentIcon.EDIT, self.tr("Manage selected items"), self.footer_container)
-        self.manage_menu = QMenu(self)
         self.manage_actions = {}
         for label, method in [
             ("Open details", self.open_selected_item),
@@ -463,44 +599,10 @@ class ValidationWorkspace(ModelLibraryWidget):
         ]:
             action = Action(self.tr(label), self)
             action.triggered.connect(method)
-            self.manage_menu.addAction(action)
             self.manage_actions[label] = action
-            self.item_table.addAction(action)
-        self.item_table.setContextMenuPolicy(Qt.ContextMenuPolicy.ActionsContextMenu)
-        self.manage_button.clicked.connect(
-            lambda: self.manage_menu.exec(self.manage_button.mapToGlobal(self.manage_button.rect().bottomLeft()))
-        )
-        self.import_workspace_button = PushButton(
-            FluentIcon.ADD, self.tr("Add reference data…"), self.footer_container
-        )
-        # These actions also live in the global Fluent menu, which owns their item bindings.
-        import_menu = QMenu(self)
-        for action in (
-            self.import_action,
-            self.import_files_action,
-            self.import_folder_action,
-            self.import_package_action,
-        ):
-            import_menu.addAction(action)
-        self.import_workspace_button.clicked.connect(
-            lambda: import_menu.exec(
-                self.import_workspace_button.mapToGlobal(self.import_workspace_button.rect().bottomLeft())
-            )
-        )
-        for widget in (self.select_visible_button, self.clear_checked_button, self.manage_button):
-            footer_layout.addWidget(widget)
-        self.bulk_menu = QMenu(self)
-        self.bulk_menu.addAction(self.select_visible_button.text(), self.check_visible)
-        self.bulk_menu.addAction(self.clear_checked_button.text(), self.clear_checks)
-        self.bulk_menu.addSeparator()
-        self.bulk_menu.addActions(list(self.manage_actions.values()))
-        self.bulk_button = PushButton(self.tr("Actions"), self.footer_container)
-        self.bulk_button.clicked.connect(lambda: self.bulk_menu.exec(
-            self.bulk_button.mapToGlobal(self.bulk_button.rect().bottomLeft())))
-        footer_layout.addWidget(self.bulk_button)
-        footer_layout.addWidget(self.context_hint, 1)
-        footer_layout.addWidget(self.import_workspace_button)
-        body.addWidget(self.footer_container)
+        for table in (self.sidebar_item_list, self.item_table):
+            table.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
+            table.customContextMenuRequested.connect(lambda pos, view=table: self._item_menu(view, pos))
 
         self.workspace_split = QSplitter(Qt.Orientation.Horizontal, self)
         self.workspace_split.setChildrenCollapsible(False)
@@ -508,7 +610,6 @@ class ValidationWorkspace(ModelLibraryWidget):
         self.workspace_split.addWidget(self.sidebar)
         self.workspace_split.addWidget(main)
         self.workspace_split.setStretchFactor(1, 1)
-        self.workspace_split.setSizes([218, 960])
         self.workspace_split.splitterMoved.connect(lambda *_: self._present_workspace())
         root.addWidget(self.workspace_split, 1)
         self.capsule_panel.hide()
@@ -544,10 +645,12 @@ class ValidationWorkspace(ModelLibraryWidget):
         fields.addWidget(self.run_selected_button)
         self.controls_panel.layout().setContentsMargins(12, 5, 12, 5)
         self.controls_panel.layout().setSpacing(0)
-        self.sidebar.setMinimumWidth(164)
+        self.sidebar.setMinimumWidth(212)
         self.sidebar.setMaximumWidth(420)
+        self.workspace_split.setSizes([304, 960])
         self.setMinimumWidth(500)
         self._workspace_ready = True
+        self.main_panel.installEventFilter(self)
         self._present_workspace()
         self.run_summary.hide()
         self._update_header(None)
@@ -655,6 +758,8 @@ class ValidationWorkspace(ModelLibraryWidget):
 
     def hideEvent(self, event):
         super().hideEvent(event)
+        if hasattr(self, "groups"):
+            self.groups.close_picker()
         if getattr(self, "role_dialog", None) is not None:
             self.role_dialog.close()
 
@@ -700,6 +805,7 @@ class ValidationWorkspace(ModelLibraryWidget):
             self.cards[key].color_button.set_color(color)
         if self.role_dialog is not None and key in self.role_dialog.color_buttons:
             self.role_dialog.color_buttons[key].set_color(color)
+        self._reload_gallery()
 
     def _choose_model_role(self, key, role, *, reveal=True):
         row = self.model.row(self.model.row_of_model(key))
@@ -798,31 +904,93 @@ class ValidationWorkspace(ModelLibraryWidget):
     def _sync_card_visibility(self, key, shown):
         if key in self.cards:
             self.cards[key].show_visibility(shown)
+        self._reload_gallery()
 
     def resizeEvent(self, event):
         super().resizeEvent(event)
         if hasattr(self, "edit_models"):
             self._present_workspace()
 
+    def eventFilter(self, obj, event):
+        if event.type() == QEvent.Type.Resize and obj is getattr(self, "main_panel", None):
+            self._present_workspace()
+        return super().eventFilter(obj, event)
+
     def _present_workspace(self):
         if not hasattr(self, "edit_models"):
             return
-        result = self.pages.currentWidget() is self.detail_scroll
-        editing = not self.editor_scroll.isHidden()
-        focused = bool(self._focused_reference and self.curves_button.isChecked())
-        self.sidebar_item_list.setVisible(result)
-        self.sidebar.layout().setAlignment(Qt.AlignmentFlag.AlignTop if not result else Qt.AlignmentFlag(0))
-        self.bulk_button.show()
-        for button in (self.select_visible_button, self.clear_checked_button, self.manage_button):
-            button.hide()
-        self.footer_container.setVisible(not editing)
+        width = self.sidebar.contentsRect().width() - 20
+        height = self.topic_flow.heightForWidth(width)
+        chips_fit = height <= 72 and self.topic_flow.minimumSize().width() <= width
+        self.topic_chips.setFixedHeight(height if chips_fit else 0)
+        self.topic_chips.setVisible(chips_fit)
+        self.topic_picker.setVisible(not chips_fit)
+        has_items = self.sidebar_item_list.rowCount() > 0
+        self.sidebar_item_list.setVisible(has_items)
+        self.empty_items.setVisible(not has_items)
         self.edit_models.setText("+" if self.width() < 700 else "+  " + self.tr("Add models"))
-        narrow = self.main_panel.width() < 970
-        self.pane_button.setVisible(result and focused and narrow and not editing)
-        metrics = narrow and self.pane_button.isChecked()
-        self.pane_button.setText(self.tr("Show curve") if metrics else self.tr("Physical metrics"))
-        self.detail.plot_pane.setVisible(not metrics)
-        self.detail.inspector_panel.setVisible(focused and (not narrow or metrics))
+        width = self.main_panel.width()
+        eos = (self.pages.currentWidget() is self.result_page and self.detail._groups
+               and uses_energy_chart(self.detail._groups[0][1]) and self.editor_scroll.isHidden())
+        self.chart_tools.setVisible(bool(eos))
+        self.add_eos_groups.setText(self.tr("Comparison groups") if width >= 530 else "")
+        candidates = [b for i, b in enumerate(self.plot_switches) if self._plot_switch_available(i)] if eos else []
+        gap = self.chart_tools.layout().spacing()
+        basic = sum(w.sizeHint().width() + gap for w in (self.eos_grid_mode, self.eos_layout, self.add_eos_groups)
+                    if not w.isHidden()) if eos else 0
+        nav_width = self.view_picker.width()
+        compact = width < nav_width + basic + self.chart_options.sizeHint().width() + 32
+        self.view_picker.setVisible(not compact)
+        self.compact_view_picker.setVisible(compact)
+        if eos:
+            nav_width = self.compact_view_picker.sizeHint().width() if compact else nav_width
+            budget = width - nav_width - basic - 32
+            step = self.plot_switches[0].width() + gap
+            overflow = budget < len(candidates) * step
+            slots = max(0, (budget - self.chart_options.sizeHint().width() - gap) // step) if overflow else len(candidates)
+            for button in self.plot_switches:
+                button.setVisible(button in candidates[:slots])
+            self.chart_options.setVisible(overflow)
+
+    def _reload_gallery(self):
+        if self.pages.currentWidget() is self.gallery:
+            self.gallery.set_records(self.visible_items())
+
+    def _plot_thumbnail(self, item, size):
+        if self._thumbnail_renderer is None:
+            self._thumbnail_renderer = RunDetailPanel(self.gallery)
+            self._thumbnail_renderer.hide()
+        renderer = self._thumbnail_renderer
+        rows = [self.model.row(self.model.row_of_model(key)) for key in self.comparison_curve_ids()]
+        entries = self._curve_entries(item, [row for row in rows if row])
+        renderer.group_markers = self.groups.markers
+        renderer.model_colors = self.detail.model_colors.copy()
+        renderer._series_styles = self.detail._series_styles.copy()
+        renderer._hidden_series = self.detail._hidden_series.copy()
+        renderer.show_runs(item, entries)
+        chart = renderer.eos_plots[0] if renderer._groups and renderer.eos_plots else renderer.plot
+        plots = [] if renderer._groups and not renderer.eos_plots else chart.listDataItems()
+        if not any(line.isVisible() and line.xData is not None and len(line.xData) for line in plots):
+            empty = CaptionLabel(self.tr("No plotted data"))
+            empty.resize(size)
+            empty.setAlignment(Qt.AlignmentFlag.AlignCenter)
+            return empty.grab(), "", ""
+        if hasattr(chart, "x_label"):
+            x_label, y_label = chart.x_label.text(), chart.y_label.text()
+            chart.x_label.hide()
+            chart.y_label.hide()
+        else:
+            axes = [chart.getAxis(side) for side in ("bottom", "left")]
+            x_label, y_label = [" ".join(filter(None, (axis.labelText, axis.labelUnits))) for axis in axes]
+            for axis in axes:
+                axis.showLabel(False)
+            chart.getPlotItem().layout.setContentsMargins(2, 7, 4, 2)
+        chart.setFixedSize(size)
+        if hasattr(chart, "fit"):
+            chart.fit()
+        else:
+            chart.getPlotItem().autoRange()
+        return chart.grab(), x_label, y_label
 
     def _navigate_item(self, row, column, *_):
         if self._rendering or row < 0 or column != 0:
@@ -830,6 +998,33 @@ class ValidationWorkspace(ModelLibraryWidget):
         item = self.sidebar_item_list.item(row, 0)
         if item is not None:
             self.open_item(item.data(Qt.ItemDataRole.UserRole))
+
+    def _run_item_missing(self, row, column):
+        if column != 0 or self._run_task is not None:
+            return
+        item = self.sidebar_item_list.item(row, 0)
+        key = item.data(Qt.ItemDataRole.UserRole) if item else None
+        benchmark = next((i for i in self._items if i["id"] == key), None)
+        if benchmark:
+            jobs = [job for job in self.run_jobs(model_ids=self.comparison_curve_ids(), benchmarks=[benchmark])
+                    if self._cell_status(*job)["status"] in ("missing", "failed")]
+            if jobs:
+                self._run_validation(jobs=jobs)
+
+    def _plot_switch_available(self, index):
+        return not (self.detail._eos_residual and index < 2)
+
+    def _chart_options_menu(self):
+        menu = self.chart_options.menu()
+        menu.clear()
+        for index, button in enumerate(self.plot_switches):
+            if button.isHidden() and self._plot_switch_available(index):
+                menu.addAction(button.defaultAction())
+
+    def apply_canvas_mode(self, _mode):
+        if self._workspace_ready:
+            self._update_detail()
+            self._reload_gallery()
 
     def _navigator_checked(self, item):
         if self._rendering or item.column() != 1:
@@ -847,8 +1042,14 @@ class ValidationWorkspace(ModelLibraryWidget):
 
     def _on_sidebar_search(self, text: str) -> None:
         self._search_filter = text.strip().casefold()
+        self._refresh_filtered_items()
+
+    def _refresh_filtered_items(self):
         self._render_workspace()
-        self._focus_first_visible()
+        if self._focused_reference and self.metrics_model.kind == "eos" and self.curves_button.isChecked():
+            self._update_detail()
+        else:
+            self._focus_first_visible()
 
     def _scorecard_current_id(self, requested, comparison_ids):
         row = self.model.row(self.model.row_of_model(requested))
@@ -870,12 +1071,25 @@ class ValidationWorkspace(ModelLibraryWidget):
         context = (str(self.service().library.root), suite_id)
         if context != self._workspace_suite:
             self.checked_ids.clear()
+            self.groups.set_candidates(None, [])
             self.topic_id = "all"
             self._focused_reference = None
             self._workspace_suite = context
-            self.pages.setCurrentWidget(self.detail_scroll)
+            self.pages.setCurrentWidget(self.result_page)
             self.view_picker.setCurrentItem("result")
+            self.compact_view_picker.setCurrentIndex(0)
         self._items = self.service().suite_items(suite_id) if suite_id is not None else []
+        families = {}
+        for item in self._items:
+            view = presentation_for(item["protocol"])
+            if is_magnetic_eos(item):
+                families[item["id"]] = [(n, branch[0]) for n, branch in enumerate(magnetic_branches(item))]
+            elif view.source_group:
+                group = view.group(item)
+                family = view.family(item) or item["id"]
+                families.setdefault(family, []).append((min(group.get("indices") or [0]), item["id"]))
+        self.groups.load_markers(self.service().library.root, ([key for _, key in sorted(rows)] for rows in families.values()))
+        self.detail.group_markers = self.groups.markers
         self.checked_ids.intersection_update(item["id"] for item in self._items)
         if self._focused_reference not in {item["id"] for item in self._items}:
             self._focused_reference = None
@@ -884,19 +1098,31 @@ class ValidationWorkspace(ModelLibraryWidget):
             self.topic_id = "all"
         self.topic_picker.blockSignals(True)
         self.topic_picker.clear()
-        self.topic_picker.addItem(self.tr("All topics"), userData="all")
+        self.topic_picker.addItem(self.tr("All ({count})").format(count=len(self._items)), userData="all")
         for group in self._topics:
             self.topic_picker.addItem(group["name"], userData=group["id"])
         if any(item["group_id"] is None for item in self._items):
             self.topic_picker.addItem(self.tr("Ungrouped"), userData=None)
         self.topic_picker.setCurrentIndex(self.topic_picker.findData(self.topic_id))
         self.topic_picker.blockSignals(False)
+        while self.topic_flow.count():
+            chip = self.topic_flow.takeAt(0).widget()
+            chip.hide()
+            chip.deleteLater()
+        for index in range(self.topic_picker.count()):
+            chip = QPushButton(self.topic_picker.itemText(index), self.topic_chips)
+            chip.setCheckable(True)
+            chip.setChecked(index == self.topic_picker.currentIndex())
+            chip.clicked.connect(lambda _, i=index: self.topic_picker.setCurrentIndex(i))
+            chip.setAutoExclusive(True)
+            self.topic_flow.addWidget(chip)
+            chip.show()
         self._render_workspace()
         self._update_run_scope()
         self._focus_first_visible()
 
     def _focus_first_visible(self):
-        if self.pages.currentWidget() is self.detail_scroll and self.editor_scroll.isHidden():
+        if self.pages.currentWidget() is self.result_page and self.editor_scroll.isHidden():
             if self._focused_reference and not self.curves_button.isChecked():
                 self.open_item(self._focused_reference)
             elif not self._focused_reference and self.visible_items():
@@ -906,8 +1132,8 @@ class ValidationWorkspace(ModelLibraryWidget):
         if index < 0:
             return
         self.topic_id = self.topic_picker.currentData()
-        self._render_workspace()
-        self._focus_first_visible()
+        self.topic_flow.itemAt(index).widget().setChecked(True)
+        self._refresh_filtered_items()
 
     def visible_items(self):
         items = [i for i in self._items if self.topic_id == "all" or i["group_id"] == self.topic_id]
@@ -940,10 +1166,8 @@ class ValidationWorkspace(ModelLibraryWidget):
             better=any(c.get("verdict") == "better" for c in cells),
         )
 
-    def _headline_display_for_model(self, model_id, item):
+    def _headline_display_for_model(self, model_id, item, metric):
         """Return (formatted_text, cell_dict) for a model on a validation item."""
-        protocol = protocol_for_set(item)
-        metric = protocol.headline_metrics()[0]
         column = next(
             (
                 n + 1
@@ -963,7 +1187,7 @@ class ValidationWorkspace(ModelLibraryWidget):
                 display += " ↑退化"
             return display, cell
         status = (cell or {}).get("status", "missing")
-        return ("—" if status == "missing" else self._status_text(status)), cell
+        return ("—" if status in ("missing", "succeeded") else self._status_text(status)), cell
 
     def _render_workspace(self):
         if not self._workspace_ready or self._rendering:
@@ -972,74 +1196,6 @@ class ValidationWorkspace(ModelLibraryWidget):
         models = self.comparison_curve_ids()
         suite_id = self.current_suite_id()
         baseline = self.service().get_suite(suite_id).get("baseline_model_id") if suite_id is not None else None
-        self.overview.blockSignals(True)
-        self.overview.clearContents()
-        self.overview.setColumnCount(2 + len(models))
-        labels = [self.tr("Topic"), self.tr("Items")]
-        for model_id in models:
-            index = self.model.row_of_model(model_id)
-            row = self.model.row(index)
-            label = row["name"] if row else self.service().get_model(model_id)["name"]
-            labels.append(label + (" · " + self.tr("Baseline") if model_id == baseline else ""))
-        self.overview.setHorizontalHeaderLabels(labels)
-        self.overview.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeMode.Stretch)
-        topics = [(t["id"], t["name"]) for t in self._topics]
-        if any(i["group_id"] is None for i in self._items) or not topics:
-            topics.append((None, self.tr("Ungrouped")))
-        if self.topic_id != "all":
-            topics = [t for t in topics if t[0] == self.topic_id]
-        self.overview.setRowCount(len(topics))
-        for row, (key, label) in enumerate(topics):
-            members = [i for i in self._items if i["group_id"] == key]
-            title = QTableWidgetItem(label)
-            title.setFlags(title.flags() | Qt.ItemFlag.ItemIsUserCheckable)
-            count = sum(i["id"] in self.checked_ids for i in members)
-            title.setCheckState(
-                Qt.CheckState.Checked
-                if members and count == len(members)
-                else Qt.CheckState.PartiallyChecked
-                if count
-                else Qt.CheckState.Unchecked
-            )
-            title.setData(Qt.ItemDataRole.UserRole, key)
-            self.overview.setItem(row, 0, title)
-            self.overview.setItem(row, 1, QTableWidgetItem(str(len(members))))
-            for column, model_id in enumerate(models, 2):
-                states = [self._cell_status(model_id, i["id"]) for i in members]
-                done = sum(s["status"] == "succeeded" for s in states)
-                failed = sum(s["status"] == "failed" for s in states)
-                unsupported = sum(s["status"] == "unsupported" for s in states)
-                worse = sum(s["worse"] for s in states)
-                better = sum(s["better"] for s in states)
-                text = self.tr("Done {done}/{total}").format(done=done, total=len(members))
-                if failed:
-                    text += " · " + self.tr("{count} failed").format(count=failed)
-                if unsupported:
-                    text += " · " + self.tr("{count} unsupported").format(count=unsupported)
-                if worse:
-                    text += " · " + self.tr("{count} regressed").format(count=worse)
-                elif better:
-                    text += f" · {better} 改善"
-                # Append headline metric preview when a single item or uniform metric exists in the topic
-                if len(members) == 1 and done == 1:
-                    m_text, _ = self._headline_display_for_model(model_id, members[0])
-                    if m_text and m_text != "—":
-                        text += f" ({m_text})"
-                cell = QTableWidgetItem(text)
-                if worse:
-                    cell.setBackground(VERDICT_COLORS["worse"])
-                elif better and done == len(members):
-                    cell.setBackground(VERDICT_COLORS["better"])
-                cell.setToolTip(
-                    "\n".join(
-                        i["name"] + ": " + self._status_text(s["status"]) for i, s in zip(members, states)
-                    )
-                )
-                self.overview.setItem(row, column, cell)
-        self.overview.blockSignals(False)
-
-        # Multi-model item_table: keep the 7 base columns for contract compatibility,
-        # and append columns for each comparison/baseline model so all models are compared side-by-side!
         current = self.model_combo.currentData()
         extra_models = [mid for mid in models if mid != current and mid is not None]
         base_headers = [
@@ -1093,9 +1249,22 @@ class ValidationWorkspace(ModelLibraryWidget):
         self.item_table.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeMode.Stretch)
 
         items = self.visible_items()
+        kinds = {item["protocol"] for item in items}
+        choices = ()
+        if len(kinds) == 1 and presentation_for(items[0]["protocol"]).choose_table_metric:
+            choices = protocol_for_set(items[0]).headline_metrics()
+        if [self.table_metric.itemData(i) for i in range(self.table_metric.count())] != [m.key for m in choices]:
+            self.table_metric.blockSignals(True)
+            self.table_metric.clear()
+            for metric in choices:
+                label = QCoreApplication.translate("ScorecardTableModel", metric.label)
+                self.table_metric.addItem(f"{label} ({metric.unit})", userData=metric.key)
+            self.table_metric.blockSignals(False)
+        self.table_metric.setVisible(len(choices) > 1)
         if self._focused_reference and not any(i["id"] == self._focused_reference for i in items):
             self._focused_reference = None
             self.curves_button.setChecked(False)
+            self._sync_comparison_groups(None)
         if not self.curves_button.isChecked():
             self.curves_hint.setText(self.tr("Click a cell to see its details"))
             self.overview_label.setText(self.tr("Item details"))
@@ -1111,8 +1280,11 @@ class ValidationWorkspace(ModelLibraryWidget):
         self.sidebar_item_list.setRowCount(len(items))
 
         for row, item in enumerate(items):
-            short_item_name = item["name"].rsplit(" / ", 1)[-1]
-            name = QTableWidgetItem(short_item_name)
+            view = presentation_for(item["protocol"])
+            name = QTableWidgetItem(view.item_title(item))
+            marker = self.groups.markers.get(item["id"])
+            if marker:
+                name.setIcon(group_marker_icon(marker))
             name.setData(Qt.ItemDataRole.UserRole, item["id"])
             name.setToolTip(item["name"])
             check = QTableWidgetItem()
@@ -1134,25 +1306,30 @@ class ValidationWorkspace(ModelLibraryWidget):
                 "slices": self.tr("Accuracy by group"),
             }
             role = (summary.get("analysis") or {}).get("role", item.get("provenance", {}).get("role", "unknown"))
-            display, cur_cell = self._headline_display_for_model(current, item)
+            metric = protocol.metric(self.table_metric.currentData()) if choices else protocol.headline_metrics()[0]
+            display, cur_cell = self._headline_display_for_model(current, item, metric)
+            state = self._cell_status(current, item["id"])
+            status_label = self.tr("Update needed") if state.get("previous_version") else self._status_text(state["status"])
             values = [
                 item.get("group_name") or self.tr("Ungrouped"),
-                mode_labels.get(analysis, protocol.title),
+                QCoreApplication.translate("ScorecardTableModel", metric.label) if view.choose_table_metric else mode_labels.get(analysis, protocol.title),
                 roles.get(role, role),
                 str(summary.get("frames", len(summary.get("volumes", [])))),
                 display,
-                self._status_text(self._cell_status(current, item["id"])["status"]),
+                status_label,
             ]
             for c, value in enumerate(values, 1):
                 entry = QTableWidgetItem(str(value))
                 entry.setData(Qt.ItemDataRole.UserRole, item["id"])
                 entry.setToolTip(str(value))
+                if c == 5 and value == "—" and cur_cell and cur_cell["status"] == "succeeded":
+                    entry.setToolTip("\n".join(translate_runtime_message(w) for w in summary.get("warnings", [])) or str(value))
                 if c == 5 and cur_cell and cur_cell.get("verdict") in ("better", "worse"):
                     entry.setForeground(QColor(palette.PLOT_SHOW if cur_cell["verdict"] == "better" else palette.PLOT_REJECT))
                 self.item_table.setItem(row, c, entry)
 
             for extra_idx, mid in enumerate(extra_models):
-                extra_display, extra_cell = self._headline_display_for_model(mid, item)
+                extra_display, extra_cell = self._headline_display_for_model(mid, item, metric)
                 extra_item = QTableWidgetItem(str(extra_display))
                 extra_item.setData(Qt.ItemDataRole.UserRole, item["id"])
                 extra_item.setToolTip(str(extra_display))
@@ -1168,26 +1345,43 @@ class ValidationWorkspace(ModelLibraryWidget):
                     QItemSelectionModel.SelectionFlag.Select | QItemSelectionModel.SelectionFlag.Rows,
                 )
 
-            nav_item = QTableWidgetItem(short_item_name if self.topic_id != "all" else item["name"])
+            nav_item = QTableWidgetItem(name.text() if view.source_group else item["name"].removeprefix(values[0] + " / "))
+            if marker:
+                nav_item.setIcon(name.icon())
+            status = status_label if current is not None else ""
+            ink, fill = palette.TEXT_SECONDARY, palette.SURFACE_SUBTLE
+            if state["status"] == "succeeded":
+                ink, fill = palette.SUCCESS, palette.SUCCESS_SOFT
+            elif state["status"] == "failed":
+                ink, fill = palette.DANGER, palette.DANGER_SOFT
+            elif state["status"] == "unsupported":
+                ink, fill = palette.WARNING_STRONG, palette.WARNING_SOFT
+            count_label = self.tr("{count} frames").format(count=values[3])
+            if protocol.kind == "diagnostic":
+                count_label = self.tr("{count} scan points").format(count=len(summary.get("coordinates", [])))
+            subtitle = f"{values[0]} · {count_label}"
+            badge = view.item_badge(item)
+            nav_item.setData(Qt.ItemDataRole.UserRole + 1, (subtitle, badge, status, ink, fill))
+            nav_item.setData(Qt.ItemDataRole.AccessibleDescriptionRole, f"{subtitle} · {badge} · {status}")
             nav_item.setData(Qt.ItemDataRole.UserRole, item["id"])
-            nav_item.setToolTip(item["name"])
+            nav_item.setToolTip(f"{item['name']}\n{subtitle} · {self.tr('Current model')}: {status}" if status else item["name"])
+            nav_item.setToolTip(nav_item.toolTip() + "\n" + self.tr("Double-click to evaluate missing or failed models for this item."))
             self.sidebar_item_list.setItem(row, 0, nav_item)
-            self.sidebar_item_list.setItem(row, 1, QTableWidgetItem(check))
+            self.sidebar_item_list.setItem(row, 1, check.clone())
             if item["id"] == self._focused_reference:
                 self.sidebar_item_list.setCurrentCell(row, 0)
 
+        self.empty_items.setText(self.tr("No matching items") if self._items else self.tr("No validation items"))
         self.sidebar_item_list.blockSignals(False)
         self.item_table.blockSignals(False)
         self._rendering = False
-        self.matrix_title.setText(self.tr("Model comparison") + f"  ·  {len(items)}")
+        self.matrix_title.setText(self.tr("Overview") + f"  ·  {len(items)}")
         self._update_header(baseline)
         if self.role_dialog is not None and self.role_dialog.isVisible():
             self._sync_role_dialog()
-        self.context_hint.setText("")
         self._management_state()
         self._present_workspace()
-        if self.pages.currentWidget() is self.history_table:
-            self._render_history()
+        self._reload_gallery()
 
     def _status_text(self, status):
         return {
@@ -1212,24 +1406,6 @@ class ValidationWorkspace(ModelLibraryWidget):
             self.sidebar_item_list.blockSignals(False)
         self._update_run_scope()
 
-    def _overview_checked(self, item):
-        if self._rendering or item.column() != 0:
-            return
-        key = item.data(Qt.ItemDataRole.UserRole)
-        for record in self._items:
-            if record["group_id"] == key:
-                if item.checkState() != Qt.CheckState.Unchecked:
-                    self.checked_ids.add(record["id"])
-                else:
-                    self.checked_ids.discard(record["id"])
-        self._render_workspace()
-        self._update_run_scope()
-
-    def _overview_open(self, row, _column):
-        topic = self.overview.item(row, 0).data(Qt.ItemDataRole.UserRole)
-        self.topic_picker.setCurrentIndex(self.topic_picker.findData(topic))
-        self.show_page("items")
-
     def check_visible(self):
         self.checked_ids.update(i["id"] for i in self.visible_items())
         self._render_workspace()
@@ -1243,14 +1419,18 @@ class ValidationWorkspace(ModelLibraryWidget):
     def show_page(self, key):
         if not self._workspace_ready:
             return
+        entering = self.pages.currentWidget() is not self.page_widgets[key]
+        if key != "result":
+            self.groups.close_picker()
         self.pages.setCurrentWidget(self.page_widgets[key])
         self.view_picker.setCurrentItem(key)
-        if key == "overview":
-            self._render_workspace()
+        self.compact_view_picker.setCurrentIndex(self.compact_view_picker.findData(key))
         self._present_workspace()
-        if key == "history":
-            self._render_history()
+        if key == "gallery":
+            self._reload_gallery()
         if key == "result":
+            if entering and self._focused_reference and self.curves_button.isChecked() and self.editor_scroll.isHidden():
+                self._update_detail()
             self._focus_first_visible()
 
     def _compare_cell(self, row, column):
@@ -1278,28 +1458,108 @@ class ValidationWorkspace(ModelLibraryWidget):
             self.item_table.selectRow(index)
         self.item_table.scrollToItem(self.item_table.item(index, 0))
         self._expand_curves()
-        self.show_page("result")
-        self._update_detail()
+        if self.pages.currentWidget() is self.result_page:
+            self._update_detail()
+        else:
+            self.show_page("result")
         self._present_workspace()
+
+    def _group_marker_changed(self, key, symbol):
+        self.detail.set_group_marker(key, symbol)
+        for table in (self.sidebar_item_list, self.item_table):
+            for row in range(table.rowCount()):
+                item = table.item(row, 0)
+                if item and item.data(Qt.ItemDataRole.UserRole) == key:
+                    item.setIcon(group_marker_icon(symbol))
+                    break
+        self._reload_gallery()
+
+    def _set_current_group(self, key):
+        if self.detail.magnetic_selection is not None:
+            self.groups.browse(key)
+            self._update_detail()
+        else:
+            self.open_item(key)
+
+    def _focus_plot_group(self, tag):
+        if self.detail.magnetic_selection is not None:
+            self.groups.focus(tag)
+        elif self.groups.comparisons:
+            self.groups.focus(self.metrics_model.benchmarks[int(tag[1:]) - 1]["id"])
+        else:
+            super()._focus_plot_group(tag)
+
+    def _select_all_groups(self):
+        if hasattr(self, "groups") and self.groups.focused:
+            self.groups.expand()
+        else:
+            super()._select_all_groups()
+
+    def _sync_comparison_groups(self, benchmark):
+        candidates = []
+        view = presentation_for(benchmark["protocol"]) if benchmark else None
+        family = view.family(benchmark) if view else None
+        magnetic = benchmark and is_magnetic_eos(benchmark)
+        current = self._focused_reference
+        if magnetic:
+            branches = magnetic_branches(benchmark)
+            candidates = [(key, label, self.tr("{count} frames").format(count=len(indices)))
+                          for key, label, indices in branches]
+            keys = [key for key, _, _ in candidates]
+            if self.groups.current in keys:
+                current = self.groups.current
+            else:
+                current = keys[0]
+                self.groups.comparisons = set(keys[1:])
+                self.groups.focused = False
+        elif family:
+            for item in self.visible_items():
+                if item["protocol"] == benchmark["protocol"] and view.family(item) == family:
+                    group = view.group(item)
+                    caption = self.tr("{count} frames").format(count=len(group["indices"]))
+                    candidates.append((item["id"], str(group["value"]), caption))
+        self.groups.set_candidates(current, candidates)
+        self.detail.magnetic_selection = None
+        if magnetic:
+            self.detail.magnetic_selection = {current} if self.groups.focused else self.groups.comparisons | {current}
+        self.detail.magnetic_can_focus = bool(magnetic and self.groups.comparisons)
+        self.detail.eos_current_id = current if len(candidates) > 1 else None
+        self.add_eos_groups.setVisible(len(candidates) > 1)
+        eos = bool(benchmark and uses_energy_chart(benchmark))
+        self.chart_tools.setVisible(eos)
+        self.standard_options.setVisible(not eos)
+        self.detail.title_label.setVisible(not eos)
+        self.detail.info_label.setVisible(not eos)
+        comparing = bool(self.groups.comparisons) and not self.groups.focused
+        self.eos_layout.setVisible(comparing)
 
     def _update_detail(self):
         self.detail._current_key = self.model_combo.currentData()
+        if self._workspace_ready and self.pages.currentWidget() is not self.result_page:
+            return
+        group_rows = None
+        group_total = None
         if self._workspace_ready and self.curves_button.isChecked():
-            row = next((i for i, item in enumerate(self.metrics_model.benchmarks)
-                        if item["id"] == self._focused_reference), None)
+            benchmarks = self.metrics_model.benchmarks
+            row = next((i for i, item in enumerate(benchmarks) if item["id"] == self._focused_reference), None)
             if row is None:
                 self.detail.show_runs(None, [])
+                self._sync_comparison_groups(None)
                 return
             selection = self.table.selectionModel()
             selection.blockSignals(True)
             self.table.selectRow(row)
             selection.blockSignals(False)
-        super()._update_detail()
+            self._sync_comparison_groups(benchmarks[row])
+            if presentation_for(benchmarks[row]["protocol"]).source_group:
+                keys = self.groups.comparisons | {self._focused_reference}
+                group_rows = [row] if self.groups.focused else [i for i, item in enumerate(benchmarks) if item["id"] in keys]
+                group_total = len(keys)
+        super()._update_detail(group_rows=group_rows, group_total=group_total)
         if self._workspace_ready:
             self.all_groups_button.hide()
-            if self._focused_reference and self.detail._args[0]:
+            if self._focused_reference and self.detail._args[0] and group_rows is None:
                 self.detail.title_label.setText(self.detail._args[0]["name"])
-
 
     def open_scorecard(self, suite_id, model_id=None, *, draft=None):
         super().open_scorecard(suite_id, model_id, draft=draft, show_curves=False)
@@ -1351,8 +1611,25 @@ class ValidationWorkspace(ModelLibraryWidget):
         self.new_suite_button.setEnabled(idle)
         for widget in (self.new_topic_button, self.existing_button, self.organize_button):
             widget.setEnabled(idle and saved)
-        self.import_workspace_button.setEnabled(idle)
         self._management_state()
+
+    def _item_menu(self, table, pos):
+        menu = QMenu(table)
+        row = table.rowAt(pos.y())
+        if row >= 0:
+            if table is self.sidebar_item_list:
+                table.setCurrentCell(row, 0)
+                self.item_table.selectRow(row)
+            elif not table.selectionModel().isRowSelected(row):
+                table.selectRow(row)
+            for name, action in self.manage_actions.items():
+                if table is self.item_table or name != "Open details":
+                    menu.addAction(action)
+            menu.addSeparator()
+        menu.addAction(self.tr("Check visible items"), self.check_visible).setEnabled(bool(table.rowCount()))
+        menu.addAction(self.tr("Clear checks"), self.clear_checks).setEnabled(bool(self.checked_ids))
+        menu.exec(table.viewport().mapToGlobal(pos))
+        menu.deleteLater()
 
     def _management_ids(self):
         return [
@@ -1370,7 +1647,6 @@ class ValidationWorkspace(ModelLibraryWidget):
         topic = self.topic_id
         for action in self.topic_actions:
             action.setEnabled(idle and saved and isinstance(topic, int))
-        self.manage_button.setEnabled(bool(count) and idle)
         for name, action in self.manage_actions.items():
             action.setEnabled(
                 idle
@@ -1388,24 +1664,6 @@ class ValidationWorkspace(ModelLibraryWidget):
         if task is not None:
             self.run_summary.show()
         return task
-
-    def _render_history(self):
-        if not self._workspace_ready:
-            return
-        rows = self.service().reference_history([i["id"] for i in self.visible_items()])
-        names = {i["id"]: i["name"] for i in self._items}
-        models = {m["id"]: m["name"] for m in self.service().models()}
-        self.history_table.setRowCount(len(rows))
-        for r, run in enumerate(rows):
-            values = [
-                names[run["set_id"]],
-                models.get(run["model_id"], str(run["model_id"])),
-                self._status_text(run["status"]),
-                run.get("created_at", self.tr("Session only")),
-                translate_runtime_message(run.get("error", "")),
-            ]
-            for c, value in enumerate(values):
-                self.history_table.setItem(r, c, QTableWidgetItem(str(value)))
 
     def _change(self, operation):
         try:

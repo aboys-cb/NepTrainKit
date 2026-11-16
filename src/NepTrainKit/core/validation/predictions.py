@@ -25,27 +25,10 @@ class CachedPrediction:
             "structure_virials": (len(frames), 9),
             "mforces": (sum(map(len, frames)), 3),
         }
-        if not self.refresh and self.path.is_file():
-            try:
-                with np.load(self.path, allow_pickle=False) as archive:
-                    metadata = json.loads(str(archive["metadata"]))
-                    if metadata["identity"] != self.identity:
-                        raise ValueError("Prediction identity mismatch.")
-                    values = {key: np.array(archive[key]) for key in expected if key in archive}
-                    if not {"energy", "forces", "structure_virials"} <= values.keys():
-                        raise ValueError("Incomplete predictions.")
-                    for key, value in values.items():
-                        if (
-                            value.shape != expected[key]
-                            or value.dtype != np.float64
-                            or not np.isfinite(value).all()
-                            or hashlib.sha256(value.tobytes()).hexdigest() != metadata["hashes"][key]
-                        ):
-                            raise ValueError("Corrupted predictions.")
-                self.source = {"kind": "prediction_cache", "key": self.path.stem}
-                return SimpleNamespace(**{"mforces": None, **values})
-            except (OSError, ValueError, KeyError, TypeError, EOFError, zipfile.BadZipFile):
-                pass
+        values = self.read_arrays(expected, required={"energy", "forces", "structure_virials"}) if not self.refresh else None
+        if values is not None:
+            self.source = {"kind": "prediction_cache", "key": self.path.stem}
+            return SimpleNamespace(**{"mforces": None, **values})
         prediction = self.predictor.predict(frames)
         values = {}
         for key, shape in expected.items():
@@ -77,3 +60,22 @@ class CachedPrediction:
             if temporary is not None:
                 temporary.unlink(missing_ok=True)
         return SimpleNamespace(**{"mforces": None, **values})
+
+    def read_arrays(self, expected, *, required):
+        """Read just the requested arrays, checking identity, shape and content."""
+        if self.path.is_file():
+            try:
+                with np.load(self.path, allow_pickle=False) as archive:
+                    metadata = json.loads(str(archive["metadata"]))
+                    if metadata["identity"] != self.identity or not required.issubset(archive.files):
+                        return None
+                    values = {key: archive[key] for key in expected if key in archive}
+                    for key, value in values.items():
+                        if (value.shape != expected[key] or value.dtype != np.float64
+                                or not np.isfinite(value).all()
+                                or hashlib.sha256(value.tobytes()).hexdigest() != metadata["hashes"][key]):
+                            return None
+                    return values
+            except (OSError, ValueError, KeyError, TypeError, EOFError, zipfile.BadZipFile):
+                return None
+        return None

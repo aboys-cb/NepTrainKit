@@ -415,7 +415,7 @@ def test_eos_flow_chinese_labels_and_errors(make_service, tmp_path):
     try:
         host = QWidget()
         dialog = BenchmarkImportDialog(host, [], "PbTe 验证")
-        assert dialog.titleLabel.text() == "导入参考基准集"
+        assert dialog.windowTitle() == "导入参考基准集"
         assert dialog.supplementary_button.text() == "补充信息（可选）"
         assert dialog.group_field_label.text() == "分组字段"
         assert "每个构型的注释行" in dialog.group_hint.text()
@@ -424,6 +424,10 @@ def test_eos_flow_chinese_labels_and_errors(make_service, tmp_path):
         assert "单组扫描 · 使用整个文件" in dialog.group_hint.text()
         assert dialog.status_label.text() == "请先选择验证类型。"
         dialog.protocol_combo.setCurrentIndex(dialog.protocol_combo.findData("eos"))
+        assert dialog.help_panel.isHidden()
+        dialog.help_button.click()
+        assert not dialog.help_panel.isHidden()
+        dialog.help_button.click()
         instructions = dialog.requirements_label.text()
         assert "每组 EOS 至少需要 5 个不同体积点" in instructions
         assert "总能量（eV），请勿提前除以原子数" in instructions
@@ -537,7 +541,11 @@ def test_grouped_eos_automatically_allows_warnings_and_blocks_errors(make_servic
     dialog.group_table.setCurrentCell(0, 0)
     dialog.overlay_groups.setChecked(True)
     assert [curve.name() for curve in dialog.preview_plot.listDataItems()] == ["A", "B"]
+    dialog.preview_marker.markerChanged.emit("d")
+    assert [curve.opts["symbol"] for curve in dialog.preview_plot.listDataItems()] == ["d", "t1"]
     records = dialog.import_into(service, lambda _: True)
+    from NepTrainKit.config import Config
+    assert Config.get(f"validation_group_markers:{service.library.root}", records[0]["id"]) == "d"
     assert len(records) == 2
     assert all(record["provenance"] == {} for record in records)
     assert records[1]["summary"]["warnings"]  # warning retained after successful import
@@ -587,11 +595,11 @@ def test_import_dialog_resizes_without_squeezing_controls(tmp_path, language):
         dialog.group_field_combo.setCurrentIndex(dialog.group_field_combo.findData("config_type"))
         dialog.supplementary_button.click()
         dialog.show()
-        for width, height in [(1280, 900), (1000, 700), (800, 600), (1280, 900)]:
-            host.resize(width, height)
+        for width, height in [(1120, 740), (960, 700), (760, 600), (1120, 740)]:
+            dialog.resize(width, height)
             for _ in range(3):
                 app.processEvents()
-            assert host.rect().contains(dialog.widget.geometry())
+            assert dialog.isWindow() and dialog.parentWidget() is host
             for control in (
                 dialog.path_edit, dialog.browse_button, dialog.protocol_combo,
                 dialog.group_field_combo, dialog.name_edit,
@@ -601,20 +609,20 @@ def test_import_dialog_resizes_without_squeezing_controls(tmp_path, language):
             assert dialog.preview_plot.height() >= 260
             scroll = dialog.body_scroll
             assert scroll.widget().width() <= scroll.viewport().width()
-            if width >= 1280:
+            if width >= 880:
                 assert dialog.fields_panel.x() < dialog.preview_panel.x()
                 assert dialog.fields_panel.y() == dialog.preview_panel.y()
             else:
                 assert dialog.fields_panel.geometry().bottom() < dialog.preview_panel.y()
                 assert scroll.verticalScrollBar().maximum() > 0
             # Scrolling can reach the final check result without moving the footer.
-            button_pos = dialog.yesButton.mapTo(host, dialog.yesButton.rect().topLeft())
+            button_pos = dialog.yesButton.mapTo(dialog, dialog.yesButton.rect().topLeft())
             scroll.ensureWidgetVisible(dialog.issues_label)
             app.processEvents()
             result_pos = dialog.issues_label.mapTo(scroll.viewport(), dialog.issues_label.rect().center())
             assert scroll.viewport().rect().contains(result_pos)
-            assert dialog.yesButton.mapTo(host, dialog.yesButton.rect().topLeft()) == button_pos
-            assert host.rect().contains(dialog.yesButton.mapTo(host, dialog.yesButton.rect().bottomRight()))
+            assert dialog.yesButton.mapTo(dialog, dialog.yesButton.rect().topLeft()) == button_pos
+            assert dialog.rect().contains(dialog.yesButton.mapTo(dialog, dialog.yesButton.rect().bottomRight()))
             assert dialog.group_field_combo.currentData() == "config_type"
     finally:
         dialog.hide()

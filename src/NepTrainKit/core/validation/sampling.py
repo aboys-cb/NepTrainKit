@@ -29,7 +29,7 @@ def clean_sampling_parent(atoms: Atoms, provenance: dict) -> Atoms:
     clean = Atoms(
         numbers=atoms.numbers.copy(), positions=atoms.positions.copy(), cell=atoms.cell.copy(), pbc=atoms.pbc.copy()
     )
-    for key in ("initial_magmoms", "spin", "spins"):
+    for key in ("initial_magmoms", "spin", "spins", "spin_active"):
         if key in atoms.arrays:
             clean.set_array(key, atoms.arrays[key].copy())
     clean.info.update(
@@ -176,3 +176,54 @@ def suggest_sampling(frames, details: dict | None = None) -> dict:
     return dict(
         summary=summary, parent_index=parent_index, params=params, reason=reason, peak_mev=peak, residual=residual
     )
+
+
+def magnetic_sampling_payload(frames, benchmark, branch, model=None, run=None):
+    """Seed an editable scan from the measured branch, retaining its fixed coordinate."""
+    from NepTrainKit.core.magnetic_response import LocalMagneticResponseParams
+    from NepTrainKit.core.magnetism import existing_moment_vectors
+
+    key, label, indices = branch
+    summary = benchmark["summary"]
+    rows = [summary["rows"][i] for i in indices]
+    axis = summary["analysis"]["x_field"]
+    candidates = [r for r in rows if r["x"] != 0] if axis == "moment_ratio" else rows
+    nearest = min(candidates or rows, key=lambda r: abs(r["x"] - 1.0))
+    index = nearest["terms"][0][0]
+    parent = clean_sampling_parent(frames[index], {
+        "set_id": benchmark["id"], "set_hash": benchmark["object_hash"], "group": label,
+        "branch": key, "parent_index": index, "x_field": axis, "parent_coordinate": nearest["x"],
+        "second_axis": summary["analysis"]["second_axis"], "fixed_coordinate": nearest["second_axis"],
+        "model_hash": (model or {}).get("content_hash"), "run_id": (run or {}).get("id"),
+    })
+    parent.info["Config_type"] = "mEOS_sampling"
+    parents = [frames[r["terms"][0][0]] for r in rows]
+    if axis == "volume_ratio":
+        volumes = [frame.get_volume() / len(frame) for frame in parents]
+        low, high = min(volumes), max(volumes)
+        if low == high:
+            low, high = low * 0.99, high * 1.01
+        margin = (high - low) * 0.1
+        workflow = sampling_workflow(parent, EOSSamplingParams(low + margin, high - margin))
+    else:
+        spins = existing_moment_vectors(parent)
+        if spins is None or not np.any(np.linalg.norm(spins, axis=1) > 1e-10):
+            raise ValueError("Moment sampling requires non-zero input magnetic moments.")
+        magnitudes = np.linalg.norm(spins, axis=1)
+        targets = magnitudes > 1e-10
+        if len(parents) > 1:
+            varies = np.zeros(len(parent), dtype=bool)
+            for frame in parents:
+                moments = existing_moment_vectors(frame)
+                if moments is None or not np.array_equal(frame.numbers, parent.numbers):
+                    raise ValueError("Moment sampling needs consistent magnetic sites within the branch.")
+                varies |= ~np.isclose(np.linalg.norm(moments, axis=1), magnitudes)
+            targets &= varies
+        if not np.any(targets):
+            raise ValueError("No varying magnetic moments in this scan branch.")
+        params = LocalMagneticResponseParams(response_kind="Moment magnitude", target_mode="Explicit indices",
+                                             target_indices=",".join(str(i + 1) for i in np.flatnonzero(targets)),
+                                             moment_scale_scan="0.98,1,1.02")
+        workflow = {"workflow_schema": 2, "cards": [
+            {"class": "LocalMagneticResponseCard", "check_state": True, "params": params_to_dict(params)}]}
+    return {"name": f"{benchmark['name']} · {label}", "kind": "mEOS", "structures": [parent], "workflow": workflow}

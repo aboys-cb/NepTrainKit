@@ -188,7 +188,7 @@ class NepTrainKitMainWindow(FluentWindow):
         )
         self.addSubInterface(
             self.data_manager_interface.validation_page,
-            FluentIcon.COMPLETED,
+            QIcon(":/images/src/images/validation.svg"),
             self.tr('Model validation'),
         )
         self.addSubInterface(
@@ -221,6 +221,7 @@ class NepTrainKitMainWindow(FluentWindow):
             self.show_nep_interface.graph_widget.apply_canvas_mode
         )
         self.data_manager_interface = DataManagerWidget(self)
+        self.setting_interface.canvasModeChanged.connect(self.data_manager_interface.library_widget.apply_canvas_mode)
         self.show_nep_interface.modelRegistryChanged.connect(self.data_manager_interface._on_registry_changed)
         self.data_manager_interface.navigateRequested.connect(self.switchTo)
         self.data_manager_interface.validation_page.toolbarActionsChanged.connect(self._refresh_page_actions)

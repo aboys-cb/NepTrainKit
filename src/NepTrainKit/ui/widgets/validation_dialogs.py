@@ -8,7 +8,8 @@ from pathlib import Path
 from html import escape
 
 from PySide6.QtCore import QEvent, Qt, Slot
-from PySide6.QtWidgets import QApplication, QAbstractItemView, QBoxLayout, QFileDialog, QFormLayout, QHeaderView, QHBoxLayout, QLayout, QTableWidgetItem, QVBoxLayout, QWidget
+from PySide6.QtGui import QColor
+from PySide6.QtWidgets import QApplication, QAbstractItemView, QBoxLayout, QDialog, QFrame, QSizePolicy, QStackedWidget, QFileDialog, QFormLayout, QHeaderView, QHBoxLayout, QLayout, QTableWidgetItem, QVBoxLayout, QWidget
 from qfluentwidgets import (
     BodyLabel,
     CaptionLabel,
@@ -19,6 +20,7 @@ from qfluentwidgets import (
     LineEdit,
     MessageBoxBase,
     PushButton,
+    PrimaryPushButton,
     ScrollArea,
     SubtitleLabel,
     TableWidget,
@@ -36,6 +38,9 @@ from NepTrainKit.core.prediction_cache import find_output_groups, inspect_output
 from NepTrainKit.ui.dialogs import call_path_dialog
 from NepTrainKit.ui.messages import translate_runtime_message
 from NepTrainKit.ui.threads import BackgroundTask
+from NepTrainKit.ui.widgets.validation_group_comparison import remember_import_markers
+from NepTrainKit.ui.widgets.validation_model_picker import GroupMarkerButton, default_group_marker, group_marker_icon
+from NepTrainKit.ui.widgets.validation_presentation import file_import_choices, presentation_for
 
 
 class SaveModelDialog(MessageBoxBase):
@@ -286,7 +291,7 @@ def save_model_to_project(parent, service, draft, *, name=None):
     return dialog.save_model(draft)
 
 
-class BenchmarkImportDialog(MessageBoxBase):
+class BenchmarkImportDialog(QDialog):
     """Choose a property, preview its reference data and optionally add notes."""
 
     def __init__(self, parent=None, suites: list[dict] | tuple = (), suite_name: str = ""):
@@ -299,56 +304,80 @@ class BenchmarkImportDialog(MessageBoxBase):
         self.eos_groups = []
         self._group_error = ""
 
-        self.titleLabel = SubtitleLabel(self.tr("Import reference dataset"), self)
-        self.viewLayout.addWidget(self.titleLabel)
-        self.body_scroll = ScrollArea(self.widget)
+        self.setWindowTitle(self.tr("Import reference dataset"))
+        self.setObjectName("benchmarkImportDialog")
+        self.setStyleSheet(
+            f"#benchmarkImportDialog, #benchmarkImportBody {{ background: {palette.SURFACE_SUBTLE}; }}"
+            f"QFrame#importCard {{ background: white; border: 1px solid {palette.BORDER_STRONG}; border-radius: 9px; }}"
+            f"QFrame#importFooter {{ background: white; border-top: 1px solid {palette.BORDER}; }}"
+        )
+        root = QVBoxLayout(self)
+        root.setContentsMargins(0, 0, 0, 0)
+        root.setSpacing(0)
+        self.body_scroll = ScrollArea(self)
         self.body_scroll.setWidgetResizable(True)
+        self.body_scroll.setFrameShape(QFrame.Shape.NoFrame)
         self.body_scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
-        self.body_scroll.setStyleSheet("QScrollArea { border: none; background: transparent; }")
-        self.body_scroll.viewport().setStyleSheet("background: transparent;")
         body = QWidget()
         body.setObjectName("benchmarkImportBody")
-        body.setStyleSheet("#benchmarkImportBody { background: transparent; }")
-        columns = QBoxLayout(QBoxLayout.Direction.LeftToRight, body)
-        columns.setContentsMargins(0, 0, 12, 0)
-        columns.setSpacing(24)
-        columns.setSizeConstraint(QLayout.SizeConstraint.SetMinAndMaxSize)
-        self._columns = columns
+        body_layout = QVBoxLayout(body)
+        body_layout.setContentsMargins(14, 14, 14, 12)
+        body_layout.setSpacing(10)
+        body_layout.setSizeConstraint(QLayout.SizeConstraint.SetMinAndMaxSize)
         self.body_scroll.setWidget(body)
-        self.viewLayout.addWidget(self.body_scroll, 1)
-        self.fields_panel = QWidget(body)
-        self.preview_panel = QWidget(body)
-        fields = QVBoxLayout(self.fields_panel)
-        fields.setContentsMargins(0, 0, 0, 0)
-        fields.setSpacing(12)
-        preview = QVBoxLayout(self.preview_panel)
-        preview.setContentsMargins(0, 0, 0, 0)
-        preview.setSpacing(6)
-        self._preview_layout = preview
-        columns.addWidget(self.fields_panel, 1)
-        columns.addWidget(self.preview_panel, 1)
+        root.addWidget(self.body_scroll, 1)
 
-        fields.addWidget(BodyLabel(self.tr("1 · Choose validation type"), self))
+        def card():
+            frame = QFrame(body)
+            frame.setObjectName("importCard")
+            layout = QVBoxLayout(frame)
+            layout.setContentsMargins(14, 12, 14, 12)
+            layout.setSpacing(8)
+            return frame, layout
+
+        source_panel, source_layout = card()
+        body_layout.addWidget(source_panel)
+        self._source_row = QBoxLayout(QBoxLayout.Direction.LeftToRight)
+        self._source_row.setSpacing(12)
+        source_layout.addLayout(self._source_row)
+        self.fields_panel, fields = card()
+        self.preview_panel, preview = card()
+        self._preview_layout = preview
+        self._columns = QBoxLayout(QBoxLayout.Direction.LeftToRight)
+        self._columns.setSpacing(10)
+        self._columns.addWidget(self.fields_panel, 2)
+        self._columns.addWidget(self.preview_panel, 3)
+        body_layout.addLayout(self._columns, 1)
+        type_layout = QVBoxLayout()
+        type_layout.setSpacing(4)
+        type_layout.addWidget(BodyLabel(self.tr("Validation type"), self))
+        self._source_row.addLayout(type_layout, 2)
         self.protocol_combo = ComboBox(self)
         self.protocol_combo.addItem(self.tr("Select validation type…"), userData=None)
-        self.protocol_combo.addItem(self.tr("EOS · Energy–volume curve"), userData="eos")
-        self.protocol_combo.addItem(self.tr("Energy / force / virial errors"), userData="efv")
-        self.protocol_combo.addItem(self.tr("Reference response · scans / differences / combinations"), userData="response")
-        fields.addWidget(self.protocol_combo)
+        for kind, label in file_import_choices():
+            self.protocol_combo.addItem(self.tr(label), userData=kind)
+        self.protocol_combo.setSizePolicy(QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Fixed)
+        type_layout.addWidget(self.protocol_combo)
         self.requirements_label = CaptionLabel(self)
         self.requirements_label.setWordWrap(True)
-        fields.addWidget(self.requirements_label)
-        fields.addWidget(BodyLabel(self.tr("2 · Load reference structures"), self))
 
         file_row = QWidget(self)
         file_layout = QHBoxLayout(file_row)
         file_layout.setContentsMargins(0, 0, 0, 0)
         self.path_edit = LineEdit(file_row)
         self.path_edit.setPlaceholderText(self.tr("Labelled EXTXYZ file"))
-        self.path_edit.editingFinished.connect(lambda: self.load_file(self.path_edit.text()))
+        self.file_picker = QStackedWidget(file_row)
+        self.file_picker.addWidget(self.path_edit)
+        self.file_name = PushButton("", file_row)
+        self.file_name.setAutoDefault(False)
+        self.file_name.setSizePolicy(QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Fixed)
+        self.file_name.setStyleSheet(f"PushButton {{ text-align: left; padding: 0 10px; background: {palette.SURFACE}; color: {palette.TEXT_PRIMARY}; border: 1px solid {palette.BORDER}; border-radius: 5px; }}")
+        self.file_name.clicked.connect(self._edit_path)
+        self.file_picker.addWidget(self.file_name)
+        self.path_edit.editingFinished.connect(self._finish_path_edit)
         self.browse_button = PushButton(self.tr("Browse..."), file_row)
         self.browse_button.clicked.connect(self._browse)
-        file_layout.addWidget(self.path_edit, 1)
+        file_layout.addWidget(self.file_picker, 1)
         file_layout.addWidget(self.browse_button)
 
         self.name_edit = LineEdit(self)
@@ -360,7 +389,16 @@ class BenchmarkImportDialog(MessageBoxBase):
 
         form = QFormLayout()
         form.setRowWrapPolicy(QFormLayout.RowWrapPolicy.WrapLongRows)
-        form.addRow(BodyLabel(self.tr("File"), self), file_row)
+        source_file = QVBoxLayout()
+        source_file.setSpacing(4)
+        source_file.addWidget(BodyLabel(self.tr("Reference file"), self))
+        source_file.addWidget(file_row)
+        self._source_row.addLayout(source_file, 3)
+        fields.addWidget(BodyLabel(self.tr("Import settings"), self))
+        form.setHorizontalSpacing(10)
+        form.setVerticalSpacing(8)
+        form.addRow(self.tr("Suite"), self.suite_combo)
+        form.addRow(self.tr("Name"), self.name_edit)
         self.group_field_combo = ComboBox(self)
         self.group_field_label = BodyLabel(self.tr("Group by field"), self)
         form.addRow(self.group_field_label, self.group_field_combo)
@@ -370,18 +408,23 @@ class BenchmarkImportDialog(MessageBoxBase):
             "Every structure must have the chosen field. Each group must be one structure / magnetic branch. If the file contains only one scan, choose Single scan · whole file."
         ), self)
         self.group_hint.setWordWrap(True)
-        form.addRow(self.group_hint)
-        form.addRow(BodyLabel(self.tr("Name"), self), self.name_edit)
+        self.help_button = TransparentPushButton(FluentIcon.INFO, self.tr("Data requirements"), self)
+        self.help_button.setCheckable(True)
+        self.help_button.setAutoDefault(False)
+        self._source_row.addWidget(self.help_button, 0, Qt.AlignmentFlag.AlignBottom)
+        self.help_panel = QWidget(source_panel)
+        help_layout = QVBoxLayout(self.help_panel)
+        help_layout.setContentsMargins(0, 4, 0, 0)
+        help_layout.addWidget(self.requirements_label)
+        help_layout.addWidget(self.group_hint)
+        self.help_panel.hide()
+        self.help_button.toggled.connect(self.help_panel.setVisible)
+        source_layout.addWidget(self.help_panel)
         fields.addLayout(form)
         from .reference_analysis import ReferenceAnalysisEditor
         self.analysis_editor = ReferenceAnalysisEditor(self)
         fields.addWidget(self.analysis_editor)
         self.analysis_editor.hide()
-        fields.addWidget(BodyLabel(self.tr("3 · Add to a fixed validation plan"), self))
-        fields.addWidget(self.suite_combo)
-        plan_hint = CaptionLabel(self.tr("Future model versions reuse this reference dataset. Importing does not change the baseline model."), self)
-        plan_hint.setWordWrap(True)
-        fields.addWidget(plan_hint)
         self.supplementary_button = TransparentPushButton(
             FluentIcon.CARE_RIGHT_SOLID, self.tr("Supplementary information (optional)"), self
         )
@@ -397,10 +440,15 @@ class BenchmarkImportDialog(MessageBoxBase):
         fields.addWidget(self.supplementary_panel)
         self.supplementary_panel.hide()
         self.supplementary_button.toggled.connect(self._toggle_supplementary)
-        fields.addStretch(1)
 
         self.preview_title = BodyLabel(self.tr("Reference curve preview"), self)
-        preview.addWidget(self.preview_title)
+        preview_header = QHBoxLayout()
+        self.preview_title.setStyleSheet(f"font-size: 16px; font-weight: 600; color: {palette.TEXT_PRIMARY};")
+        preview_header.addWidget(self.preview_title, 1)
+        self.preview_marker = GroupMarkerButton("o", self)
+        self.preview_marker.markerChanged.connect(self._change_preview_marker)
+        preview_header.addWidget(self.preview_marker)
+        preview.addLayout(preview_header)
         self.group_table = TableWidget(self)
         self.group_table.setColumnCount(4)
         self.group_table.setHorizontalHeaderLabels([
@@ -415,35 +463,43 @@ class BenchmarkImportDialog(MessageBoxBase):
         self.group_table.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeMode.Stretch)
         self.group_table.horizontalHeader().setSectionResizeMode(2, QHeaderView.ResizeMode.Interactive)
         self.group_table.setColumnWidth(2, 136)
-        self.group_table.setFixedHeight(138)
-        preview.addWidget(self.group_table)
+        self.group_table.setColumnHidden(2, True)
+        self.group_table.setTextElideMode(Qt.TextElideMode.ElideMiddle)
+        self.group_table.setMinimumHeight(148)
+        fields.addWidget(self.group_table, 1)
         self.overlay_groups = CheckBox(self.tr("Overlay checked groups (no energy shifts)"), self)
-        preview.addWidget(self.overlay_groups)
+        fields.addWidget(self.overlay_groups)
+        fields.addStretch(0)
         self.preview_summary = CaptionLabel(self)
         self.preview_summary.setWordWrap(True)
+        self.preview_summary.setStyleSheet(f"font-size: 13px; color: {palette.TEXT_SECONDARY};")
+        self.preview_plot = None
+        self.preview_layout = preview
         preview.addWidget(self.preview_summary)
-        import NepTrainKit.ui.canvas.pyqtgraph  # noqa: F401 - shared plot configuration
-        import pyqtgraph as pg
-        self.preview_plot = pg.PlotWidget(self)
-        self.preview_legend = self.preview_plot.addLegend(offset=(-10, 10))
-        self.preview_plot.setMinimumHeight(260)
-        self.preview_plot.viewport().installEventFilter(self)
-        self.preview_plot.showGrid(x=True, y=True, alpha=0.2)
-        preview.addWidget(self.preview_plot, 1)
 
         self.issues_label = CaptionLabel(self)
         self.issues_label.setWordWrap(True)
         preview.addWidget(self.issues_label)
-        preview.addStretch(0)
-        self.status_label = CaptionLabel(self)
+        footer = QFrame(self)
+        footer.setObjectName("importFooter")
+        actions = QHBoxLayout(footer)
+        actions.setContentsMargins(16, 9, 16, 9)
+        actions.setSpacing(8)
+        root.addWidget(footer)
+        self.cancelButton = PushButton(self.tr("Cancel"), footer)
+        self.cancelButton.setAutoDefault(False)
+        self.cancelButton.clicked.connect(self.reject)
+        self.yesButton = PrimaryPushButton(self.tr("Import"), footer)
+        self.yesButton.setDefault(True)
+        self.yesButton.clicked.connect(self.accept)
+        self.status_label = CaptionLabel(footer)
         self.status_label.setWordWrap(True)
         self.status_label.setStyleSheet(f"color:{palette.TEXT_SECONDARY};")
-        self.viewLayout.addWidget(self.status_label)
-
+        actions.addWidget(self.status_label, 1)
+        actions.addWidget(self.cancelButton)
+        actions.addWidget(self.yesButton)
+        self.yesButton.setMinimumWidth(92)
         self.name_edit.textChanged.connect(self._validate)
-
-        self.yesButton.setText(self.tr("Save reference dataset"))
-        self.cancelButton.setText(self.tr("Cancel"))
         for control in (
             self.protocol_combo, self.path_edit, self.browse_button,
             self.group_field_combo, self.name_edit, self.notes_edit,
@@ -460,42 +516,47 @@ class BenchmarkImportDialog(MessageBoxBase):
         self.overlay_groups.stateChanged.connect(self._update_preview)
         self._populate_group_fields()
         self._protocol_changed()
-        parent.installEventFilter(self)
-        self._fit_to_parent()
+        screen = self.screen().availableGeometry()
+        width = min(1100, (parent.width() if parent and parent.isVisible() else screen.width()) - 32, screen.width() - 32)
+        self.resize(max(320, width), min(720, screen.height() - 72))
 
     def _toggle_supplementary(self, expanded: bool):
         self.supplementary_panel.setVisible(expanded)
         self.supplementary_button.setIcon(FluentIcon.CARE_DOWN_SOLID if expanded else FluentIcon.CARE_RIGHT_SOLID)
 
-    def _fit_to_parent(self):
-        """Scroll the body instead of squeezing fields into the host window."""
-        parent = self.parentWidget()
-        self.resize(parent.size())
-        width = min(1120, max(0, parent.width() - 32))
-        height = min(840, max(0, parent.height() - 32))
-        self._columns.setDirection(
-            QBoxLayout.Direction.LeftToRight if width >= 1040
-            else QBoxLayout.Direction.TopToBottom
-        )
-        self.widget.setFixedSize(width, height)
+    def resizeEvent(self, event):
+        super().resizeEvent(event)
+        narrow = self.width() < 880
+        self._columns.setDirection(QBoxLayout.Direction.TopToBottom if narrow else QBoxLayout.Direction.LeftToRight)
+        self._source_row.setDirection(QBoxLayout.Direction.TopToBottom if self.width() < 680 else QBoxLayout.Direction.LeftToRight)
+        self.group_table.setMaximumHeight(190 if narrow else 16777215)
+
+    def accept(self):
+        if self.validate():
+            super().accept()
 
     def eventFilter(self, obj, event):
-        if event.type() == QEvent.Type.Wheel and obj is self.preview_plot.viewport():
+        if event.type() == QEvent.Type.Wheel and self.preview_plot is not None and obj is self.preview_plot.viewport():
             pixels = event.pixelDelta()
             if pixels.isNull():
                 QApplication.sendEvent(self.body_scroll.viewport(), event)
             else:
                 bar = self.body_scroll.verticalScrollBar(); bar.setValue(bar.value() - pixels.y())
             return True
-        if obj is self.parentWidget() and event.type() == QEvent.Type.Resize and hasattr(self, "body_scroll"):
-            self._fit_to_parent()
         return super().eventFilter(obj, event)
 
-    def showEvent(self, event):
-        self._fit_to_parent()
-        super().showEvent(event)
-
     # -- file and protocol ----------------------------------------------------
+    def _edit_path(self):
+        self.file_picker.setCurrentWidget(self.path_edit)
+        self.path_edit.setFocus()
+        self.path_edit.selectAll()
+
+    def _finish_path_edit(self):
+        if self._loaded_bytes is None:
+            self.load_file(self.path_edit.text())
+        else:
+            self.file_picker.setCurrentWidget(self.file_name)
+
     def _browse(self) -> None:
         path = call_path_dialog(
             self, self.tr("Select benchmark set"), "select", file_filter="EXTXYZ (*.xyz *.extxyz);;All files (*)"
@@ -514,6 +575,9 @@ class BenchmarkImportDialog(MessageBoxBase):
                 data = Path(path).expanduser().read_bytes()
                 self.frames = read_frames(data)
                 self._loaded_bytes = data
+                self.file_name.setText(Path(path).name)
+                self.file_name.setToolTip(path)
+                self.file_picker.setCurrentWidget(self.file_name)
             except Exception as error:  # noqa: BLE001 - any parse failure blocks the import
                 self._read_error = str(error) or type(error).__name__
             else:
@@ -532,6 +596,7 @@ class BenchmarkImportDialog(MessageBoxBase):
 
     def _invalidate_file(self, *_args):
         self.frames, self._loaded_bytes, self._read_error = None, None, ""
+        self.file_picker.setCurrentWidget(self.path_edit)
         self._populate_group_fields()
         self._check_protocol()
 
@@ -542,12 +607,16 @@ class BenchmarkImportDialog(MessageBoxBase):
         self.group_field_combo.addItem(self.tr("Single scan · whole file"), userData="")
         for field in eos_group_fields(self.frames or []):
             self.group_field_combo.addItem(field, userData=field)
+        explicit = self.group_field_combo.findData(presentation_for("eos").source_group)
+        if explicit >= 0:
+            self.group_field_combo.setCurrentIndex(explicit)
         self.group_field_combo.blockSignals(False)
 
     def _protocol_changed(self, *_args):
         kind = self.protocol_combo.currentData()
         self.path_edit.setEnabled(bool(kind))
         self.browse_button.setEnabled(bool(kind))
+        self.group_table.setColumnHidden(2, kind == "eos")
         self.group_field_label.setVisible(kind == "eos")
         self.group_field_combo.setVisible(kind == "eos")
         self.group_hint.setVisible(kind == "eos")
@@ -587,15 +656,19 @@ class BenchmarkImportDialog(MessageBoxBase):
                     except ValueError as error:
                         self._group_error = str(error)
                     else:
-                        for key, indices in groups.items():
+                        for index, (key, indices) in enumerate(groups.items()):
                             frames = [self.frames[i] for i in indices]
                             issues = protocol.check(frames)
                             summary = None if any(i.level == "error" for i in issues) else protocol.summarize_reference(frames)
                             self.eos_groups.append(dict(key=key, indices=indices, issues=issues,
-                                                        summary=summary, include=True))
+                                                        summary=summary, include=True, marker=default_group_marker(index)))
                         self.group_table.setRowCount(len(self.eos_groups))
                         for row, group in enumerate(self.eos_groups):
-                            name = QTableWidgetItem(group["key"] or self.tr("Whole file"))
+                            title, _ = presentation_for("eos").group_title(group["key"], (group["summary"] or {}).get("formula"))
+                            name = QTableWidgetItem(title.replace(" · ", "\n", 1) or self.tr("Whole file"))
+                            self.group_table.setRowHeight(row, 44 if "\n" in name.text() else 32)
+                            name.setIcon(group_marker_icon(group["marker"]))
+                            name.setToolTip(group["key"])
                             name.setFlags(name.flags() | Qt.ItemFlag.ItemIsUserCheckable)
                             name.setCheckState(Qt.CheckState.Checked)
                             self.group_table.setItem(row, 0, name)
@@ -619,12 +692,16 @@ class BenchmarkImportDialog(MessageBoxBase):
     def _set_group_status(self, row):
         group = self.eos_groups[row]
         if not group["include"]:
-            text = self.tr("Excluded")
+            text, color = self.tr("Excluded"), palette.TEXT_MUTED
         elif group["summary"] is None:
-            text = self.tr("Error")
+            text, color = self.tr("Error"), palette.DANGER
+        elif group["issues"]:
+            text, color = self.tr("Ready · warning"), palette.WARNING_STRONG
         else:
-            text = self.tr("Ready · warning") if group["issues"] else self.tr("Checks passed")
-        self.group_table.setItem(row, 3, QTableWidgetItem(text))
+            text, color = self.tr("Checks passed"), palette.SUCCESS
+        status = QTableWidgetItem(text)
+        status.setForeground(QColor(color))
+        self.group_table.setItem(row, 3, status)
 
     def _include_group(self, item):
         if item.column() != 0:
@@ -647,16 +724,44 @@ class BenchmarkImportDialog(MessageBoxBase):
             lines.append(self.tr("Reference data checks passed."))
         self.issues_label.setText("<br>".join(lines))
 
+    def _change_preview_marker(self, symbol):
+        row = self.group_table.currentRow()
+        if 0 <= row < len(self.eos_groups):
+            group = self.eos_groups[row]
+            group["marker"] = symbol
+            group["marker_edited"] = True
+            self.group_table.blockSignals(True)
+            self.group_table.item(row, 0).setIcon(group_marker_icon(symbol))
+            self.group_table.blockSignals(False)
+            self._update_preview()
+
     def _update_preview(self, *_args):
-        self.preview_plot.clear()
-        self.preview_legend.clear()
         self.reference_summary = None
         protocol = self.current_protocol()
         is_eos = protocol is not None and protocol.kind == "eos"
         is_response = protocol is not None and protocol.kind == "response"
-        self.preview_plot.setVisible(is_eos or is_response)
+        if self.preview_plot is None or self._response_canvas != is_response:
+            if self.preview_plot is not None:
+                self.preview_layout.removeWidget(self.preview_plot)
+                self.preview_plot.hide()
+                self.preview_plot.deleteLater()
+            self._response_canvas = is_response
+            if is_response:
+                import NepTrainKit.ui.canvas.pyqtgraph
+                import pyqtgraph as pg
+                self.preview_plot = pg.PlotWidget(self)
+                self.preview_plot.addLegend(offset=(-10, 10))
+                self.preview_plot.showGrid(x=True, y=True, alpha=.2)
+            else:
+                from NepTrainKit.ui.canvas.curve_factory import create_curve_plot
+                self.preview_plot = create_curve_plot(self)
+            self.preview_plot.setMinimumHeight(260)
+            self.preview_plot.viewport().installEventFilter(self)
+            self.preview_layout.insertWidget(self.preview_layout.indexOf(self.preview_summary), self.preview_plot, 1)
+        if hasattr(self.preview_plot, "point_hover"):
+            self.preview_plot.point_hover.hide()
+        self.preview_plot.clear()
         self.preview_plot.setMaximumHeight(320 if is_response else 16777215)
-        self._preview_layout.setStretch(self._preview_layout.count() - 1, 0 if is_eos or is_response else 1)
         self.preview_summary.setText(self.tr("Load a reference file to inspect its data before saving."))
         self.preview_title.setText(self.tr("Reference curve") if is_eos else self.tr("Reference data preview"))
         group = None
@@ -667,31 +772,17 @@ class BenchmarkImportDialog(MessageBoxBase):
             self.reference_summary = group["summary"] if group else None
         elif protocol is not None and self.frames is not None and not any(i.level == "error" for i in self.issues):
             self.reference_summary = protocol.summarize_reference(self.frames)
+        self.preview_marker.setVisible(bool(is_eos and group and group["summary"]))
+        if group:
+            self.preview_marker.set_marker(group["marker"])
         self._show_issues()
         summary = self.reference_summary
+        self.preview_plot.setVisible(summary is not None and (is_eos or is_response))
         if summary is None:
             return
-        if protocol.kind == "eos":
-            import pyqtgraph as pg
-            volumes = summary["volumes"]
-            self.preview_plot.setLabel("bottom", self.tr("Volume (Å³/atom)"))
-            self.preview_plot.setLabel("left", self.tr("Energy (eV/atom)"))
-            plotted = [g for g in self.eos_groups if g["include"] and g["summary"]] if self.overlay_groups.isChecked() else [group]
-            for index, entry in enumerate(plotted):
-                curve = entry["summary"]
-                color = (palette.PLOT_MARKER_EDGE, palette.PLOT_SELECTED, palette.PLOT_CURRENT)[index % 3]
-                self.preview_plot.plot(curve["volumes"], curve["energies"], pen=pg.mkPen(color, width=2),
-                                       symbol="o", symbolBrush=color, symbolSize=7,
-                                       name=entry["key"] or self.tr("Whole file"))
-            text = self.tr("{formula} · {count} structures\nVolume: {low:.3f}–{high:.3f} Å³/atom").format(
-                formula=summary["formula"], count=len(group["indices"]), low=volumes[0], high=volumes[-1])
-            if group["key"]:
-                text = self.tr("Group: {name}").format(name=group["key"]) + "\n" + text
-            fit = summary["fit"]
-            if "v0" in fit:
-                text += "\n" + self.tr("Reference fit: V₀ = {v0:.3f} Å³/atom · B₀ = {b0:.2f} GPa").format(v0=fit["v0"], b0=fit["b0_gpa"])
-            else:
-                text += "\n" + self.tr("Fit unavailable: compare the E–V curve only; V₀/B₀ will not be compared.")
+        preview = presentation_for(protocol.kind).draw_import_preview
+        if preview:
+            text = preview(self, summary, group)
         elif protocol.kind == "response":
             import pyqtgraph as pg
             self.preview_title.setText(self.tr("Reference response preview"))
@@ -832,4 +923,11 @@ class BenchmarkImportDialog(MessageBoxBase):
                 service.create_suite(values["suite"], [record["id"] for record in records])
             else:
                 service.add_to_suite(suite["id"], [record["id"] for record in records])
+        if values["protocol"] == "eos":
+            groups = {g["key"]: g for g in self.eos_groups if g["include"]}
+            assignments = []
+            for record in records:
+                group = groups[(record["source_ref"].get("eos_group") or {}).get("value", "")]
+                assignments.append((record["id"], group["marker"], group.get("marker_edited", False)))
+            remember_import_markers(service.library.root, assignments)
         return records

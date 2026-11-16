@@ -498,8 +498,9 @@ class MakeDataWidget(QWidget):
         cards = self._normalise_card_config_payload(payload["workflow"])
         self.dataset = [atoms.copy() for atoms in payload["structures"]]
         self._add_card_configs(cards, notify=False)
+        title = self.tr("mEOS sampling · {name}") if payload.get("kind") == "mEOS" else self.tr("EOS sampling · {name}")
         self._set_active_workflow(None, dirty=True,
-                                  display_name=self.tr("EOS sampling · {name}").format(name=payload["name"]))
+                                  display_name=title.format(name=payload["name"]))
         self.dataset_info_label.setText(self.tr("Success load {count} structures.").format(count=len(self.dataset)))
         self._refresh_input_count_previews()
         if payload.get("eos_context"):

@@ -17,6 +17,7 @@ from NepTrainKit.core.validation.protocols import get_protocol
 from NepTrainKit.core.validation.sampling import (
     EOSSamplingParams,
     clean_sampling_parent,
+    magnetic_sampling_payload,
     reference_overlaps,
     sampling_payload,
     sampling_volumes,
@@ -49,6 +50,27 @@ def labelled_frames():
         atoms.set_array("forces", np.ones((2, 3)))
         atoms.set_array("force_mag", np.ones((2, 3)))
     return frames
+
+
+def test_magnetic_sampling_keeps_fixed_sites_and_uses_selected_slice():
+    frames = labelled_frames()[:3]
+    ratios = [1.0, 0.8, 1.1]
+    for atoms, ratio in zip(frames, ratios):
+        atoms.arrays["spin"][0, 2] *= ratio
+        atoms.set_array("spin_active", np.array([True, True]))
+    record = dict(source(), summary={
+        "analysis": {"x_field": "moment_ratio", "second_axis": "volume_ratio"},
+        "rows": [dict(x=x, second_axis=0.95, terms=[[i, 1], [0, -1]]) for i, x in enumerate(ratios)],
+    })
+    data = magnetic_sampling_payload(frames, record, ("eos-set/1", "slice 2", [1, 2]))
+    parent, = data["structures"]
+    provenance = parent.info["sampling_source"]
+    assert provenance["parent_index"] == 2 and provenance["fixed_coordinate"] == 0.95
+    assert "forces" not in parent.arrays
+    np.testing.assert_array_equal(parent.arrays["spin_active"], [True, True])
+    card, = data["workflow"]["cards"]
+    assert card["class"] == "LocalMagneticResponseCard"
+    assert card["params"]["target_indices"] == "1"
 
 
 def test_nonorthogonal_geometry_labels_and_atomic_export(tmp_path):

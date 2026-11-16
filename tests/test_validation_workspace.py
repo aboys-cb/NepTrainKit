@@ -83,13 +83,19 @@ def test_workspace_separates_navigation_checks_and_model_selection(scored):
     w.open_scorecard(scored.suite["id"], scored.new["id"])
     w.show()
     QApplication.processEvents()
-    assert w.pages.currentWidget() is w.detail_scroll
+    assert w.pages.currentWidget() is w.result_page
     assert w.checked_ids == set() and w.selected_benchmarks() == []
     volume = w.topic_picker.findData(group["id"])
-    w.topic_picker.setCurrentIndex(volume)
-    assert w.pages.currentWidget() is w.detail_scroll and len(w.visible_items()) == 1
+    assert w.topic_chips.isVisible()
+    w.topic_flow.itemAt(volume).widget().click()
+    assert w.topic_picker.currentData() == group["id"]
+    assert w.pages.currentWidget() is w.result_page and len(w.visible_items()) == 1
     w.check_visible()
     assert w.checked_ids == {scored.eos["id"]}
+    w.sidebar_search.setText("no matching item")
+    assert w.empty_items.isVisible() and w.checked_ids == {scored.eos["id"]}
+    w.sidebar_search.clear()
+    assert w.sidebar_item_list.isVisible() and w._focused_reference == scored.eos["id"]
     w.topic_picker.setCurrentIndex(w.topic_picker.count() - 1)
     w.check_visible()
     assert w.checked_ids == {scored.eos["id"], scored.efv["id"]}
@@ -97,11 +103,14 @@ def test_workspace_separates_navigation_checks_and_model_selection(scored):
     w.topic_picker.setCurrentIndex(volume)
     w.open_item(scored.eos["id"])
     assert w.checked_ids == before and len(w.detail.eos_plots) == 1
-    assert w.pages.currentWidget() is w.detail_scroll
+    assert w.pages.currentWidget() is w.result_page
     w.comparison_picker.set_selected_ids([scored.old["id"]])
     assert len(w.run_jobs(model_ids=w.selected_model_ids())) == 4
     w.clear_checks()
     assert not w.run_selected_button.isEnabled()
+    service.create_group(scored.suite["id"], "Long topic name " * 8)
+    w.refresh()
+    assert w.topic_picker.isVisible() and not w.topic_chips.isVisible()
     w.close()
     w.deleteLater()
 
@@ -146,7 +155,6 @@ def test_workspace_overview_does_not_load_curves_and_primary_switch_keeps_target
     w = ValidationWorkspace(service=scored.service)
     w.open_scorecard(scored.suite["id"], scored.new["id"])
     with patch.object(scored.service, "run_details", side_effect=AssertionError("Overview must not load curve files")):
-        w.show_page("overview")
         w.show_page("items")
     before = set(w.selected_model_ids())
     w.model_combo.setCurrentIndex(w.model_combo.findData(scored.old["id"]))
@@ -162,7 +170,7 @@ def test_workspace_diagnostic_editor_is_not_hidden_behind_overview(scored):
     w = ValidationWorkspace(service=scored.service)
     w.open_scorecard(scored.suite["id"], scored.new["id"])
     w.show_diagnostic_editor()
-    assert w.pages.currentWidget() is w.detail_scroll
+    assert w.pages.currentWidget() is w.result_page
     assert not w.editor_scroll.isHidden()
     w.close()
     w.deleteLater()
@@ -229,7 +237,7 @@ def test_workspace_edit_saves_new_version_and_preserves_other_suite(scored, monk
     w.deleteLater()
 
 
-def test_topic_navigation_clears_management_selection_but_keeps_checks(scored):
+def test_topic_navigation_focuses_visible_item_and_keeps_checks(scored):
     from NepTrainKit.ui.views.validation_workspace import ValidationWorkspace
 
     service = scored.service
@@ -313,17 +321,244 @@ def test_clicking_compare_and_run_cells_has_independent_effects(scored):
     w.resize(800, 650)
     QApplication.processEvents()
     assert navigator.isVisible() and w.detail.plot_pane.isVisible()
-    w.pane_button.click()
-    assert w.detail.inspector_panel.isVisible() and not w.detail.plot_pane.isVisible()
+    assert not w.matrix_card.isVisible() and not w.detail.inspector_panel.isVisible()
+    assert not w.metrics_button.isVisible()
+    assert list(w.page_widgets) == ["result", "items", "gallery"]
     w.show_page("items")
-    assert w.item_table.isVisible()
+    assert w.item_table.isVisible() and not w.detail_scroll.isVisible()
     assert w.item_table.item(1, w.check_column).checkState() == Qt.CheckState.Checked
-    w.resize(1360, 860)
-    QApplication.processEvents()
+    cell = w.item_table.item(0, 0)
+    QTest.mouseClick(w.item_table.viewport(), Qt.MouseButton.LeftButton, pos=w.item_table.visualItemRect(cell).center())
     assert w.item_table.isVisible()
-    w.show_page("result")
-    assert w.detail.plot_pane.isVisible() and w.detail.inspector_panel.isVisible()
+    w.resize(1360, 820)
+    QApplication.processEvents()
+    QTest.mouseClick(w.view_picker.items["gallery"], Qt.MouseButton.LeftButton)
+    from test_validation_ui import _wait_until
+    assert _wait_until(lambda: w.gallery.loaded == {0, 1})
+    assert not w.item_table.isVisible() and not w.detail_scroll.isVisible()
+    QTest.mouseClick(w.gallery.viewport(), Qt.MouseButton.LeftButton,
+                     pos=w.gallery.visualItemRect(w.gallery.item(0)).center())
+    assert w.detail_scroll.isVisible() and w.detail._args[0]["id"] == scored.eos["id"]
     assert w.checked_ids == {scored.efv["id"]}
+    w.close()
+    w.deleteLater()
+
+
+def test_double_click_runs_only_missing_models_for_one_item(scored):
+    from PySide6.QtTest import QTest
+    from NepTrainKit.ui.views.validation_workspace import ValidationWorkspace
+    from test_validation_ui import _wait_until
+
+    w = ValidationWorkspace(service=scored.service)
+    w.open_scorecard(scored.suite["id"], scored.fresh["id"])
+    w.show()
+    QApplication.processEvents()
+    nav = w.sidebar_item_list
+    nav.item(1, 1).setCheckState(Qt.CheckState.Checked)
+    pos = nav.visualItemRect(nav.item(0, 0)).center()
+    with patch.object(scored.service, "evaluate", wraps=scored.service.evaluate) as evaluate:
+        QTest.mouseClick(nav.viewport(), Qt.MouseButton.LeftButton, pos=pos)
+        QTest.mouseDClick(nav.viewport(), Qt.MouseButton.LeftButton, pos=pos)
+        assert _wait_until(lambda: evaluate.called and w._run_task is None)
+        evaluate.assert_called_once_with(scored.fresh["id"], scored.eos["id"])
+        assert w.checked_ids == {scored.efv["id"]}
+        QTest.mouseClick(nav.viewport(), Qt.MouseButton.LeftButton, pos=pos)
+        QTest.mouseDClick(nav.viewport(), Qt.MouseButton.LeftButton, pos=pos)
+        assert w._run_task is None and evaluate.call_count == 1
+    w.close()
+    w.deleteLater()
+
+
+def test_eos_residual_and_source_group_switch_preserve_scope(scored, tmp_path, monkeypatch):
+    import numpy as np
+    from qfluentwidgets import ComboBox
+    from test_validation_framework import write_xyz
+    from NepTrainKit.ui.views.validation_workspace import ValidationWorkspace
+
+    # The hover probe below maps a QPointF through PyQtGraph's scene.
+    monkeypatch.setattr("NepTrainKit.ui.canvas.curve_factory._normalize_canvas_type", lambda _: "pyqtgraph")
+    groups = [eos_frames(), eos_frames(curvature=0.8)]
+    for frames, label in zip(groups, ("first", "second")):
+        for frame in frames:
+            frame.info["scan_id"] = label
+    path = write_xyz(tmp_path / "both.xyz", groups[0] + groups[1])
+    records = scored.service.import_eos_groups(path, name="scan", provenance={}, group_field="scan_id",
+                                              group_names=["first", "second"])
+    suite = scored.service.create_suite("two branches", [r["id"] for r in records] + [scored.eos["id"]])
+    scored.service.run_suite(scored.new["id"], suite["id"])
+    w = ValidationWorkspace(service=scored.service)
+    w.open_scorecard(suite["id"], scored.new["id"])
+    w.show()
+    w.sidebar_item_list.item(0, 1).setCheckState(Qt.CheckState.Checked)
+    from qfluentwidgets import TransparentToolButton
+    first, second = (r["id"] for r in records)
+    panel = w.detail
+    assert len(panel.eos_plots) == 1
+    for width, height in ((1050, 700), (1360, 820)):
+        w.resize(width, height)
+        QApplication.processEvents()
+        assert panel.eos_cards[0].size() == panel.grid_scroll.viewport().size()
+        assert panel.grid_scroll.verticalScrollBar().maximum() == 0
+    w.add_eos_groups.click()
+    picker = w.groups.dialog
+    assert picker.isVisible() and not picker.isModal()
+    assert w.item_table.item(0, 0).text() == w.sidebar_item_list.item(0, 0).text()
+    assert not w.item_table.item(0, 0).icon().isNull()
+    assert set(picker.buttons) == {first, second}
+    picker.search.setText("SECOND")
+    assert picker.row_widgets[0].isHidden() and not picker.row_widgets[1].isHidden()
+    picker.buttons[second]["compare"].click()
+    assert len(panel.eos_plots) == 2 and w.eos_grid_mode.isVisible()
+    from NepTrainKit.ui.widgets.validation_model_picker import GroupMarkerButton
+    from PySide6.QtGui import QColor
+    assert w.groups.markers[first] != w.groups.markers[second]
+    marker = picker.marker_buttons[second]
+    marker.menu().aboutToShow.emit()
+    next(action for action in marker.menu().actions() if action.data() == "d").trigger()
+    assert panel.eos_cards[1].findChild(GroupMarkerButton).symbol == "d"
+    assert {curve.opts["symbol"] for curve in panel.eos_plots[1].listDataItems()} == {"d"}
+    color = QColor("#893acd")
+    w._set_model_color(scored.new["id"], color)
+    curve = panel.eos_plots[1].listDataItems()[-1]
+    assert curve.opts["pen"].color() == color and curve.opts["symbol"] == "d"
+    separate = [c for plot in panel.eos_plots for c in plot.listDataItems()]
+    expected = [(c.xData.copy(), c.yData.copy()) for c in separate]
+    from PySide6.QtTest import QTest
+    picker.done_button.click()
+    w.activateWindow()
+    assert not w.eos_layout.isChecked()
+    QTest.mouseClick(w.eos_layout, Qt.MouseButton.LeftButton)
+    assert w.eos_layout.isChecked()
+    QApplication.processEvents()
+    merged, = panel.eos_plots
+    assert panel.eos_cards[0].size() == panel.grid_scroll.viewport().size()
+    assert len(merged.listDataItems()) == len(expected) == 4
+    for curve, (x, y) in zip(merged.listDataItems(), expected):
+        np.testing.assert_array_equal(curve.xData, x)
+        np.testing.assert_array_equal(curve.yData, y)
+    from PySide6.QtCore import QEvent, QPointF
+    curve = merged.listDataItems()[1]
+    volume, energy = curve.xData[2], curve.yData[2]
+    point = merged.mapFromScene(merged.getViewBox().mapViewToScene(QPointF(volume, energy)))
+    from PySide6.QtGui import QMouseEvent
+    viewport = merged.viewport()
+    QApplication.sendEvent(viewport, QMouseEvent(QEvent.Type.MouseMove, QPointF(point),
+                           QPointF(viewport.mapToGlobal(point)), Qt.MouseButton.NoButton,
+                           Qt.MouseButton.NoButton, Qt.KeyboardModifier.NoModifier))
+    hover = merged.point_hover
+    assert hover.isVisible() and f"{volume:.4f}" in hover.text() and f"{energy:.6g}" in hover.text()
+    assert "●" in hover.text() and "◆" in hover.text() and "#893acd" in hover.text()
+    assert all(label not in hover.text() for label in ("first", "second", "Reference", "Inbox", "new"))
+    QApplication.sendEvent(merged.viewport(), QEvent(QEvent.Type.Leave))
+    assert not hover.isVisible()
+    w.groups.set_marker(second, "s")
+    assert [c.opts["symbol"] for c in merged.listDataItems()] == [w.groups.markers[first]] * 2 + ["s"] * 2
+    w.groups.set_marker(second, "d")
+    panel.set_series_visible(scored.new["id"], False)
+    assert [c.isVisible() for c in merged.listDataItems()] == [True, False, True, False]
+    panel.set_series_visible(scored.new["id"], True)
+    QTest.mouseClick(w.eos_grid_mode, Qt.MouseButton.LeftButton)
+    residuals = panel.eos_plots[0].listDataItems()
+    assert len(residuals) == 2
+    residual_plot = panel.eos_plots[0]
+    assert all(c.opts["pen"].isCosmetic() for c in residuals)
+    panel.set_series_visible(scored.new["id"], False)
+    QApplication.processEvents()
+    assert not residual_plot.residual_placeholder.isHidden() and residual_plot.isHidden()
+    panel.set_series_visible(scored.new["id"], True)
+    assert not residual_plot.isHidden() and residual_plot.residual_placeholder.isHidden()
+    for curve, (_, _, entries) in zip(residuals, panel._groups):
+        details = entries[0][3]
+        delta = np.subtract(details["predicted"], details["reference"])
+        np.testing.assert_allclose(curve.yData, (delta - delta.mean()) * 1000)
+    for width, height in ((1050, 700), (1360, 820)):
+        w.resize(width, height)
+        QApplication.processEvents()
+        card, = panel.eos_cards
+        assert card.size() == panel.grid_scroll.viewport().size()
+        assert card.window() == w and w.sidebar_item_list.isVisible()
+        assert panel.grid_scroll.verticalScrollBar().maximum() == 0
+    assert w.checked_ids == {first} and w._focused_reference == first
+    QTest.mouseClick(w.eos_grid_mode, Qt.MouseButton.LeftButton)
+    QTest.mouseClick(w.eos_layout, Qt.MouseButton.LeftButton)
+    assert not w.eos_layout.isChecked() and len(panel.eos_plots) == 2
+    w.add_eos_groups.click()
+    picker.buttons[second]["current"].click()
+    assert w._focused_reference == second and picker.buttons[first]["compare"].isChecked()
+    picker.done_button.click()
+    panel.eos_cards[0].findChild(TransparentToolButton, "toggleEosGroupFocus").click()
+    assert len(panel.eos_plots) == 1 and w._focused_reference == first
+    panel.eos_cards[0].findChild(TransparentToolButton, "toggleEosGroupFocus").click()
+    assert len(panel.eos_plots) == 2
+    panel.eos_cards[1].findChild(TransparentToolButton, "removeEosGroup").click()
+    assert len(panel.eos_plots) == 1 and w.checked_ids == {first}
+    w.open_item(scored.eos["id"])
+    assert not w.add_eos_groups.isVisible() and len(panel.eos_plots) == 1
+    w.open_item(second)
+    QTest.mouseClick(w.eos_grid_mode, Qt.MouseButton.LeftButton)
+    details = panel._args[1][0][3]
+    raw = np.subtract(details["predicted"], details["reference"])
+    np.testing.assert_allclose(panel.eos_plots[0].listDataItems()[0].yData, (raw - raw.mean()) * 1000)
+    panel.offset_checkbox.click()
+    np.testing.assert_allclose(panel.eos_plots[0].listDataItems()[0].yData, raw * 1000)
+    assert {curve.opts["symbol"] for curve in panel.eos_plots[0].listDataItems()} == {"d"}
+    w._reload_workspace()
+    assert w.groups.markers[second] == "d"
+    w.show_page("items")
+    assert w.table_metric.isVisible() and w.table_metric.count() == 3
+    w.table_metric.setCurrentIndex(w.table_metric.findData("v0_error"))
+    assert "%" in w.item_table.item(0, 5).text()
+    assert w.item_table.item(1, 2).text() == "V₀ error"
+    w._compare_cell(1, 0)
+    assert w._focused_reference == second and w.checked_ids == {first}
+    w.close()
+    w.deleteLater()
+    from PySide6.QtCore import QEvent
+    QApplication.sendPostedEvents(None, QEvent.Type.DeferredDelete)
+
+
+def test_item_context_menu_targets_clicked_card_and_preserves_matrix_multiselection(scored):
+    from PySide6.QtCore import QItemSelectionModel, QTimer
+    from NepTrainKit.ui.views.validation_workspace import ValidationWorkspace
+
+    w = ValidationWorkspace(service=scored.service)
+    w.open_scorecard(scored.suite["id"], scored.new["id"])
+    w.show()
+    QApplication.processEvents()
+    w.sidebar_item_list.item(0, 1).setCheckState(Qt.CheckState.Checked)
+    matrix = w.item_table
+
+    def select_both():
+        for row in (0, 1):
+            matrix.selectionModel().select(matrix.model().index(row, 0),
+                QItemSelectionModel.SelectionFlag.Select | QItemSelectionModel.SelectionFlag.Rows)
+
+    menus = []
+    def close_menu():
+        menu = QApplication.activePopupWidget()
+        menus.append(menu)
+        menu.close()
+
+    def open_menu(table, row):
+        cell = table.item(row, 0)
+        QTimer.singleShot(0, close_menu)
+        table.customContextMenuRequested.emit(table.visualItemRect(cell).center())
+        return menus[-1]
+
+    select_both()
+    menu = open_menu(w.sidebar_item_list, 1)
+    assert w._management_ids() == [scored.efv["id"]]
+    assert w.manage_actions["Rename in this suite…"] in menu.actions()
+    assert w.manage_actions["Rename in this suite…"].isEnabled()
+    assert w.checked_ids == {scored.eos["id"]}
+    w.show_page("items")
+    select_both()
+    menu = open_menu(matrix, 0)
+    assert set(w._management_ids()) == {scored.eos["id"], scored.efv["id"]}
+    assert not w.manage_actions["Rename in this suite…"].isEnabled()
+    assert w.manage_actions["Move to topic…"].isEnabled()
+    next(a for a in menu.actions() if a.text() == w.tr("Clear checks")).trigger()
+    assert not w.checked_ids
     w.close()
     w.deleteLater()
 
@@ -509,7 +744,8 @@ def test_pinning_a_comparison_keeps_cards_columns_and_plot_in_place(scored):
     one_row = w.controls_panel.height()
     assert "evaluated" in w.suite_combo.toolTip()
     w.resize(550, 650)
-    QApplication.processEvents()
+    from test_validation_ui import _wait_until
+    assert _wait_until(lambda: w.controls_panel.height() > one_row)
     card_height = max(card.height() for card in cards.values())
     assert one_row < w.controls_panel.height() <= one_row + card_height + 4 + w.card_scroll.horizontalScrollBar().sizeHint().height()
     assert w.card_scroll.verticalScrollBar().maximum() > 0
@@ -528,8 +764,6 @@ def test_pinning_a_comparison_keeps_cards_columns_and_plot_in_place(scored):
     assert pin_positions() == positions
     assert w.cards[new].pin.accessibleName() == "Baseline model" and w.cards[old].remove.isVisible()
     assert w.detail.eos_plots[0] is plot and [entry[0] for entry in w.detail._args[1]] == list(cards)
-    assert [w.overview.horizontalHeaderItem(i).text().split(" · ")[0] for i in (2, 3, 4)] == [
-        scored.new["name"], scored.old["name"], scored.fresh["name"]]
     w.edit_models.click()
     w.role_dialog.buttons[old]["current"].click()
     header = w.item_table.horizontalHeader()
@@ -631,3 +865,139 @@ def test_draft_can_run_as_comparison_without_replacing_current_model(scored):
     assert captured["id"] in w.comparison_picker.selected_ids()
     w.close()
     w.deleteLater()
+
+def test_reference_only_eos_explains_empty_residual(scored):
+    from NepTrainKit.ui.views.model_library import RunDetailPanel
+
+    panel = RunDetailPanel()
+    panel.set_adaptive_layout(True)
+    panel.show_runs(scored.eos, [])
+    panel._change_eos_view(1)
+    plot, = panel.eos_plots
+    assert plot.isHidden() and not plot.residual_placeholder.isHidden()
+    assert "No paired prediction" in plot.residual_placeholder.text()
+    panel._change_eos_view(0)
+    assert len(panel.eos_plots[0].listDataItems()) == 1
+    panel.close()
+    panel.deleteLater()
+
+
+def test_magnetic_equation_of_state_badge_uses_the_scan_axes():
+    from NepTrainKit.ui.widgets.validation_presentation import presentation_for
+
+    view = presentation_for("response")
+    for x, other, quantity, expected in (
+        ("moment_ratio", "", "energy", "mEOS"),
+        ("volume_ratio", "moment_ratio", "energy", "mEOS"),
+        ("angle_deg", "", "energy", "Resp"),
+        ("moment_ratio", "", "pressure", "Resp"),
+    ):
+        recipe = dict(mode="scan", x_field=x, second_axis=other, quantity=quantity)
+        assert view.item_badge(dict(protocol="response", summary={"analysis": recipe})) == expected
+
+
+def test_magnetic_scan_draws_measured_slices_and_saved_residuals(scored, tmp_path):
+    from PySide6.QtTest import QTest
+    from NepTrainKit.ui.views.validation_workspace import ValidationWorkspace
+
+    frames = eos_frames(points=4)
+    for frame, volume, moment in zip(frames, (0.9, 1.1, 0.9, 1.1), (0.8, 0.8, 1.2, 1.2)):
+        frame.info.update(volume_ratio=volume, moment_ratio=moment)
+    record = _import(scored.service, tmp_path, frames, "magnetic scan", protocol="response",
+                     analysis=dict(mode="scan", x_field="volume_ratio", second_axis="moment_ratio",
+                                   normalization="total", energy_unit="μeV"))
+    suite = scored.service.create_suite("magnetic", [record["id"]])
+    scored.service.run_suite(scored.new["id"], suite["id"])
+    w = ValidationWorkspace(service=scored.service)
+    w.open_scorecard(suite["id"], scored.new["id"])
+    w.show()
+    w.open_item(record["id"])
+    QTest.qWait(30)
+    assert all(w._plot_switch_available(index) for index in range(4))
+    w.plot_switches[2].defaultAction().trigger()  # inspect unshifted saved energies
+    w.plot_switches[1].defaultAction().trigger()
+    details = w.detail._groups[0][2][0][3]
+    run = w.detail._groups[0][2][0][2]
+    # Legacy records have only relative curves. The same absolute data must be available without evaluating.
+    assert scored.service.absolute_scan_energies(record) == details["absolute_reference"]
+    assert scored.service.absolute_scan_energies(record, run) == details["absolute_predicted"]
+    assert scored.service.absolute_scan_energies(record, dict(run, set_id="another scan")) is None
+    indices = [i for i, row in enumerate(details["rows"]) if row["second_axis"] == 0.8]
+    ref, model = w.detail.eos_plots[0].listDataItems()
+    assert list(model.yData) == [details["absolute_predicted"][i] for i in indices]
+    assert list(ref.yData) == [details["absolute_reference"][i] for i in indices]
+    w.plot_switches[1].defaultAction().trigger()
+    assert not w.eos_layout.isHidden() and len(w.detail.eos_plots) == 2
+    w.eos_layout.click()
+    QTest.qWait(30)
+    w.eos_grid_mode.click()
+    plot, = w.detail.eos_plots
+    assert plot.point_hover.unit == "μeV/cell" and "V/V₀" in plot.point_hover.x_label
+    details = w.detail._groups[0][2][0][3]
+    curves = plot.listDataItems()
+    assert len(curves) == 2
+    for curve, moment in zip(curves, (0.8, 1.2)):
+        indices = [i for i, row in enumerate(details["rows"]) if row["second_axis"] == moment]
+        assert list(curve.xData) == [0.9, 1.1]
+        assert list(curve.yData) == [details["errors"][i] for i in indices]
+    w.plot_switches[2].defaultAction().trigger()
+    assert all(abs(sum(c.yData)) < 1e-6 for c in w.detail.eos_plots[0].listDataItems())
+    # Branch roles and markers work on saved response rows without selecting other validation items.
+    from NepTrainKit.ui.widgets.validation_model_picker import GroupMarkerButton
+    from qfluentwidgets import TransparentToolButton
+    first, second = [key for key, _, _ in w.groups.candidates]
+    assert w.add_eos_groups.isVisible()
+    w.add_eos_groups.click()
+    picker = w.groups.dialog
+    picker.buttons[second]["current"].click()
+    assert w.groups.current == second and w.groups.comparisons == {first}
+    picker.buttons[first]["hidden"].click()
+    assert len(w.detail.eos_plots[0].listDataItems()) == 1
+    assert w.detail.eos_cards[0].property("groupId") == second
+    w.groups.set_marker(second, "d")
+    assert w.detail.eos_cards[0].findChild(GroupMarkerButton).symbol == "d"
+    assert w.detail.eos_plots[0].listDataItems()[0].opts["symbol"] == "d"
+    picker.buttons[first]["compare"].click()
+    w.eos_layout.click()
+    w.detail.eos_cards[0].findChild(TransparentToolButton, "toggleEosGroupFocus").click()
+    assert w.groups.focused and len(w.detail.eos_cards) == 1
+    w.detail.eos_cards[0].findChild(TransparentToolButton, "toggleEosGroupFocus").click()
+    assert len(w.detail.eos_cards) == 2 and not w.checked_ids
+    w.close()
+    w.deleteLater()
+
+
+def test_curve_values_align_measured_points_and_keep_distinct_model_ids(monkeypatch):
+    from types import SimpleNamespace
+    from PySide6.QtGui import QColor, QPen
+    from PySide6.QtWidgets import QDialog, QTableWidget
+    import pyqtgraph as pg
+    from NepTrainKit.ui.views.model_library import RunDetailPanel
+    from NepTrainKit.ui.widgets.validation_values import show_curve_values
+
+    panel = RunDetailPanel()
+    panel._groups = [("A", {"id": "A", "name": "First"}, []), ("B", {"id": "B", "name": "Second"}, [])]
+    curves = []
+    def add(group, model, xs, ys, visible=True):
+        curve = pg.PlotDataItem(xs, ys, name="reference" if model is None else "same name", pen=QPen(QColor("blue")))
+        curve.setProperty("groupId", group)
+        panel._register_curve(model, curve)
+        curve.setVisible(visible)
+        curves.append(curve)
+
+    add("A", None, [1, 1, 2], [5, 6, 7])
+    add("A", 1, [1, 2], [4, 8])
+    add("A", 2, [1, 1, 2], [9, 8, 7])
+    add("B", 2, [1], [10])
+    add("B", 3, [1], [100], False)
+    def inspect(dialog):
+        table = dialog.findChild(QTableWidget)
+        assert (table.rowCount(), table.columnCount()) == (4, 5)
+        assert [table.item(1, i).text() for i in range(5)] == ["First", "1", "6", "—", "8"]
+        assert [table.item(3, i).text() for i in range(5)] == ["Second", "1", "—", "—", "10"]
+        assert table.horizontalHeaderItem(3).icon().isNull() is False
+        return 0
+    monkeypatch.setattr(QDialog, "exec", inspect)
+    show_curve_values(panel, SimpleNamespace(axis_titles=("X", "ΔE (meV/atom)"), listDataItems=lambda: curves))
+    panel.close()
+    panel.deleteLater()

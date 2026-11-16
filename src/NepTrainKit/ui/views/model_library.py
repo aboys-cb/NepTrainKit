@@ -39,7 +39,7 @@ from qfluentwidgets import (
 
 from NepTrainKit import palette
 from NepTrainKit.ui.widgets.validation_model_picker import GroupMarkerButton
-from NepTrainKit.ui.widgets.validation_presentation import presentation_for, uses_energy_chart
+from NepTrainKit.ui.widgets.validation_presentation import presentation_for, uses_curve_chart
 from NepTrainKit.ui.widgets.eos_plot import EOS_REFERENCE_WIDTH, update_residual_placeholder
 from NepTrainKit.config import Config
 from NepTrainKit.core import MessageManager
@@ -790,7 +790,7 @@ class RunDetailPanel(QWidget):
         self._hidden_series.clear()
 
     def _series_pen(self, key):
-        eos = bool(self._adaptive_layout and self._groups and uses_energy_chart(self._groups[0][1]))
+        eos = bool(self._adaptive_layout and self._groups and uses_curve_chart(self._groups[0][1]))
         if key is None:
             pen = QPen(QColor(palette.PLOT_AXIS), EOS_REFERENCE_WIDTH if eos else 1.5, Qt.PenStyle.DashLine)
             pen.setCosmetic(True)
@@ -828,7 +828,7 @@ class RunDetailPanel(QWidget):
             entry[0] for entry in entries
         ]
         if self._adaptive_layout:
-            residual = self._eos_residual and groups and uses_energy_chart(groups[0][1])
+            residual = self._eos_residual and groups and uses_curve_chart(groups[0][1])
             keys = [key for key in keys if key is None and not residual]
         else:
             self._hidden_series.intersection_update(keys)
@@ -957,6 +957,7 @@ class RunDetailPanel(QWidget):
             curve.setVisible(visible)
         for plot in self.eos_plots:
             update_residual_placeholder(plot)
+            self._reset_plot_view(plot)
         self.seriesVisibilityChanged.emit(key, visible)
 
     def resizeEvent(self, event):
@@ -991,7 +992,7 @@ class RunDetailPanel(QWidget):
 
     def _layout_cards(self):
         protocol = self._groups[0][1]["protocol"] if self._groups else None
-        adaptive_eos = self._adaptive_layout and self._groups and uses_energy_chart(self._groups[0][1])
+        adaptive_eos = self._adaptive_layout and self._groups and uses_curve_chart(self._groups[0][1])
         single_eos = adaptive_eos and len(self.eos_cards) == 1
         limit = 2 if adaptive_eos or protocol == "diagnostic" else 3
         available_width = self.plot_pane.width() if self._adaptive_layout and self.plot_pane.width() > 200 else self.width()
@@ -1054,6 +1055,9 @@ class RunDetailPanel(QWidget):
 
     @staticmethod
     def _reset_plot_view(plot):
+        if hasattr(plot, "fit"):
+            plot.fit()
+            return
         view = plot.getViewBox()
         view.enableAutoRange(x=True, y=True)
         view.updateAutoRange()
@@ -2110,7 +2114,7 @@ class ModelLibraryWidget(QWidget):
             group_id = set_id
             set_id = group_id.partition("/")[0]
             benchmark = service.get_set(set_id)
-            if not uses_energy_chart(benchmark):
+            if benchmark["protocol"] != "eos" and not is_magnetic_eos(benchmark):
                 return None
             row = self.current_model_row()
             model = service.get_model(row["model_id"]) if row and row["model_id"] else None

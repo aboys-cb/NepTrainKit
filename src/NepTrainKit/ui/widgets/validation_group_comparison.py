@@ -57,6 +57,10 @@ class ValidationGroupComparison(QObject):
     def set_candidates(self, current, candidates):
         self.browse(current)
         self.candidates = candidates
+        saved = Config.get_section(self.section) if candidates and hasattr(self, "section") else {}
+        for index, (key, _, _) in enumerate(candidates):
+            symbol = saved.get(key)
+            self.markers.setdefault(key, symbol if symbol in GROUP_MARKERS else default_group_marker(index))
         self.comparisons.intersection_update(row[0] for row in candidates)
         if not self.comparisons:
             self.focused = False

@@ -535,6 +535,7 @@ class ValidationService:
         """Validate every reviewed file before registering the batch atomically."""
         packages = [self._import_sets(entry['path'], name=entry['name'], provenance=entry.get('provenance', {}),
                     protocol=entry['protocol'], analysis=entry.get('analysis'), expected_hash=entry['expected_hash'],
+                    group_field=entry.get('group_field'), group_names=entry.get('group_names'),
                     max_bytes=DEFAULT_MAX_SET_BYTES, allow_large=entry.get('allow_large', False), prepare_only=True)
                     for entry in entries]
         if not packages:
@@ -1038,6 +1039,16 @@ class ValidationService:
         identity = {key: value for key, value in environment.items()
                     if key not in ("protocol", "mode", "analysis", "reference_label_counts")}
         return CachedPrediction(predictor, self.library.root / "cache" / "predictions", identity, refresh=refresh)
+
+    def response_plot_series(self, benchmark):
+        """Add plot coordinates to old references using their sealed input frames."""
+        from .response_plot import response_plot_series
+
+        summary = benchmark["summary"]
+        if "plot_series" not in summary:
+            frames = protocol_for_set(benchmark)._frames(self.set_frames(benchmark["id"]))
+            summary["plot_series"] = response_plot_series(frames, summary)
+        return summary["plot_series"]
 
     def absolute_scan_energies(self, benchmark, run=None):
         """Restore the absolute zero for older relative scans without evaluating a model."""

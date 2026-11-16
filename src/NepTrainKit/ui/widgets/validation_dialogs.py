@@ -8,7 +8,7 @@ from pathlib import Path
 from html import escape
 
 from PySide6.QtCore import QEvent, QSize, Qt, Slot
-from PySide6.QtGui import QColor
+from PySide6.QtGui import QColor, QPen
 from PySide6.QtWidgets import QApplication, QAbstractItemView, QBoxLayout, QComboBox, QDialog, QFrame, QSizePolicy, QStackedWidget, QFileDialog, QFormLayout, QHeaderView, QHBoxLayout, QLayout, QListView, QStyledItemDelegate, QTableWidgetItem, QVBoxLayout, QWidget
 from qfluentwidgets import (
     BodyLabel,
@@ -640,15 +640,22 @@ class BenchmarkImportDialog(QDialog):
         self._check_protocol()
 
     def _populate_group_fields(self):
+        from NepTrainKit.core.validation.recognition import AUTO_EOS_GROUP, eos_scan_groups
+
         self.group_field_combo.blockSignals(True)
         self.group_field_combo.clear()
         self.group_field_combo.addItem(self.tr("Choose grouping…"), userData=None)
         self.group_field_combo.addItem(self.tr("Single scan · whole file"), userData="")
         for field in eos_group_fields(self.frames or []):
             self.group_field_combo.addItem(field, userData=field)
+        inferred = eos_scan_groups(self.frames or [])
+        if inferred:
+            self.group_field_combo.addItem(self.tr("Automatic · geometry and magnetic order"), userData=AUTO_EOS_GROUP)
         explicit = self.group_field_combo.findData(presentation_for("eos").source_group)
         if explicit >= 0:
             self.group_field_combo.setCurrentIndex(explicit)
+        elif inferred:
+            self.group_field_combo.setCurrentIndex(self.group_field_combo.findData(AUTO_EOS_GROUP) if len(inferred) > 1 else 1)
         self.group_field_combo.blockSignals(False)
 
     def _protocol_changed(self, *_args):
@@ -785,15 +792,8 @@ class BenchmarkImportDialog(QDialog):
                 self.preview_plot.hide()
                 self.preview_plot.deleteLater()
             self._response_canvas = is_response
-            if is_response:
-                import NepTrainKit.ui.canvas.pyqtgraph
-                import pyqtgraph as pg
-                self.preview_plot = pg.PlotWidget(self)
-                self.preview_plot.addLegend(offset=(-10, 10))
-                self.preview_plot.showGrid(x=True, y=True, alpha=.2)
-            else:
-                from NepTrainKit.ui.canvas.curve_factory import create_curve_plot
-                self.preview_plot = create_curve_plot(self)
+            from NepTrainKit.ui.canvas.curve_factory import create_curve_plot
+            self.preview_plot = create_curve_plot(self)
             self.preview_plot.setMinimumHeight(260)
             self.preview_plot.viewport().installEventFilter(self)
             self.preview_layout.insertWidget(self.preview_layout.indexOf(self.preview_summary), self.preview_plot, 1)
@@ -823,10 +823,19 @@ class BenchmarkImportDialog(QDialog):
         if preview:
             text = preview(self, summary, group)
         elif protocol.kind == "response":
-            import pyqtgraph as pg
+            from NepTrainKit.ui.widgets.reference_response_plot import SCAN_AXES
+
             self.preview_title.setText(self.tr("Reference response preview"))
-            self.preview_plot.setLabel("bottom", summary["x_label"] if protocol.spec.mode == "scan" else self.tr("State / combination"))
-            self.preview_plot.setLabel("left", summary["unit"])
+            angular = any(branch["axis"] == "angle_deg" for branch in summary.get("plot_series", []))
+            xlabel = self.tr("Rotation angle θ (°)") if angular else (
+                SCAN_AXES.get(summary["x_label"], summary["x_label"]) if protocol.spec.mode == "scan"
+                else self.tr("State / combination"))
+            ylabel = "ΔE" if protocol.spec.quantity == "energy" else protocol.spec.quantity
+            if protocol.spec.reference:
+                reference_label = (self.tr("state {index}").format(index=protocol.spec.reference)
+                                   if "rotation_state" in protocol.spec.state_fields else protocol.spec.reference)
+                ylabel += f" · E − E({reference_label})"
+            self.preview_plot.configure(xlabel, ylabel + " (" + summary["unit"] + ")", True)
             self.group_table.blockSignals(True)
             self.group_table.setHorizontalHeaderLabels([self.tr("Reference group"), self.tr("Frames"), self.tr("Response points"), self.tr("Status")])
             self.group_table.setRowCount(len(summary['series']) + len(summary['excluded']))
@@ -837,16 +846,28 @@ class BenchmarkImportDialog(QDialog):
                     item = QTableWidgetItem(str(value)); item.setToolTip(str(value)); self.group_table.setItem(row, column, item)
             self.group_table.blockSignals(False); self.group_table.show()
             combined = protocol.spec.mode in ('four_state', 'cross', 'combination')
-            groups = [dict(name=self.tr('Reference'), indices=list(range(len(summary['rows']))))] if combined else summary['series']
+            groups = summary.get("plot_series") or (
+                [dict(name=self.tr("Reference"), indices=list(range(len(summary["rows"]))))]
+                if combined else summary["series"])
+            if angular:
+                groups = [group for group in groups if group.get("axis") == "angle_deg"]
             for index, series in enumerate(groups):
-                rows = [summary['rows'][i] for i in series['indices']]
-                selected = [i for i in series['indices'] if summary['reference'][i] is not None]
-                x = [summary['rows'][i]['x'] for i in selected]
-                if combined or not all(isinstance(value, (int, float)) for value in x):
-                    x = list(range(1, len(selected)+1))
-                self.preview_plot.plot(x, [summary['reference'][i] for i in selected],
-                                       pen=None if combined or protocol.spec.second_axis else pg.mkPen((index, max(1, len(groups))), width=2),
-                                       symbol="o", symbolSize=6, name=series['name'] if len(groups) <= 4 else None)
+                points = [(n, i) for n, i in enumerate(series["indices"])
+                          if i is None or summary["reference"][i] is not None]
+                selected = [i for _, i in points]
+                x = ([series["x"][n] for n, _ in points] if "x" in series else
+                     [summary["rows"][i]["x"] for i in selected])
+                categorical = combined or series.get("connected") is False or not all(
+                    isinstance(v, (int, float)) for v in x)
+                if categorical:
+                    x = list(range(1, len(selected) + 1))
+                color = QColor(palette.PLOT_AXIS)
+                self.preview_plot.plot(x, [0. if i is None else summary["reference"][i] for i in selected],
+                                       pen=None if categorical or protocol.spec.second_axis else QPen(color, 2.4),
+                                       symbol=default_group_marker(index), symbolSize=8, symbolPen=color, symbolBrush=color,
+                                       name=series["name"] if len(groups) <= 4 else "")
+            self.preview_plot.finish()
+            self.preview_plot.fit()
             roles = {'unknown': self.tr('Not declared'), 'training': self.tr('Training regression'),
                      'development': self.tr('Development validation'), 'validation': self.tr('Validation (user declared)')}
             text = self.tr("{groups} complete groups · {points} response points · {excluded} excluded groups\nRole: {role} · {unit}").format(

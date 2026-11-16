@@ -302,6 +302,7 @@ RUNTIME_ERROR_TEMPLATES = (
     ('RuntimeMessage', 'Non-physical structure scanning requires the native audit extension.'),
     ('RuntimeMessage', 'Project {project} not found'),
     ('RuntimeMessage', 'A project cannot be its own ancestor.'),
+    ('RuntimeMessage', 'No complete, unambiguous uniform-volume scans were found.'),
     ('ProjectInfoMessageBox', 'Project name already exists.'),
     ('RuntimeMessage', 'A model cannot be its own ancestor.'),
     ('RuntimeMessage', 'Provided species length does not match counts in XDATCAR'),

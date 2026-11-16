@@ -896,6 +896,57 @@ def test_magnetic_equation_of_state_badge_uses_the_scan_axes():
         assert view.item_badge(dict(protocol="response", summary={"analysis": recipe})) == expected
 
 
+def test_mae_uses_angle_curves_and_restores_old_references_without_prediction(scored, tmp_path):
+    from test_reference_response import mae_frames
+    from test_validation_framework import _label
+    from NepTrainKit.core.validation.protocols.response import suggest_response_settings
+    from NepTrainKit.ui.views.validation_workspace import ValidationWorkspace
+
+    frames = mae_frames()
+    for a in frames:
+        a.set_chemical_symbols(["Pb", "Te"])
+        _label(a, a.info.pop("energy"))
+    item = _import(scored.service, tmp_path, frames, "MAE", protocol="response",
+                   analysis=suggest_response_settings(frames))
+    suite = scored.service.create_suite("angles", [item["id"]])
+    scored.service.run_suite(scored.new["id"], suite["id"])
+    w = ValidationWorkspace(service=scored.service)
+    w.resize(1200, 820)
+    w.open_scorecard(suite["id"], scored.new["id"])
+    w.show()
+    w.open_item(item["id"])
+    QApplication.processEvents()
+    assert len(w.groups.candidates) == 3
+    assert not w._plot_switch_available(1) and not w._plot_switch_available(2)
+    assert w.chart_tools.isVisible() and not w.eos_layout.isVisible()
+    assert len(w.detail.eos_plots) == 1
+    w.add_eos_groups.click()
+    for key, _, _ in w.groups.candidates[1:]:
+        w.groups.dialog.buttons[key]["compare"].click()
+    w.groups.dialog.close()
+    QApplication.processEvents()
+    assert w.eos_layout.isVisible()
+    w.eos_layout.click()
+    QApplication.processEvents()
+    plot, = w.detail.eos_plots
+    assert plot.axis_titles[0] == "Rotation angle θ (°)"
+    assert "E(p)" in plot.axis_titles[1]
+    assert len(plot.listDataItems()) == 6
+    ref = plot.listDataItems()[0]
+    assert list(ref.xData) == [-45., 0., 15., 45., 90.]
+    assert list(ref.yData) == pytest.approx([20., 0., 1., 15., 5.])
+    w.eos_grid_mode.click()
+    QApplication.processEvents()
+    assert len(w.detail.eos_plots[0].listDataItems()) == 3
+    assert "Residual" in w.detail.eos_plots[0].axis_titles[1]
+    legacy = dict(item, summary=dict(item["summary"]))
+    legacy["summary"].pop("plot_series")
+    with patch.object(scored.service, "evaluate", side_effect=AssertionError("unexpected prediction")):
+        assert scored.service.response_plot_series(legacy) == item["summary"]["plot_series"]
+    w.close()
+    w.deleteLater()
+
+
 def test_magnetic_scan_draws_measured_slices_and_saved_residuals(scored, tmp_path):
     from PySide6.QtTest import QTest
     from NepTrainKit.ui.views.validation_workspace import ValidationWorkspace

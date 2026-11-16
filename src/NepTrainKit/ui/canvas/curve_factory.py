@@ -1,7 +1,8 @@
 """Select a point/line canvas without loading the unused rendering library."""
 from functools import lru_cache
-from math import floor, isfinite, log10
+from math import ceil, floor, isfinite, log10
 
+from PySide6.QtCore import Qt
 from PySide6.QtGui import QOpenGLContext
 
 from NepTrainKit.config import Config
@@ -15,6 +16,17 @@ def tick_spacing(span, pixels, gap):
     rough = span / max(2, min(10, pixels / gap))
     base = 10. ** floor(log10(rough))
     return next(n * base for n in (1, 2, 2.5, 5, 10) if n * base >= rough)
+
+
+def category_ticks(categories, lo, hi, pixels, metrics):
+    visible = [(x, str(label)) for x, label in categories if lo <= x <= hi]
+    if not visible or pixels <= 0:
+        return []
+    gap = min(140, max(64, *(metrics.horizontalAdvance(label) + 16 for _, label in visible)))
+    count = max(1, int(pixels // gap))
+    selected = visible[::max(1, ceil(len(visible) / count))]
+    width = max(24, int(pixels / len(selected)) - 12)
+    return [(x, metrics.elidedText(label, Qt.TextElideMode.ElideRight, width)) for x, label in selected]
 
 
 @lru_cache(maxsize=1)

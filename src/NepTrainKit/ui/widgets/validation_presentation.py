@@ -10,6 +10,7 @@ from typing import Callable
 from NepTrainKit.ui.widgets.diagnostic_plot import redraw_diagnostics
 from NepTrainKit.ui.widgets.eos_plot import eos_group_title, preview_eos, redraw_eos
 from NepTrainKit.ui.widgets.reference_response_plot import is_magnetic_eos, redraw_reference_responses
+from NepTrainKit.core.validation.response_plot import is_mae
 
 
 @dataclass(frozen=True)
@@ -25,6 +26,8 @@ class PropertyPresentation:
     def item_badge(self, item):
         if is_magnetic_eos(item):
             return "mEOS"
+        if item["protocol"] == "response" and is_mae(item.get("summary") or {}):
+            return "MAE"
         return self.badge
 
     def group(self, item):
@@ -57,8 +60,9 @@ _PRESENTATIONS = {
 }
 
 
-def uses_energy_chart(item):
-    return item["protocol"] == "eos" or is_magnetic_eos(item)
+def uses_curve_chart(item):
+    return item["protocol"] == "eos" or (item["protocol"] == "response"
+                                      and item["summary"]["analysis"]["mode"] != "slices")
 
 
 def presentation_for(kind):

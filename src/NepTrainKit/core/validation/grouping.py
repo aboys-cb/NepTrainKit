@@ -31,6 +31,13 @@ def eos_group_fields(frames) -> list[str]:
 
 def eos_frame_groups(frames, field: str) -> dict[str, list[int]]:
     """Partition every frame; missing or ambiguous values block the operation."""
+    from .recognition import AUTO_EOS_GROUP, eos_scan_groups
+
+    if field == AUTO_EOS_GROUP:
+        groups = eos_scan_groups(frames)
+        if not groups:
+            raise ValueError("No complete, unambiguous uniform-volume scans were found.")
+        return groups
     groups: dict[str, list[int]] = {}
     value_type = None
     for index, frame in enumerate(frames):

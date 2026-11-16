@@ -476,6 +476,9 @@ class ReferenceResponseProtocol(ValidationProtocol):
             "role": self.spec.role,
             **({"label_counts": labels.counts} if self.spec.mode == "slices" else {}),
         }
+        from ..response_plot import response_plot_series
+
+        result["plot_series"] = response_plot_series(frames, result)
         if self.spec.mode == "scan" and self.spec.quantity == "energy" and self.spec.relative:
             result["absolute_reference"] = _scan_points(raw_reference, rows)
         if self.spec.extract_exchange:
@@ -576,32 +579,55 @@ def suggest_response_settings(frames):
     observable = next(iter(observables)) if len(observables) == 1 else None
     group = ("geometry",) if "geometry" in common else ("family",) if "family" in common else ()
     kwargs = dict(group_fields=group)
-    if observable == "MAE":
+    from ..spin_rotation import rotation_metadata
+
+    automatic = {}
+    four_state = None
+    has_scan_metadata = bool({"path", "moment_ratio", "volume_ratio"}.intersection(common)) or any(
+        "direction" in a.info or "angle_deg" in a.info for a in frames
+    )
+    if observable in (None, "MAE") and not has_scan_metadata:
+        try:
+            energy_labels = [_energy(a) for a in frames]
+        except (ValueError, TypeError):
+            energy_labels = []
+        if energy_labels and np.isfinite(energy_labels).all():
+            from ..recognition import four_state_candidates
+
+            four_state = four_state_candidates(frames) if observable is None else None
+            if not four_state:
+                automatic = rotation_metadata(frames, group)
+    if four_state:
+        kwargs.update(four_state)
+    elif automatic:
+        kwargs.update(mode="difference", group_fields=("rotation_group",),
+                      state_fields=("rotation_state",), reference="0",
+                      energy_unit="μeV", x_field="angle_deg", frame_metadata=automatic)
+    elif observable == "MAE":
+        state_fields = ("direction", "plane", "angle_deg") if any("angle_deg" in a.info for a in frames) else ("direction",)
+        reference_frame = next((a for a in frames if a.info.get("direction") == "p"), frames[0])
+        reference_state = ",".join(_text(reference_frame.info[name]) if name in reference_frame.info else ""
+                                   for name in state_fields).rstrip(",")
         kwargs.update(
             mode="difference",
-            state_fields=("direction", "plane", "angle_deg")
-            if any("angle_deg" in a.info for a in frames)
-            else ("direction",),
-            reference="p" if any(a.info.get("direction") == "p" for a in frames) else "",
+            state_fields=state_fields,
+            reference=reference_state,
             energy_unit="μeV",
         )
-        from NepTrainKit.core.magnetism import existing_moment_vectors
-
-        moments = existing_moment_vectors(frames[0], lift_scalar=False)
-        elements = (
-            {symbol for symbol, m in zip(frames[0].get_chemical_symbols(), moments) if np.dot(m, m) > 1e-14}
-            if moments is not None
-            else set()
-        )
-        if len(elements) == 1:
-            kwargs.update(normalization="element", element=next(iter(elements)))
     elif observable == "JD":
+        from ..recognition import four_state_candidates
+
+        fields = ("geometry", "theta_deg", "axis_i", "axis_j", "site_i", "site_j")
         kwargs.update(
             mode="four_state",
-            group_fields=("geometry", "theta_deg", "axis_i", "axis_j", "site_i", "site_j"),
+            group_fields=fields,
             state_fields=("sign_i", "sign_j"),
             normalization="total",
         )
+        if not all(set(fields + ("sign_i", "sign_j")) <= a.info.keys() for a in frames):
+            proposal = four_state_candidates(frames)
+            if proposal:
+                kwargs.update(proposal)
     elif "path" in common and "family" in common:
         kwargs.update(
             mode="difference",
@@ -619,5 +645,32 @@ def suggest_response_settings(frames):
     elif "state" in common:
         kwargs.update(x_field="state", group_fields=())
     else:
-        kwargs.update(mode="slices")
+        from ..recognition import eos_scan_groups, four_state_candidates, magnitude_scan, shear_scan
+
+        recognised = four_state_candidates(frames) or magnitude_scan(frames) or shear_scan(frames)
+        if recognised:
+            kwargs.update(recognised)
+        else:
+            scans = eos_scan_groups(frames)
+            if scans:
+                metadata = {}
+                for name, indices in scans.items():
+                    volume = frames[indices[0]].get_volume()
+                    for i in indices:
+                        metadata[str(i)] = dict(scan_group=name, volume_ratio=frames[i].get_volume() / volume,
+                                                scan_reference_frame=indices[0])
+                kwargs.update(mode="scan", x_field="volume_ratio", group_fields=["scan_group"],
+                              frame_metadata=metadata)
+            else:
+                kwargs.update(mode="slices")
+    if automatic or observable == "MAE":
+        from NepTrainKit.core.magnetism import existing_moment_vectors
+
+        moments = existing_moment_vectors(frames[0], lift_scalar=False)
+        elements = (
+            {symbol for symbol, m in zip(frames[0].get_chemical_symbols(), moments) if np.dot(m, m) > 1e-14}
+            if moments is not None else set()
+        )
+        if len(elements) == 1:
+            kwargs.update(normalization="element", element=next(iter(elements)))
     return ResponseSpec(**kwargs).to_dict()

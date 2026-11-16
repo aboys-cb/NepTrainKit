@@ -3,7 +3,7 @@ from collections import Counter
 from html import unescape
 
 from PySide6.QtCore import Qt
-from PySide6.QtGui import QIcon, QPixmap
+from PySide6.QtGui import QIcon, QPixmap, QPen
 from PySide6.QtWidgets import QDialog, QHBoxLayout, QHeaderView, QTableWidgetItem, QVBoxLayout
 from qfluentwidgets import BodyLabel, CaptionLabel, PushButton, StrongBodyLabel, TableWidget
 
@@ -51,7 +51,8 @@ def show_curve_values(panel, plot, group_names=None, response_details=None):
     for curve in curves:
         key = curve.property("modelId")
         label = unescape(curve.label if hasattr(curve, "label") else curve.name())
-        models[key] = (label, curve.opts["pen"].color())
+        pen = QPen(curve.opts["pen"] or curve.opts["symbolPen"])
+        models[key] = (label, pen.color())
         # Preserve separate measurements even when their X coordinates coincide.
         occurrence = Counter()
         for x, y in zip(curve.xData, curve.yData):
@@ -86,13 +87,15 @@ def show_curve_values(panel, plot, group_names=None, response_details=None):
         heading.addWidget(more)
     table = values_table(dialog)
     multi = len(group_ids) > 1
-    headers = ([panel.tr("Group")] if multi else []) + [plot.axis_titles[0]] + [label for label, _ in models.values()]
+    categories = getattr(plot, "category_labels", {})
+    headers = (([panel.tr("Group")] if multi else []) + [plot.axis_titles[0]]
+               + ([panel.tr("State / combination")] if categories else []) + [label for label, _ in models.values()])
     table.setColumnCount(len(headers))
     table.setHorizontalHeaderLabels(headers)
     header = table.horizontalHeader()
     header.setSectionResizeMode(QHeaderView.ResizeMode.Interactive)
     header.setStretchLastSection(True)
-    for column, (_, color) in enumerate(models.values(), int(multi) + 1):
+    for column, (_, color) in enumerate(models.values(), int(multi) + 1 + bool(categories)):
         swatch = QPixmap(12, 12)
         swatch.fill(color)
         table.horizontalHeaderItem(column).setIcon(QIcon(swatch))
@@ -106,12 +109,16 @@ def show_curve_values(panel, plot, group_names=None, response_details=None):
             cell = QTableWidgetItem(group_marker_icon(panel.group_markers.get(group, "o")), groups[group])
             cell.setToolTip(groups[group])
             table.setItem(row, 0, cell)
-        for column, value in enumerate([x, *(values.get(key) for key in models)], int(multi)):
-            cell = QTableWidgetItem("—" if value is None else f"{value:.8g}")
-            widths[column] = max(widths[column], table.fontMetrics().horizontalAdvance(cell.text()) + 52)
-            cell.setTextAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
+        row_values = [x] + ([categories.get(x, "")] if categories else []) + [values.get(key) for key in models]
+        for column, value in enumerate(row_values, int(multi)):
+            text = value if isinstance(value, str) else "—" if value is None else f"{value:.8g}"
+            cell = QTableWidgetItem(text)
+            width = max(widths[column], table.fontMetrics().horizontalAdvance(text) + 52)
+            widths[column] = min(310, width) if isinstance(value, str) else width
+            alignment = Qt.AlignmentFlag.AlignLeft if isinstance(value, str) else Qt.AlignmentFlag.AlignRight
+            cell.setTextAlignment(alignment | Qt.AlignmentFlag.AlignVCenter)
             if value is not None:
-                cell.setToolTip(str(float(value)))
+                cell.setToolTip(str(value))
             table.setItem(row, column, cell)
     for column, width in enumerate(widths):
         table.horizontalHeaderItem(column).setToolTip(headers[column])

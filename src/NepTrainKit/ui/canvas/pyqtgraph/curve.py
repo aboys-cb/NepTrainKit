@@ -4,10 +4,25 @@ from PySide6.QtGui import QFontMetrics
 from PySide6.QtCore import Qt
 
 from NepTrainKit import palette
-from NepTrainKit.ui.canvas.curve_factory import tick_spacing
+from NepTrainKit.ui.canvas.curve_factory import category_ticks, tick_spacing
 
 
 class _CurveAxis(pg.AxisItem):
+    categories = None
+
+    def tickValues(self, minVal, maxVal, size):
+        if self.categories is None:
+            return super().tickValues(minVal, maxVal, size)
+        metrics = QFontMetrics(self.style["tickFont"] or self.font())
+        ticks = category_ticks(self.categories, minVal, maxVal, size, metrics)
+        self._category_strings = dict(ticks)
+        return [(1, [x for x, _ in ticks])]
+
+    def tickStrings(self, values, scale, spacing):
+        if self.categories is None:
+            return super().tickStrings(values, scale, spacing)
+        return [self._category_strings.get(value, "") for value in values]
+
     def tickSpacing(self, minVal, maxVal, size):
         gap = 55 if self.orientation == "left" else max(
             68, *(QFontMetrics(self.style["tickFont"] or self.font()).horizontalAdvance(f"{value:.6g}") + 24 for value in (maxVal, minVal)))
@@ -22,6 +37,7 @@ class PyqtgraphCurvePlot(pg.PlotWidget):
         return self.plotItem.plot(*args, antialias=antialias, **kwargs)
 
     def configure(self, xlabel, ylabel, legend, zero_pen=None):
+        self.getAxis("bottom").categories = None
         if legend and self.plotItem.legend is None:
             self.addLegend(offset=(8, 3), colCount=2, labelTextSize="11pt",
                            labelTextColor=palette.TEXT_SECONDARY)
@@ -50,6 +66,15 @@ class PyqtgraphCurvePlot(pg.PlotWidget):
         view = self.getViewBox()
         view.enableAutoRange(x=True, y=True)
         view.updateAutoRange()
+
+    def add_zero_line(self, pen):
+        self.addLine(y=0, pen=pen)
+
+    def set_category_ticks(self, ticks):
+        axis = self.getAxis("bottom")
+        axis.categories = ticks
+        axis.picture = None
+        axis.update()
 
     def cursor_coordinates(self, pos):
         view = self.getViewBox()

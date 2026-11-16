@@ -2,13 +2,13 @@
 
 import numpy as np
 from PySide6.QtCore import QObject, QRect, Qt
-from PySide6.QtGui import QColor, QPainter, QPalette
+from PySide6.QtGui import QColor, QPainter, QPalette, QPen
 from PySide6.QtWidgets import QGridLayout, QLabel, QSizePolicy, QVBoxLayout, QWidget
 from vispy import scene
 from vispy.gloo.context import forget_canvas
 
 from NepTrainKit import palette
-from NepTrainKit.ui.canvas.curve_factory import tick_spacing
+from NepTrainKit.ui.canvas.curve_factory import category_ticks, tick_spacing
 from NepTrainKit.ui.canvas.vispy.distribution import _RotatedLabel
 
 
@@ -18,6 +18,7 @@ class _TickLabels(QWidget):
         super().__init__(parent)
         self.vertical = vertical
         self.bounds = (0., 1.)
+        self.categories = None
         font = self.font()
         font.setPixelSize(15)
         self.setFont(font)
@@ -35,6 +36,8 @@ class _TickLabels(QWidget):
         lo, hi = self.bounds
         if hi <= lo:
             return []
+        if self.categories is not None:
+            return category_ticks(self.categories, lo, hi, self.width(), self.fontMetrics())
         fm = self.fontMetrics()
         gap = 55 if self.vertical else max(68, *(fm.horizontalAdvance(f"{v:.6g}") + 20 for v in self.bounds))
         length = self.height() if self.vertical else self.width()
@@ -120,15 +123,15 @@ class _Curve(QObject):
         self.refresh()
 
     def refresh(self):
-        color = self.opts["pen"].color().name()
+        pen = self.opts["pen"] or self.opts["symbolPen"]
+        color = pen.color().name()
         symbol = self.opts["symbol"]
-        self.line.visible = self.visible
+        self.line.visible = self.visible and self.opts["pen"] is not None
         polygon = symbol in ("h", "p")
         self.points.visible = self.visible and bool(symbol) and not polygon
         self.polygon.visible = self.visible and polygon
         if not self.visible or not len(self.positions):
             return
-        pen = self.opts["pen"]
         positions = self.positions
         # VisPy's public line API has no dash pattern. Split in screen space
         # so a dashed reference stays distinguishable at every zoom level.
@@ -159,6 +162,14 @@ class _Curve(QObject):
     def setSymbol(self, symbol):
         self.opts["symbol"] = symbol
         self.refresh()
+
+    def setSymbolBrush(self, color):
+        self.opts["symbolPen"] = QPen(QColor(color))
+        self.refresh()
+        self.chart.refresh_legend()
+
+    def setSymbolPen(self, color):
+        self.setSymbolBrush(color)
 
     def setVisible(self, visible):
         self.visible = visible
@@ -224,22 +235,34 @@ class VispyCurvePlot(QWidget):
         self.x_label.setText(xlabel)
         self.legend.setVisible(legend)
         if zero_pen is not None:
-            self.zero = scene.visuals.InfiniteLine(pos=0, vertical=False, color=zero_pen.color().getRgbF(),
-                                                   parent=self.view.scene)
+            self.add_zero_line(zero_pen)
 
-    def plot(self, xs, ys, *, pen, symbol, symbolSize, name, **_):
-        curve = _Curve(self, xs, ys, pen, symbol, symbolSize, name)
+    def add_zero_line(self, pen):
+        self.zero = scene.visuals.InfiniteLine(pos=0, vertical=False, color=pen.color().getRgbF(),
+                                             parent=self.view.scene)
+
+    def set_category_ticks(self, ticks):
+        self.x_ticks.categories = ticks
+        self.x_ticks.update()
+
+    def plot(self, xs, ys, *, pen, symbol, symbolSize, name, symbolPen=None, **_):
+        marker_pen = pen or QPen(QColor(symbolPen or palette.PLOT_AXIS))
+        curve = _Curve(self, xs, ys, marker_pen, symbol, symbolSize, name)
+        if pen is None:
+            curve.opts["pen"] = None
+            curve.refresh()
         self.curves.append(curve)
         return curve
 
     def refresh_legend(self):
-        self.legend.setText("　".join(f'<span style="color:{c.opts["pen"].color().name()}">●</span> {c.label}'
+        self.legend.setText("　".join(f'<span style="color:{(c.opts["pen"] or c.opts["symbolPen"]).color().name()}">●</span> {c.label}'
                                      for c in self.curves if c.visible and c.label))
 
     def listDataItems(self):
         return self.curves
 
     def clear(self):
+        self.x_ticks.categories = None
         for curve in self.curves:
             for visual in (curve.line, curve.points, curve.polygon):
                 visual.parent = None
@@ -255,7 +278,8 @@ class VispyCurvePlot(QWidget):
         self.y_ticks.set_bounds(rect.bottom, rect.top)
         self.x_ticks.set_bounds(rect.left, rect.right)
         for curve in self.curves:
-            if curve.opts["pen"].dashPattern() or curve.opts["symbol"] in ("p", "h"):
+            pen = curve.opts["pen"]
+            if (pen is not None and pen.dashPattern()) or curve.opts["symbol"] in ("p", "h"):
                 curve.refresh()
 
     def finish(self):

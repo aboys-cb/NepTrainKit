@@ -168,6 +168,7 @@ def _show_values(panel, summary, selected, entries):
 
 
 RATIO_AXES = {"moment_ratio": "M/M₀", "volume_ratio": "V/V₀"}
+SCAN_AXES = {**RATIO_AXES, "shear_yz": "γyz", "shear_zx": "γzx", "shear_xy": "γxy"}
 
 
 def is_magnetic_eos(item):
@@ -190,40 +191,54 @@ def _pin_response(readout, name, axis, unit, curve, index):
     readout.show()
 
 
-def magnetic_branches(benchmark):
+def response_branches(benchmark):
     summary = benchmark["summary"]
-    spec = summary["analysis"]
-    branches = []
-    for group in summary["series"]:
-        slices = {}
-        for i in group["indices"]:
-            slices.setdefault(summary["rows"][i]["second_axis"], []).append(i)
-        for value, indices in sorted(slices.items()):
-            key = f"{benchmark['id']}/{len(branches)}"
-            parts = [group["name"]] if spec["group_fields"] else []
-            if value is not None:
-                parts.append(f"{RATIO_AXES[spec['second_axis']]} = {value}")
-            branches.append((key, " · ".join(parts) or benchmark["name"].rsplit(" / ", 1)[-1], indices))
+    if summary.get("plot_series"):
+        branches = [(f"{benchmark['id']}/{n}", branch["name"], branch["indices"])
+                    for n, branch in enumerate(summary["plot_series"])]
+    else:
+        spec = summary["analysis"]
+        branches = []
+        series = summary["series"]
+        if spec["mode"] in ("combination", "four_state", "cross"):
+            series = [dict(name=benchmark["name"], indices=list(range(len(summary["rows"]))))]
+        for group in series:
+            slices = {}
+            for i in group["indices"]:
+                slices.setdefault(summary["rows"][i]["second_axis"], []).append(i)
+            for value, indices in sorted(slices.items()):
+                parts = [group["name"]] if spec["group_fields"] else []
+                if value is not None:
+                    parts.append(f"{RATIO_AXES.get(spec['second_axis'], spec['second_axis'])} = {value}")
+                branches.append((f"{benchmark['id']}/{len(branches)}",
+                                 " · ".join(parts) or benchmark["name"].rsplit(" / ", 1)[-1], indices))
     if len(branches) == 1:
         _, label, indices = branches[0]
         return [(benchmark["id"], label, indices)]
     return branches
 
 
-def _draw_magnetic_scan(panel, benchmark, entries):
+def magnetic_branches(benchmark):
+    return response_branches(benchmark)
+
+
+def _draw_response_curves(panel, benchmark, entries):
     summary = benchmark["summary"]
     spec, rows, unit = summary["analysis"], summary["rows"], summary["unit"]
-    axis = RATIO_AXES[spec["x_field"]]
-    branches = magnetic_branches(benchmark)
+    branches = response_branches(benchmark)
+    metadata = {key: branch for (key, _, _), branch in zip(branches, summary.get("plot_series", []))}
+    scan = spec["mode"] == "scan"
+    categorical = spec["mode"] in ("combination", "four_state", "cross", "difference") and not metadata
+    axis = SCAN_AXES.get(spec["x_field"], spec["x_field"]) if scan else panel.tr("State / combination")
     symbols = {key: panel.group_markers.get(key, default_group_marker(n))
                for n, (key, _, _) in enumerate(branches)}
     selection = panel.magnetic_selection
     visible = [b for b in branches if selection is None or b[0] in selection]
     batches = [visible] if panel._eos_overlay or not panel._adaptive_layout else [[b] for b in visible]
     residual = panel._adaptive_layout and panel._eos_residual
-    relative = panel.relative_checkbox.isChecked() and not residual
-    absolute = spec["relative"] and not (relative or residual)
-    ordinate = "ΔE" if relative else "E"
+    relative = scan and spec["quantity"] == "energy" and panel.relative_checkbox.isChecked() and not residual
+    absolute = scan and spec["quantity"] == "energy" and spec["relative"] and not (relative or residual)
+    ordinate = "ΔE" if relative or not scan else "E"
     if residual:
         ordinate = QCoreApplication.translate("ValidationWorkspace", "Residual")
 
@@ -247,7 +262,26 @@ def _draw_magnetic_scan(panel, benchmark, entries):
                 unavailable.append(name)
             else:
                 series_values.append((key, name, values))
+    # Separate incompatible coordinate types even when the user overlays groups.
+    compatible_batches = []
     for batch in batches:
+        by_axis = {}
+        for branch in batch:
+            by_axis.setdefault(metadata.get(branch[0], {}).get("axis", axis), []).append(branch)
+        compatible_batches.extend(by_axis.values())
+    batches = compatible_batches
+    for batch in batches:
+        branch_meta = metadata.get(batch[0][0], {})
+        coordinate = branch_meta.get("axis", axis)
+        xlabel = panel.tr("Rotation angle θ (°)") if coordinate == "angle_deg" else (
+            panel.tr("Path image") if coordinate == "image" else
+            panel.tr("Direction · angle unavailable") if coordinate == "direction" else coordinate)
+        is_category = categorical or branch_meta.get("connected") is False or (
+            not branch_meta and any(not isinstance(rows[i]["x"], (int, float))
+                                    for _, _, indices in batch for i in indices))
+        indexed = is_category and any(len(indices) > 8 for _, _, indices in batch)
+        if indexed:
+            xlabel = panel.tr("Combination index")
         card = QFrame(panel.grid_container)
         card.setObjectName("magneticScanCard")
         card.setStyleSheet(f"#magneticScanCard {{background:{palette.PLOT_BACKGROUND};border:1px solid {palette.BORDER};border-radius:10px;}}")
@@ -258,11 +292,15 @@ def _draw_magnetic_scan(panel, benchmark, entries):
             key, label, indices = batch[0]
             grouped = panel.eos_current_id is not None
             reset, data = energy_card_header(
-                panel, card, layout, benchmark, key, "G1", summary.get("formula") or label,
+                panel, card, layout, benchmark, key, "G1", label,
                 grouped, panel.magnetic_can_focus, panel.magnetic_can_focus and len(visible) == 1, focus_key=key,
             )
             count_text = QCoreApplication.translate("ValidationWorkspace", "{count} scan points")
-            caption = CaptionLabel(label + " · " + count_text.format(count=len(indices)), card)
+            context = label if is_magnetic_eos(benchmark) else (
+                " → ".join(branch_meta["plane"]) if branch_meta.get("plane") else "")
+            if "zero_frame" in branch_meta:
+                context = panel.tr("0° = frame {index}").format(index=branch_meta["zero_frame"])
+            caption = CaptionLabel(" · ".join(filter(None, (context, count_text.format(count=len(indices))))), card)
             caption.setStyleSheet(f"color: {palette.TEXT_SECONDARY};")
             layout.addWidget(caption)
         else:
@@ -271,9 +309,22 @@ def _draw_magnetic_scan(panel, benchmark, entries):
             for key, label, _ in batch:
                 add_overlay_group(panel, strip, key, label, benchmark["name"] + "\n" + label)
             strip.fit_groups()
-        selected = [i for _, _, indices in batch for i in indices]
-        plot, readout = energy_curve_canvas(panel, card, layout, reset, axis, f"{ordinate} ({unit})",
-                                            axis + " = {:.4g}", unit, residual)
+        if not is_magnetic_eos(benchmark):
+            sample = card.findChild(TransparentToolButton, "eosSamplingButton")
+            if sample:
+                sample.hide()
+        selected = list(dict.fromkeys(i for _, _, indices in batch for i in indices if i is not None))
+        quantity = ordinate if spec["quantity"] == "energy" else spec["quantity"]
+        reference_state = branch_meta.get("reference", spec.get("reference", ""))
+        if "reference_frame" in branch_meta:
+            reference_state = panel.tr("frame {index}").format(index=branch_meta["reference_frame"])
+        if reference_state and not residual:
+            quantity = f"ΔE · E − E({reference_state})" if spec["quantity"] == "energy" else quantity
+        plot, readout = energy_curve_canvas(panel, card, layout, reset, xlabel, f"{quantity} ({unit})",
+                                            xlabel + " = {:.4g}", unit, residual)
+        if not scan or spec["quantity"] != "energy":
+            plot.add_zero_line(panel._series_pen(None))
+
         names = {key: label for key, label, _ in batch}
         details = partial(_show_values, panel, summary, selected, entries)
         data.clicked.connect(lambda _=False, chart=plot, groups=names, more=details:
@@ -284,20 +335,30 @@ def _draw_magnetic_scan(panel, benchmark, entries):
             layout.insertWidget(1, note)
         for branch_key, label, indices in batch:
             symbol = symbols[branch_key]
-            x = [rows[i]["x"] for i in indices]
-            zero = min(reference[i] for i in indices) if relative and not residual and not spec["relative"] else 0.
+            info = metadata.get(branch_key, {})
+            x = info.get("x") or ([n + 1 for n in range(len(indices))] if is_category
+                                  else [rows[i]["x"] for i in indices])
+            if is_category:
+                labels = info.get("labels") or [rows[i]["label"] for i in indices]
+                plot.category_labels = dict(zip(x, labels))
+                plot.set_category_ticks(list(zip(x, (str(n) for n in x) if indexed else labels)))
+            def value_at(values, index):
+                return 0. if index is None else values[index]
+
+            zero = min(value_at(reference, i) for i in indices) if relative and not residual and not spec["relative"] else 0.
             for key, name, values in series_values:
                 offset = 0.
-                if key is not None and panel.offset_checkbox.isChecked() and (residual or reference is not None):
+                if scan and spec["quantity"] == "energy" and key is not None and panel.offset_checkbox.isChecked() and (residual or reference is not None):
                     offset = sum(values[i] if residual else values[i] - reference[i] for i in indices) / len(indices)
                 pen = panel._series_pen(key)
-                curve = plot.plot(x, [values[i] - zero - offset for i in indices], pen=pen, symbol=symbol,
+                curve = plot.plot(x, [value_at(values, i) - zero - offset for i in indices],
+                                  pen=None if is_category else pen, symbol=symbol,
                                   symbolSize=EOS_POINT_SIZE if panel._adaptive_layout else 5,
                                   symbolPen=pen.color(), symbolBrush=pen.color(), name=escape(name))
                 curve.setProperty("groupId", branch_key)
                 panel._register_curve(key, curve)
                 if readout is not None:
-                    curve.read_point = partial(_pin_response, readout, " · ".join(filter(None, (name, label))), axis, unit)
+                    curve.read_point = partial(_pin_response, readout, " · ".join(filter(None, (name, label))), xlabel, unit)
         plot.finish()
         update_residual_placeholder(plot)
         panel.eos_cards.append(card)
@@ -328,8 +389,8 @@ def redraw_reference_responses(panel):
             if grouped_points
             else summary["series"]
         )
-        if is_magnetic_eos(benchmark):
-            _draw_magnetic_scan(panel, benchmark, entries)
+        if recipe["mode"] != "slices":
+            _draw_response_curves(panel, benchmark, entries)
             continue
         for group in series:
             selected = group["indices"]

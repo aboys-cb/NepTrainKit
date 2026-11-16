@@ -9,6 +9,7 @@ from qfluentwidgets import CaptionLabel, CheckBox, EditableComboBox, PushButton,
 from NepTrainKit.core.validation.library import sha256_bytes
 from NepTrainKit.core.validation.protocols import get_protocol, read_frames
 from NepTrainKit.core.validation.protocols.response import suggest_response_settings
+from NepTrainKit.core.validation.recognition import AUTO_EOS_GROUP, eos_scan_groups
 from NepTrainKit.ui.messages import translate_runtime_message
 from NepTrainKit.ui.threads import BackgroundTask
 
@@ -27,16 +28,22 @@ def inspect_references(paths, stopped=lambda: False):
             frames = read_frames(data)
             settings = suggest_response_settings(frames)
             protocol = get_protocol("response", analysis=settings)
+            inferred_groups = eos_scan_groups(frames)
             # A real volume scan may use the dedicated EOS fit. Other scans keep their own axis.
             eos = get_protocol("eos")
-            if (
+            if inferred_groups or (
                 settings["mode"] == "scan"
                 and settings["x_field"] == "volume_ratio"
                 and not settings["second_axis"]
                 and not any(i.level == "error" for i in eos.check(frames))
             ):
                 protocol = eos
-            issues = protocol.check(frames)
+            if protocol.kind == "eos" and inferred_groups:
+                row.update(group_field=AUTO_EOS_GROUP, group_names=list(inferred_groups))
+                issues = [issue for indices in inferred_groups.values()
+                          for issue in protocol.check([frames[i] for i in indices])]
+            else:
+                issues = protocol.check(frames)
             row.update(
                 expected_hash=sha256_bytes(data),
                 protocol=protocol.kind,
@@ -46,7 +53,8 @@ def inspect_references(paths, stopped=lambda: False):
             errors = [i.message for i in issues if i.level == "error"]
             row["error"] = "\n".join(errors)
             if not errors:
-                row["summary"] = protocol.summarize_reference(frames)
+                row["summary"] = (dict(frames=len(frames), unit="meV/atom", groups=len(inferred_groups))
+                                  if protocol.kind == "eos" and inferred_groups else protocol.summarize_reference(frames))
             fingerprints, geometries = [], []
             for frame in frames:
                 if stopped():
@@ -198,7 +206,7 @@ class ReferenceBatchDialog(QDialog):
             (
                 row.get("frames", "—"),
                 modes.get(recipe.get("mode"), row["protocol"]),
-                len(summary.get("series", [])) or 1,
+                len(row.get("group_names") or []) or summary.get("groups") or len(summary.get("series", [])) or 1,
                 row.get("error") or roles.get(recipe.get("role", "unknown")),
             ),
             1,
@@ -247,13 +255,15 @@ class ReferenceBatchDialog(QDialog):
         if row.get("analysis"):
             dialog.analysis_editor.set_settings(row["analysis"])
         elif row["protocol"] == "eos":
-            dialog.group_field_combo.setCurrentIndex(dialog.group_field_combo.findData(""))
+            dialog.group_field_combo.setCurrentIndex(dialog.group_field_combo.findData(row.get("group_field") or ""))
+            if row.get("group_names"):
+                for i, group in enumerate(dialog.eos_groups):
+                    if group["key"] not in row["group_names"]:
+                        dialog.group_table.item(i, 0).setCheckState(Qt.CheckState.Unchecked)
         dialog.yesButton.setText(self.tr("Use these settings"))
         if dialog.exec():
             values = dialog.values()
-            if values["protocol"] == "eos" and dialog.group_field_combo.currentData():
-                self.status.setText(self.tr("For multiple EOS groups, use the single-file importer."))
-                return
+            grouped = values["protocol"] == "eos" and bool(dialog.group_field_combo.currentData())
             row.update(
                 name=values["name"],
                 protocol=values["protocol"],
@@ -262,6 +272,8 @@ class ReferenceBatchDialog(QDialog):
                 expected_hash=sha256_bytes(dialog._loaded_bytes),
                 summary=dialog.reference_summary,
                 error="",
+                group_field=dialog.group_field_combo.currentData() if grouped else None,
+                group_names=[g["key"] for g in dialog.eos_groups if g["include"]] if grouped else None,
             )
             self._paint_row(index, row)
             self._validate()

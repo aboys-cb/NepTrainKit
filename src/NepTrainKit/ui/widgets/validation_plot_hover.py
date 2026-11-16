@@ -6,6 +6,7 @@ from math import isclose, isfinite
 from weakref import proxy
 
 from PySide6.QtCore import QEvent, Qt
+from PySide6.QtGui import QPen
 from PySide6.QtWidgets import QLabel
 
 from NepTrainKit.ui.widgets.validation_model_picker import MARKER_GLYPHS
@@ -20,6 +21,7 @@ class PlotPointHover(QLabel):
         self.unit = unit
         self.setObjectName("validationPointHover")
         self.setTextFormat(Qt.TextFormat.RichText)
+        self.setWordWrap(True)
         self.setAttribute(Qt.WidgetAttribute.WA_TransparentForMouseEvents)
         self.setStyleSheet(
             "QLabel#validationPointHover { background: #263244; color: white; "
@@ -78,6 +80,9 @@ class PlotPointHover(QLabel):
 
         # Match the physical coordinate, since each scan may have its own sampling grid.
         lines = [f"<b>{escape(self.x_label.format(sample))}</b>"]
+        category = getattr(self.plot, "category_labels", {}).get(sample)
+        if category:
+            lines.append(escape(category))
         for curve in curves:
             xs = curve.xData
             if xs is None or not len(xs):
@@ -90,12 +95,14 @@ class PlotPointHover(QLabel):
             if not isfinite(value):
                 continue
             marker = MARKER_GLYPHS.get(curve.opts["symbol"], "●")
-            color = curve.opts["pen"].color().name()
+            pen = QPen(curve.opts["pen"] or curve.opts["symbolPen"])
+            color = pen.color().name()
             lines.append(f'<span style="color:{color}">{marker}</span>　<b>{value:.6g}</b> {self.unit}')
 
         content = "<br>".join(lines)
         if self.text() != content:
             self.setText(content)
+            self.setMaximumWidth(max(80, min(420, self.parentWidget().width() - 16)))
             self.adjustSize()
         viewport = self.parentWidget()
         x, y = pos.x() + 14, pos.y() + 16

@@ -267,7 +267,8 @@ class ReferenceAnalysisEditor(QWidget):
         self.reference.blockSignals(True)
         self.reference.clear()
         if names:
-            values = sorted({", ".join(str(a.info.get(name, "")) for name in names) for a in self.frames})
+            values = sorted({", ".join(str(self.frame_metadata.get(str(i), {}).get(name, a.info.get(name, "")))
+                                       for name in names) for i, a in enumerate(self.frames)})
             self.reference.addItems(values)
         self.reference.setText(previous)
         self.reference.blockSignals(False)
@@ -317,6 +318,27 @@ class ReferenceAnalysisEditor(QWidget):
         self.relative.setChecked(spec.relative)
         self.skip.setChecked(spec.skip_incomplete)
         self.frame_metadata = spec.frame_metadata
+        if "rotation_state" in spec.state_fields:
+            self.metadata_status.setText(self.tr(
+                "Detected collective spin rotation. State 0 is the first frame in each structure and magnetic-order group. "
+                "Choose a reference state for energy differences; each plot identifies its angle-zero frame."
+            ))
+        elif "scan_group" in spec.group_fields:
+            self.metadata_status.setText(self.tr(
+                "Coordinates inferred from cells and input moments. Ratios use the recorded reference frame "
+                "in each group; scan_reference_frame records its zero-based index."
+            ))
+        elif "shear_group" in spec.group_fields:
+            self.metadata_status.setText(self.tr(
+                "Shear uses F = H H0⁻¹ and ε = (F + Fᵀ)/2 − I, with γij = 2εij, relative to each group's first cell. "
+                "strain_reference_frame records the reference frame. Review the coordinate before importing."
+            ))
+        elif "pair_group" in spec.group_fields:
+            self.metadata_status.setText(self.tr(
+                "Four-state candidates use ascending zero-based atom indices. The positive endpoint follows the largest "
+                "Cartesian component of each spin difference. Reports E++ + E-- − E+- − E-+; review pair order, signs "
+                "and periodic multiplicity before enabling exchange extraction."
+            ))
         self.exchange.setChecked(spec.extract_exchange)
         self.pair_fields.setText(", ".join(spec.pair_fields))
         self.index_base.setCurrentIndex(spec.index_base)

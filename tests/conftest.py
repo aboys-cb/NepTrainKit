@@ -58,6 +58,10 @@ def _keep_qapplication_alive():
     code 1 after pytest has already printed a successful test summary.
     """
     global _TEST_QAPPLICATION
+    from NepTrainKit.ui.widgets.style_lifetime import keep_created_styles_alive
+
+    # Match configure_app before constructing Fluent menus and popup styles.
+    keep_created_styles_alive()
     _TEST_QAPPLICATION = QApplication.instance() or QApplication([])
     try:
         yield _TEST_QAPPLICATION

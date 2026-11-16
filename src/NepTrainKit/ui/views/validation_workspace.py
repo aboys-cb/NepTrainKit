@@ -56,8 +56,8 @@ from NepTrainKit.core.validation.service import ModelDraft, parse_model_header
 from NepTrainKit.ui.views.model_library import ModelLibraryWidget, RunDetailPanel, format_metric
 from NepTrainKit.ui.widgets.layout import FlowLayout
 from NepTrainKit.ui.widgets.validation_gallery import ValidationGallery
-from NepTrainKit.ui.widgets.validation_presentation import presentation_for, uses_energy_chart
-from NepTrainKit.ui.widgets.reference_response_plot import is_magnetic_eos, magnetic_branches
+from NepTrainKit.ui.widgets.validation_presentation import presentation_for, uses_curve_chart
+from NepTrainKit.ui.widgets.reference_response_plot import is_magnetic_eos, response_branches
 from NepTrainKit.ui.widgets.validation_group_comparison import ValidationGroupComparison
 from NepTrainKit.ui.widgets.validation_dialogs import BenchmarkImportDialog
 from NepTrainKit.ui.widgets.validation_model_picker import ModelColorButton, ValidationModelPicker, group_marker_icon, model_role
@@ -945,7 +945,7 @@ class ValidationWorkspace(ModelLibraryWidget):
         self.edit_models.setText("+" if self.width() < 700 else "+  " + self.tr("Add models"))
         width = self.main_panel.width()
         eos = (self.pages.currentWidget() is self.result_page and self.detail._groups
-               and uses_energy_chart(self.detail._groups[0][1]) and self.editor_scroll.isHidden())
+               and uses_curve_chart(self.detail._groups[0][1]) and self.editor_scroll.isHidden())
         self.chart_tools.setVisible(bool(eos))
         self.add_eos_groups.setText(self.tr("Comparison groups") if width >= 530 else "")
         candidates = [b for i, b in enumerate(self.plot_switches) if self._plot_switch_available(i)] if eos else []
@@ -1030,6 +1030,12 @@ class ValidationWorkspace(ModelLibraryWidget):
                 self._run_validation(jobs=jobs)
 
     def _plot_switch_available(self, index):
+        if self.detail._groups and index in (1, 2):
+            item = self.detail._groups[0][1]
+            if item["protocol"] == "response":
+                spec = item["summary"]["analysis"]
+                if spec["mode"] != "scan" or spec["quantity"] != "energy":
+                    return False
         return not (self.detail._eos_residual and index < 2)
 
     def _chart_options_menu(self):
@@ -1098,8 +1104,8 @@ class ValidationWorkspace(ModelLibraryWidget):
         families = {}
         for item in self._items:
             view = presentation_for(item["protocol"])
-            if is_magnetic_eos(item):
-                families[item["id"]] = [(n, branch[0]) for n, branch in enumerate(magnetic_branches(item))]
+            if item["protocol"] == "response" and uses_curve_chart(item):
+                families[item["id"]] = [(n, branch[0]) for n, branch in enumerate(response_branches(item))]
             elif view.source_group:
                 group = view.group(item)
                 family = view.family(item) or item["id"]
@@ -1527,10 +1533,11 @@ class ValidationWorkspace(ModelLibraryWidget):
         candidates = []
         view = presentation_for(benchmark["protocol"]) if benchmark else None
         family = view.family(benchmark) if view else None
-        magnetic = benchmark and is_magnetic_eos(benchmark)
+        magnetic = benchmark and benchmark["protocol"] == "response" and uses_curve_chart(benchmark)
         current = self._focused_reference
         if magnetic:
-            branches = magnetic_branches(benchmark)
+            self.service().response_plot_series(benchmark)
+            branches = response_branches(benchmark)
             candidates = [(key, label, self.tr("{count} frames").format(count=len(indices)))
                           for key, label, indices in branches]
             keys = [key for key, _, _ in candidates]
@@ -1538,7 +1545,12 @@ class ValidationWorkspace(ModelLibraryWidget):
                 current = self.groups.current
             else:
                 current = keys[0]
-                self.groups.comparisons = set(keys[1:])
+                series = benchmark["summary"].get("plot_series") or []
+                if presentation_for("response").item_badge(benchmark) == "MAE" and series:
+                    self.groups.comparisons = {key for key, branch in zip(keys[1:], series[1:])
+                                              if branch.get("plane") == series[0].get("plane")}
+                else:
+                    self.groups.comparisons = set(keys[1:])
                 self.groups.focused = False
         elif family:
             for item in self.visible_items():
@@ -1553,7 +1565,7 @@ class ValidationWorkspace(ModelLibraryWidget):
         self.detail.magnetic_can_focus = bool(magnetic and self.groups.comparisons)
         self.detail.eos_current_id = current if len(candidates) > 1 else None
         self.add_eos_groups.setVisible(len(candidates) > 1)
-        eos = bool(benchmark and uses_energy_chart(benchmark))
+        eos = bool(benchmark and uses_curve_chart(benchmark))
         self.chart_tools.setVisible(eos)
         self.standard_options.setVisible(not eos)
         self.detail.title_label.setVisible(not eos)

@@ -1106,6 +1106,18 @@
 <context>
     <name>BenchmarkImportDialog</name>
     <message>
+        <source>Automatic · geometry and magnetic order</source>
+        <translation>自动识别 · 结构与磁序</translation>
+    </message>
+    <message>
+        <source>state {index}</source>
+        <translation>状态 {index}</translation>
+    </message>
+    <message>
+        <source>Rotation angle θ (°)</source>
+        <translation>旋转角 θ (°)</translation>
+    </message>
+    <message>
         <source>Validation type</source>
         <translation>验证类型</translation>
     </message>
@@ -19869,6 +19881,30 @@ All child items will also be deleted.</source>
 <context>
     <name>RunDetailPanel</name>
     <message>
+        <source>Combination index</source>
+        <translation>组合序号</translation>
+    </message>
+    <message>
+        <source>0° = frame {index}</source>
+        <translation>0° = 第 {index} 帧</translation>
+    </message>
+    <message>
+        <source>frame {index}</source>
+        <translation>第 {index} 帧</translation>
+    </message>
+    <message>
+        <source>Rotation angle θ (°)</source>
+        <translation>旋转角 θ (°)</translation>
+    </message>
+    <message>
+        <source>Path image</source>
+        <translation>路径序号</translation>
+    </message>
+    <message>
+        <source>Direction · angle unavailable</source>
+        <translation>自旋方向 · 缺少角度</translation>
+    </message>
+    <message>
         <source>No visible curve values.</source>
         <translation>当前没有可见的曲线数值。</translation>
     </message>
@@ -20454,6 +20490,10 @@ Dataset SHA-256: {data}</source>
 </context>
 <context>
     <name>RuntimeMessage</name>
+    <message>
+        <source>No complete, unambiguous uniform-volume scans were found.</source>
+        <translation>未找到分组明确且完整的均匀体积扫描。</translation>
+    </message>
     <message>
         <source>Cached magnetic-force output {file} has shape {shape}, expected ({rows}, 6).</source>
         <translation>缓存的磁力输出 {file} 形状为 {shape}，预期为 ({rows}, 6)。</translation>
@@ -32601,6 +32641,22 @@ Type: {kind} · Elements: {elements}</source>
 </context>
 <context>
     <name>ReferenceAnalysisEditor</name>
+    <message>
+        <source>Coordinates inferred from cells and input moments. Ratios use the recorded reference frame in each group; scan_reference_frame records its zero-based index.</source>
+        <translation>已从晶胞和输入磁矩识别扫描坐标。比例以各组记录的参考帧为基准，scan_reference_frame 保存其从 0 开始的帧号。</translation>
+    </message>
+    <message>
+        <source>Shear uses F = H H0⁻¹ and ε = (F + Fᵀ)/2 − I, with γij = 2εij, relative to each group's first cell. strain_reference_frame records the reference frame. Review the coordinate before importing.</source>
+        <translation>剪切以每组首帧晶胞为参照，采用 F = H H0⁻¹、ε = (F + Fᵀ)/2 − I、γij = 2εij。strain_reference_frame 保存参考帧号，请在导入前核对坐标。</translation>
+    </message>
+    <message>
+        <source>Four-state candidates use ascending zero-based atom indices. The positive endpoint follows the largest Cartesian component of each spin difference. Reports E++ + E-- − E+- − E-+; review pair order, signs and periodic multiplicity before enabling exchange extraction.</source>
+        <translation>四态候选按从 0 开始的原子序号升序排列，正向由各自旋差的最大笛卡尔分量确定。当前报告 E++ + E-- − E+- − E-+；启用交换投影前请确认原子对顺序、符号和周期倍数。</translation>
+    </message>
+    <message>
+        <source>Detected collective spin rotation. State 0 is the first frame in each structure and magnetic-order group. Choose a reference state for energy differences; each plot identifies its angle-zero frame.</source>
+        <translation>已识别集体自旋转动。状态 0 对应每个结构和磁序组的首帧。可选择能差参考态，图中会标明各平面的角度零点帧。</translation>
+    </message>
     <message>
         <source>Accuracy by group</source>
         <translation>分组精度统计</translation>

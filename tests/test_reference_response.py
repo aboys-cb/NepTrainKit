@@ -33,6 +33,137 @@ def four_states(geometry="A", coupling=0.001):
     return result
 
 
+def mae_frames():
+    frames = []
+    directions = dict(p=(0, 0, 1), q=(1, 0, 0), t=(0, 1, 0),
+                      pq=(1, 0, 1), pmq=(-1, 0, 1), pt=(0, 1, 1), qt=(1, 1, 0))
+    for n, (name, vector) in enumerate(directions.items()):
+        a = spin_frame(observable="MAE", geometry="A", direction=name, energy=-10 + n * .00001)
+        vector = np.asarray(vector) / np.linalg.norm(vector) * 2.
+        a.set_initial_magnetic_moments([vector, -vector])
+        frames.append(a)
+    a = frames[0].copy()
+    a.info.pop("direction")
+    a.info.update(plane="pq", angle_deg=15., energy=-9.999998)
+    vector = np.array([np.sin(np.pi / 12), 0, np.cos(np.pi / 12)]) * 2.
+    a.set_initial_magnetic_moments([vector, -vector])
+    return frames + [a]
+
+
+def test_mae_angles_preserve_reference_terms_and_separate_planes():
+    from NepTrainKit.core.validation.protocols.response import suggest_response_settings
+
+    frames = mae_frames()
+    summary = ReferenceResponseProtocol(suggest_response_settings(frames)).summarize_reference(frames)
+    branches = {s["plane"]: s for s in summary["plot_series"]}
+    assert set(branches) == {"pq", "pt", "qt"}
+    assert branches["pq"]["x"] == [-45., 0., 15., 45., 90.]
+    assert branches["qt"]["x"] == [0., 45., 90.]
+    assert branches["pq"]["indices"][1] is None
+    assert all(branch["reference"] == "p" for branch in branches.values())
+    assert summary["reference"] == pytest.approx([5., 10., 15., 20., 25., 30., 1.])
+    assert summary["rows"][0]["terms"] == [(1, 1.), (0, -1.)]
+
+
+def test_unlabelled_rotation_uses_first_frame_zero_and_respects_selected_reference():
+    from NepTrainKit.core.validation.protocols.response import suggest_response_settings
+
+    frames = []
+    for angle in (30., -30., 60., 0.):
+        a = spin_frame(energy=-10 + (angle + 30) * 1e-6)
+        vector = np.array([np.cos(np.radians(angle)), np.sin(np.radians(angle)), 0]) * 2
+        a.set_initial_magnetic_moments([vector, -vector])
+        frames.append(a)
+    settings = suggest_response_settings(frames)
+    assert settings["reference"] == "0" and settings["state_fields"] == ["rotation_state"]
+    assert all(set(a.info) == {"energy"} for a in frames)
+    summary = ReferenceResponseProtocol(settings).summarize_reference(frames)
+    branch, = summary["plot_series"]
+    assert branch["x"] == [-60., -30., 0., 30.]
+    assert branch["zero_frame"] == branch["reference_frame"] == 0
+    assert [0 if i is None else summary["reference"][i] for i in branch["indices"]] == pytest.approx([-30, -15, 0, 15])
+    changed = ReferenceResponseProtocol(dict(settings, reference="1")).summarize_reference(frames)
+    branch, = changed["plot_series"]
+    assert branch["zero_frame"] == branch["reference_frame"] == 1
+    assert branch["x"] == [0., 30., 60., 90.]
+
+
+def test_unlabelled_rotation_keeps_ferro_and_antiferro_sublattices_separate():
+    from NepTrainKit.core.validation.protocols.response import suggest_response_settings
+
+    frames = []
+    for signs in ((1, 1), (1, -1)):
+        for angle in (0., 45., 90.):
+            vector = np.array([np.cos(np.radians(angle)), 0, np.sin(np.radians(angle))]) * 2
+            a = spin_frame(energy=-10 + angle * 1e-6)
+            a.set_initial_magnetic_moments([sign * vector for sign in signs])
+            frames.append(a)
+    settings = suggest_response_settings(frames)
+    metadata = settings["frame_metadata"]
+    assert metadata["0"]["rotation_group"].startswith("FM")
+    assert metadata["3"]["rotation_group"].startswith("AFM")
+    summary = ReferenceResponseProtocol(settings).summarize_reference(frames)
+    assert {s["reference_frame"] for s in summary["plot_series"]} == {0, 3}
+    assert len(summary["series"]) == 2
+    assert all(all(i < 3 for i in g["frame_indices"]) or all(i >= 3 for i in g["frame_indices"])
+               for g in summary["series"])
+
+
+def test_unlabelled_mae_recognises_multiple_planes_and_preserves_geometry_groups():
+    from NepTrainKit.core.validation.protocols.response import suggest_response_settings
+
+    frames = mae_frames()
+    for a in frames:
+        for key in ("direction", "plane", "angle_deg", "observable"):
+            a.info.pop(key, None)
+    settings = suggest_response_settings(frames)
+    summary = ReferenceResponseProtocol(settings).summarize_reference(frames)
+    assert {s["plane"] for s in summary["plot_series"]} == {"XY", "XZ", "YZ"}
+    assert {s["reference_frame"] for s in summary["plot_series"]} == {0}
+    assert all(s["axis"] == "angle_deg" for s in summary["plot_series"])
+    changed = [a.copy() for a in frames]
+    for a in changed:
+        a.positions[1, 0] += .1
+        a.info["geometry"] = "B"
+    summary = ReferenceResponseProtocol(suggest_response_settings(frames + changed)).summarize_reference(frames + changed)
+    assert len(summary["series"]) == 2 and len(summary["plot_series"]) == 6
+
+
+def test_rotation_guess_rejects_local_tilts_and_missing_energy():
+    from NepTrainKit.core.validation.protocols.response import suggest_response_settings
+
+    frames = [spin_frame(energy=-10), spin_frame(energy=-9)]
+    frames[1].set_initial_magnetic_moments([[.1, 0, 2], [0, 0, -2]])
+    assert suggest_response_settings(frames)["mode"] == "slices"
+    for a in frames:
+        a.info.pop("energy")
+    assert suggest_response_settings(frames)["mode"] == "slices"
+
+
+def test_mae_explicit_angles_work_without_direction_endpoints():
+    frames = [spin_frame(geometry="A", plane="ab", angle_deg=angle, energy=-10 + angle * .000001)
+              for angle in (0., 30., 60.)]
+    spec = ResponseSpec(mode="difference", group_fields=("geometry",), state_fields=("plane", "angle_deg"),
+                        reference="ab,0", energy_unit="μeV", x_field="angle_deg")
+    summary = ReferenceResponseProtocol(spec.to_dict()).summarize_reference(frames)
+    # An explicitly configured angular scan uses its real coordinates.
+    assert summary["reference"] == pytest.approx([15., 30.])
+    assert summary["plot_series"][0]["x"] == [0., 30., 60.]
+
+
+def test_path_difference_plots_follow_images_and_keep_each_reference():
+    frames = []
+    for image in (2, 0, 1):
+        for state, delta in (("Gp", 0.), ("Gq", .001 * image)):
+            frames.append(spin_frame(path="A", image=image, family=state, energy=-10 + delta))
+    spec = ResponseSpec(mode="difference", group_fields=("path", "image"),
+                        state_fields=("family",), reference="Gp")
+    summary = ReferenceResponseProtocol(spec.to_dict()).summarize_reference(frames)
+    branch, = summary["plot_series"]
+    assert branch["axis"] == "image" and branch["x"] == [0., 1., 2.]
+    assert [summary["reference"][i] for i in branch["indices"]] == pytest.approx([0., .5, 1.])
+
+
 class SignedPredictor:
     backend = "analytic"
 
@@ -193,6 +324,42 @@ def test_spin_eos_accepts_fixed_order_and_rejects_moment_changes():
     assert any("magnetic order" in i.message for i in protocol.check(frames))
 
 
+def test_public_unlabelled_mae_import_preserves_reference_mapping_and_angle_preview(tmp_path):
+    frames = mae_frames()
+    for a in frames:
+        a.info = {"energy": a.info["energy"]}
+    path = tmp_path / "unlabelled.xyz"
+    write(path, frames, format="extxyz")
+    service = ValidationService(Library(tmp_path / "library"))
+    host = QWidget()
+    host.resize(1180, 800)
+    dialog = BenchmarkImportDialog(host)
+    dialog.protocol_combo.setCurrentIndex(dialog.protocol_combo.findData("response"))
+    dialog.load_file(path)
+    dialog.suite_combo.setText("Automatic MAE")
+    editor = dialog.analysis_editor
+    assert editor.preset.currentData() == "difference"
+    assert editor.reference.text() == "0"
+    assert "Detected collective spin rotation" in editor.metadata_status.text()
+    assert not dialog.validation_errors(), dialog.validation_errors()
+    plot = dialog.preview_plot
+    xlabel = plot.x_label.text() if hasattr(plot, "x_label") else plot.getAxis("bottom").labelText
+    assert xlabel == "Rotation angle θ (°)"
+    editor.reference.setText("1")
+    QApplication.processEvents()
+    assert not dialog.validation_errors(), dialog.validation_errors()
+    record, = dialog.import_into(service, lambda _: True)
+    saved = service.get_set(record["id"])
+    assert saved["source_ref"]["analysis"]["reference"] == "1"
+    assert saved["summary"]["plot_series"][0]["reference_frame"] == 1
+    restored = service.set_frames(saved["id"])
+    assert all("rotation_state" not in a.info for a in restored)
+    editor.set_frames(frames)
+    assert editor.reference.text() == "0"
+    dialog.close()
+    host.close()
+
+
 def test_public_import_preview_saves_recipe_and_draws_small_cards(tmp_path):
     service = ValidationService(Library(tmp_path / "library"))
     path = tmp_path / "jd.xyz"
@@ -219,7 +386,8 @@ def test_public_import_preview_saves_recipe_and_draws_small_cards(tmp_path):
     widget.show()
     QApplication.processEvents()
     assert len(widget.detail.eos_plots) == 1
-    assert widget.detail.eos_cards[0].height() == 300
+    assert widget.detail.eos_cards[0].minimumHeight() < 300
+    assert widget.detail.eos_plots[0].listDataItems()[0].yData == pytest.approx([4.])
     widget.close()
     host.close()
 

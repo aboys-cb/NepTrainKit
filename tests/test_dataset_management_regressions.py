@@ -312,6 +312,25 @@ def registry(tmp_path, monkeypatch):
     page.deleteLater()
 
 
+def test_duplicate_project_name_keeps_original_and_allows_retry(registry):
+    from NepTrainKit.ui.widgets.dialog import ProjectInfoMessageBox
+
+    projects = registry.project_service
+    first = projects.create_project("A")
+    projects.create_project("B")
+    dialog = ProjectInfoMessageBox(registry)
+    dialog.existing_names = {"B"}
+    dialog.project_name.setText(" B ")
+    assert not dialog.validate() and not dialog.name_error.isHidden()
+    with pytest.raises(ValueError, match="Project name already exists"):
+        projects.modify_project(first.id, "B")
+    assert projects.get_project_by_id(first.id).name == "A"
+    dialog.project_name.setText("C")
+    assert dialog.validate() and dialog.name_error.isHidden()
+    projects.modify_project(first.id, "C")
+    assert projects.get_project_by_id(first.id).name == "C"
+
+
 def test_moved_project_reloads_the_selected_scope(registry):
     projects, models = registry.project_service, registry.model_service
     parent, other = projects.create_project("Parent"), projects.create_project("Other")

@@ -314,6 +314,23 @@ def test_registry_filters_projects_and_shares_live_validation_roles(scored, monk
     page.deleteLater()
 
 
+def test_registry_refresh_preserves_its_own_suite(scored, monkeypatch):
+    monkeypatch.setenv("NEPTRAINKIT_LIBRARY", str(scored.service.library.root))
+    monkeypatch.setattr(data_manager_module, "seed_nep_data_git", lambda *_: None)
+    other = scored.service.create_suite("EOS only", [scored.eos["id"]])
+    page = data_manager_module.DataManagerWidget()
+    page.show()
+    page.library_widget.refresh(scored.suite["id"])
+    page.show_projects()
+    view = page.data_item_widget
+    view.suite_filter.setCurrentIndex(view.suite_filter.findData(other["id"]))
+    page.show_projects()
+    assert view.suite_filter.currentData() == other["id"]
+    assert {col["set_id"] for col in view.score_columns} == {scored.eos["id"]}
+    page.close()
+    page.deleteLater()
+
+
 def test_registry_header_sorts_all_versions_and_restores_tree():
     widget = ModelItemWidget()
     widget.resize(1100, 600)

@@ -1,8 +1,10 @@
 """Database utilities for the data manager."""
 from __future__ import annotations
 
+import json
 import sqlite3
 from contextlib import contextmanager
+from itertools import groupby
 from pathlib import Path
 
 from sqlalchemy import create_engine,event
@@ -12,7 +14,7 @@ from .models import Base
 
 # Bump together with a new entry in ``_MIGRATIONS``. Migrations are frozen SQL:
 # never edit one that has shipped, add a new step instead.
-SCHEMA_VERSION = 3
+SCHEMA_VERSION = 4
 
 
 def _columns(conn: sqlite3.Connection, table: str) -> set[str]:
@@ -143,7 +145,40 @@ def _migrate_3_validation_groups(conn: sqlite3.Connection) -> None:
         conn.execute("ALTER TABLE benchmark_suite_sets ADD COLUMN display_name TEXT NOT NULL DEFAULT ''")
 
 
-_MIGRATIONS = {1: _migrate_1_model_snapshots, 2: _migrate_2_temporary_models, 3: _migrate_3_validation_groups}
+def _migrate_4_accuracy_source(conn: sqlite3.Connection) -> None:
+    columns = _columns(conn, "model_versions")
+    if not columns or "accuracy_source" in columns:
+        return
+    conn.execute("ALTER TABLE model_versions ADD COLUMN accuracy_source JSON")
+    if not _columns(conn, "events"):
+        return
+    events = conn.execute("""
+        SELECT m.id, m.energy, m.force, m.virial, e.id, e.payload_json
+        FROM events e JOIN model_versions m ON m.id = e.entity_id
+        WHERE e.entity_type = 'model_version' AND e.action = 'import_accuracy'
+          AND json_extract(e.payload_json, '$.model_sha256') = m.content_hash
+        ORDER BY m.id, e.id DESC
+    """)
+    for model_id, history in groupby(events, key=lambda row: row[0]):
+        latest = next(history)
+        summary = json.loads(latest[5])
+        keys = ("energy_rmse", "force_rmse", "virial_rmse")
+        if latest[1:4] != tuple(summary["metrics"].get(key) for key in keys):
+            continue  # Keep manually edited metrics and leave their source unspecified.
+        event_id = latest[4]
+        if summary["status"] != "verified":
+            for event in history:
+                candidate = json.loads(event[5])
+                if candidate["status"] == "verified":
+                    event_id, summary = event[4], candidate
+                    break
+        source = {"event_id": event_id, "group": summary.get("group"), "status": summary["status"]}
+        conn.execute("UPDATE model_versions SET energy=?, force=?, virial=?, accuracy_source=? WHERE id=?",
+                     (*[summary["metrics"].get(key) for key in keys], json.dumps(source), model_id))
+
+
+_MIGRATIONS = {1: _migrate_1_model_snapshots, 2: _migrate_2_temporary_models,
+               3: _migrate_3_validation_groups, 4: _migrate_4_accuracy_source}
 
 
 def migrate(path: str | Path) -> None:

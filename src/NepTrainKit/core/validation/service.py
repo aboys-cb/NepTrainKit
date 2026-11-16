@@ -218,92 +218,109 @@ class ValidationService:
         Temporary validation has no project and can reuse any saved association.
         """
         draft = path if isinstance(path, ModelDraft) else ModelDraft.from_file(path)
-        path = Path(draft.source_path)
-        data = draft.data
-        kind, elements = parse_model_header(data)
         dataset_ref = {}
         if dataset_path and Path(dataset_path).is_file():
             dataset_ref = FileRef.of(dataset_path).to_dict()
         with self.db.write_session() as session:
-            digest = self.library.put_bytes(data)
-            if project_id is not None and session.get(Project, project_id) is None:
-                raise ValueError(f"Project {project_id} not found")
-            target_project = None if temporary else (project_id or self._inbox_project_id(session))
-            query = select(ModelVersion).where(ModelVersion.content_hash == digest)
-            if not temporary:
-                query = query.where(ModelVersion.project_id == target_project)
-            row = session.scalars(query.order_by(ModelVersion.project_id.is_(None), ModelVersion.id)).first()
-            if row is None and not temporary:
-                # Promote the temporary record in place so existing runs keep their identity.
-                row = session.scalars(select(ModelVersion).where(
-                    ModelVersion.content_hash == digest, ModelVersion.project_id.is_(None)
-                )).first()
-                if row is not None:
-                    row.project_id = target_project
-            if row is None:
-                default_name = path.parent.name if path.stem == "nep" else path.stem
-                row = ModelVersion(
-                    name=(name.strip() or default_name or path.name)[:80],
-                    project_id=target_project,
-                    model_type="NEP",
-                    model_path=str(path),
-                    notes=notes,
-                    content_hash=digest,
-                    model_kind=kind,
-                    elements=list(elements),
-                    source_path=str(path),
-                    dataset_ref=dataset_ref,
-                    auto_captured=True if temporary else auto,
-                )
-                session.add(row)
-            else:
-                row.last_seen_at = _now()
-                if not auto and not temporary:
-                    row.auto_captured = False
-                if name.strip() and not temporary:
-                    row.name = name.strip()[:80]
-                if dataset_ref and not row.dataset_ref:
-                    row.dataset_ref = dataset_ref
-            session.commit()
+            row = self._capture_model(session, draft, project_id=project_id, name=name, auto=auto,
+                                      dataset_ref=dataset_ref, notes=notes, temporary=temporary)
             return _record(row)
 
-    def save_model(self, draft: ModelDraft, *, project_name: str, name: str) -> dict:
+    def _capture_model(self, session, draft, *, project_id, name, auto, dataset_ref=None, notes="", temporary=False):
+        path = Path(draft.source_path)
+        kind, elements = parse_model_header(draft.data)
+        digest = self.library.put_bytes(draft.data)
+        if project_id is not None and session.get(Project, project_id) is None:
+            raise ValueError(f"Project {project_id} not found")
+        target_project = None if temporary else (project_id or self._inbox_project_id(session))
+        query = select(ModelVersion).where(ModelVersion.content_hash == digest)
+        if not temporary:
+            query = query.where(ModelVersion.project_id == target_project)
+        row = session.scalars(query.order_by(ModelVersion.project_id.is_(None), ModelVersion.id)).first()
+        if row is None and not temporary:
+            # Promote the temporary record in place so existing runs keep their identity.
+            row = session.scalars(select(ModelVersion).where(
+                ModelVersion.content_hash == digest, ModelVersion.project_id.is_(None)
+            )).first()
+            if row is not None:
+                row.project_id = target_project
+        if row is None:
+            default_name = path.parent.name if path.stem == "nep" else path.stem
+            row = ModelVersion(
+                name=(name.strip() or default_name or path.name)[:80],
+                project_id=target_project,
+                model_type="NEP",
+                model_path=str(path),
+                notes=notes,
+                content_hash=digest,
+                model_kind=kind,
+                elements=list(elements),
+                source_path=str(path),
+                dataset_ref=dataset_ref or {},
+                auto_captured=True if temporary else auto,
+            )
+            session.add(row)
+        else:
+            row.last_seen_at = _now()
+            if not auto and not temporary:
+                row.auto_captured = False
+            if name.strip() and not temporary:
+                row.name = name.strip()[:80]
+            if dataset_ref and not row.dataset_ref:
+                row.dataset_ref = dataset_ref
+        session.flush()
+        return row
+
+    def save_model(self, draft: ModelDraft, *, project_name: str, name: str, accuracy: dict | None = None) -> dict:
         """Explicitly save to a chosen project; other project associations stay unchanged."""
         project_name, name = project_name.strip(), name.strip()
         if not project_name or not name or len(project_name) > 200 or len(name) > 80:
             raise ValueError("Choose a project and a version name (up to 80 characters).")
-        with self.db.session() as session:
+        if not isinstance(draft, ModelDraft):
+            draft = ModelDraft.from_file(draft)
+        with self.db.write_session() as session:
             project = session.scalars(select(Project).where(Project.name == project_name)).first()
             if project is None:
                 project = Project(name=project_name)
                 session.add(project)
-                session.commit()
-            project_id = project.id
-        return self.capture_model(draft, project_id=project_id, name=name, auto=False)
+                session.flush()
+            row = self._capture_model(session, draft, project_id=project.id, name=name, auto=False)
+            if accuracy is not None:
+                self._record_imported_accuracy(session, row, accuracy)
+            return _record(row)
+
+    @staticmethod
+    def _record_imported_accuracy(session, row, summary):
+        if row is None or row.content_hash != summary.get("model_sha256"):
+            raise ValueError("Imported output statistics do not match the saved model snapshot.")
+        metrics = summary.get("metrics", {})
+        status = summary.get("status")
+        if (status not in {"verified", "unverified"}
+                or not any(value is not None for value in metrics.values()) or not _finite_metrics(metrics)):
+            raise ValueError("No usable existing-output statistics are available for this model.")
+        event = Event(entity_type="model_version", entity_id=row.id, action="import_accuracy", payload_json=summary)
+        session.add(event)
+        session.flush()
+        if status == "unverified" and (row.accuracy_source or {}).get("status") == "verified":
+            return
+        row.energy = metrics.get("energy_rmse")
+        row.force = metrics.get("force_rmse")
+        row.virial = metrics.get("virial_rmse")
+        row.accuracy_source = {"event_id": event.id, "group": summary.get("group"), "status": status}
 
     def save_imported_accuracy(self, model_id: int, summary: dict) -> dict:
-        """Keep existing-output statistics in project metadata, separate from validation runs."""
+        """Archive the output summary and update the preferred registered precision."""
         with self.db.write_session() as session:
             row = session.get(ModelVersion, model_id)
-            if row is None or row.content_hash != summary.get("model_sha256"):
-                raise ValueError("Imported output statistics do not match the saved model snapshot.")
-            metrics = summary.get("metrics", {})
-            if (summary.get("status") not in {"verified", "unverified"}
-                    or not any(value is not None for value in metrics.values()) or not _finite_metrics(metrics)):
-                raise ValueError("No usable existing-output statistics are available for this model.")
-            row.energy = summary["metrics"].get("energy_rmse")
-            row.force = summary["metrics"].get("force_rmse")
-            row.virial = summary["metrics"].get("virial_rmse")
-            session.add(Event(entity_type="model_version", entity_id=model_id, action="import_accuracy",
-                              payload_json=summary))
-            session.commit()
+            self._record_imported_accuracy(session, row, summary)
             return _record(row)
 
     def imported_accuracy(self, model_id: int) -> dict:
         with self.db.session() as session:
-            event = session.scalars(select(Event).where(
-                Event.entity_type == "model_version", Event.entity_id == model_id, Event.action == "import_accuracy"
-            ).order_by(Event.id.desc())).first()
+            row = session.get(ModelVersion, model_id)
+            if row is None or not row.accuracy_source:
+                return {}
+            event = session.get(Event, row.accuracy_source["event_id"])
             return dict(event.payload_json) if event else {}
 
     def projects(self) -> list[dict]:

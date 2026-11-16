@@ -91,6 +91,7 @@ class ModelItem:
 
     children:list[ModelItem]=field( default_factory=list)
     model_kind: str = ""
+    accuracy_source: dict | None = None
 
 
 @dataclass
@@ -192,9 +193,11 @@ class ProjectService:
             return None
     def modify_project(self, project_id: int, name: str, notes: str = "", parent_id: int = None ) -> Project|None:
         """Update project attributes and persist the changes."""
-        with self.db.session() as session:
+        with self.db.write_session() as session:
             if session.get(Project, project_id) is None:
                 raise ValueError(f"Project {project_id} not found")
+            if session.scalar(select(Project.id).where(Project.name == name, Project.id != project_id)) is not None:
+                raise ValueError("Project name already exists.")
             seen = {project_id}
             ancestor_id = parent_id
             while ancestor_id is not None:
@@ -206,9 +209,8 @@ class ProjectService:
                     raise ValueError(f"Project {ancestor_id} not found")
                 ancestor_id = ancestor.parent_id
             session.query(Project).filter_by(id=project_id).update(
-                {"name":name,"notes":notes,"parent_id":parent_id}
+                {"name": name, "notes": notes, "parent_id": parent_id}
             )
-            session.commit()
 
 
     def remove_project(self, project_id: int) -> Project|None:
@@ -393,6 +395,7 @@ class ModelService:
         return ModelItem(
             model_id=node.id, name=node.name, notes=node.notes, parent_id=node.parent_id,
             project_id=node.project_id, model_type=node.model_type, model_kind=node.model_kind,
+            accuracy_source=node.accuracy_source,
             data_size=node.data_size, energy=node.energy, force=node.force, virial=node.virial,
             model_path=node.model_path, created_at=node.created_at,
             tags=[TagItem(name=t.name, tag_id=t.id, notes=t.notes, color=t.color) for t in node.tags],
@@ -590,6 +593,8 @@ class ModelService:
                 tag_objs = self._get_or_create_tags_simple(tags, session)
                 mv.tags = set(tag_objs)
             for key, value in kwargs.items():
+                if key in ("energy", "force", "virial") and value != getattr(mv, key):
+                    mv.accuracy_source = None
                 setattr(mv, key, str(value) if key == "model_path" else value)
             session.commit()
             return mv

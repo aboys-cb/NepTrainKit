@@ -4,6 +4,7 @@
 # @email    : 1747193328@qq.com
 from PySide6.QtCore import Qt, Signal
 from PySide6.QtWidgets import QDialog, QVBoxLayout, QWidget
+from sqlalchemy.exc import SQLAlchemyError
 
 from NepTrainKit.config import Config
 from NepTrainKit.core import MessageManager
@@ -185,7 +186,7 @@ class DataManagerWidget(_ModelDropPage):
             if result != QDialog.DialogCode.Accepted:
                 return
             record = dialog.save_model(dialog.draft)
-        except (OSError, ValueError) as error:
+        except (OSError, ValueError, SQLAlchemyError) as error:
             MessageManager.send_error_message(self.tr("Import failed: {error}").format(error=error))
             return
         finally:
@@ -207,7 +208,8 @@ class DataManagerWidget(_ModelDropPage):
 
     def _refresh_projects(self):
         database = get_library().database
-        if database.path != self._db.path:
+        library_changed = database.path != self._db.path
+        if library_changed:
             self._db = database
             self.model_service = ModelService(database)
             self.project_service = ProjectService(database)
@@ -236,16 +238,19 @@ class DataManagerWidget(_ModelDropPage):
         library = self.library_widget
         suites = library.service().suites()
         picker = view.suite_filter
-        previous = library.current_suite_id() if library._library_root == library.service().library.root else None
-        if previous is None:
-            previous = picker.currentData() or Config.getint("validation", "suite", 0)
+        preferred = [picker.currentData()] if not library_changed else []
+        if library._library_root == library.service().library.root:
+            preferred.append(library.current_suite_id())
+        if not library_changed:
+            preferred.append(Config.getint("validation", "suite", 0))
         picker.blockSignals(True)
         picker.clear()
         for suite in suites:
             picker.addItem(suite["name"], userData=suite["id"])
         if not suites:
             picker.addItem(self.tr("No validation suite"))
-        picker.setCurrentIndex(max(0, picker.findData(previous)))
+        suite_ids = [suite["id"] for suite in suites]
+        picker.setCurrentIndex(next((suite_ids.index(key) for key in preferred if key in suite_ids), 0))
         picker.blockSignals(False)
         self._update_suite_summary()
 

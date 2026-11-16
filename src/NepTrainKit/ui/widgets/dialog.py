@@ -1240,6 +1240,7 @@ class DFTD3MessageBox(MessageBoxBase):
 class ProjectInfoMessageBox(MessageBoxBase):
     def __init__(self, parent=None):
         super().__init__(parent)
+        self.existing_names = set()
 
         self._widget = QWidget(self)
 
@@ -1260,13 +1261,17 @@ class ProjectInfoMessageBox(MessageBoxBase):
         self.widget_layout.addWidget(self.project_name, 1, 1)
         self.widget_layout.addWidget(CaptionLabel(self.tr("Project notes"), self), 2, 0)
         self.widget_layout.addWidget(self.project_note, 2, 1)
+        self.name_error = CaptionLabel(self.tr("Project name already exists."), self)
+        self.widget_layout.addWidget(self.name_error, 3, 1)
+        self.name_error.hide()
+        self.project_name.textChanged.connect(self.name_error.hide)
         self.viewLayout.addWidget(self._widget)
 
     def validate(self):
         project_name = self.project_name.text().strip()
-        if len(project_name) == 0:
-            return False
-        return True
+        duplicate = project_name in self.existing_names
+        self.name_error.setVisible(duplicate)
+        return bool(project_name) and not duplicate
 
 
 class ModelInfoMessageBox(MessageBoxBase):

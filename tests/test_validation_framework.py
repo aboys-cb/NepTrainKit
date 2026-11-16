@@ -311,6 +311,30 @@ def test_legacy_database_is_migrated_without_losing_rows(tmp_path):
     Database(path)  # idempotent
 
 
+def test_v3_migration_recovers_verified_metrics_and_preserves_manual_edits(make_service, model_file):
+    service = make_service()
+    draft = ModelDraft.from_file(model_file)
+    verified = {"group": "test", "status": "verified", "model_sha256": draft.content_hash,
+                "metrics": {"energy_rmse": 1., "force_rmse": 2., "virial_rmse": 3.}}
+    unverified = dict(verified, group="train", status="unverified", metrics={"force_rmse": 8.})
+    ids = [service.save_model(draft, name="weights", project_name=name, accuracy=verified)["id"]
+           for name in ("A", "B")]
+    for key in ids:
+        service.save_imported_accuracy(key, unverified)
+    path = service.db.path
+    service.db.engine.dispose()
+    with sqlite3.connect(path) as conn:
+        conn.execute("ALTER TABLE model_versions DROP COLUMN accuracy_source")
+        conn.execute("UPDATE model_versions SET energy=NULL, force=8, virial=NULL")
+        conn.execute("UPDATE model_versions SET force=9 WHERE id=?", (ids[1],))
+        conn.execute("PRAGMA user_version=3")
+    Database(path).engine.dispose()
+    restored, edited = (service.get_model(key) for key in ids)
+    assert (restored["energy"], restored["force"], restored["virial"]) == (1., 2., 3.)
+    assert service.imported_accuracy(ids[0]) == verified
+    assert edited["force"] == 9 and edited["accuracy_source"] is None
+
+
 def test_new_database_starts_at_latest_schema(tmp_path):
     Database(tmp_path / "fresh.db")
     with sqlite3.connect(tmp_path / "fresh.db") as conn:

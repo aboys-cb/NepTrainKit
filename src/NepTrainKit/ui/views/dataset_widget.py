@@ -81,6 +81,14 @@ class RegistryModel(TreeModel):
                             "compare": page.tr("Click to remove from comparison"), "hidden": page.tr("Add to comparison")}[page.role(key)]
                 values = [("E", model.energy, "meV/atom"), ("F", model.force, "meV/Å"), ("V", model.virial, "meV/atom")]
                 metrics = "  ·  ".join(f"{name} {v:.4g} {unit}" for name, v, unit in values if v is not None)
+                source = model.accuracy_source
+                if metrics and source:
+                    group = source.get("group")
+                    scope = {"train": page.tr("Training set"), "test": page.tr("Test set")}.get(group, group)
+                    status = page.tr("Verified") if source["status"] == "verified" else page.tr("Unverified")
+                    metrics += "\n" + " · ".join(filter(None, (scope, status)))
+                elif metrics:
+                    metrics += "\n" + page.tr("Source not recorded")
                 return "\n".join(filter(None, [page.project_names.get(model.project_id), model.name,
                     metrics, model.notes, ", ".join(tag.name for tag in model.tags), str(model.created_at or "")]))
             if role == Qt.ItemDataRole.DisplayRole:

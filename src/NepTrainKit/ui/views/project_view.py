@@ -18,6 +18,7 @@ from NepTrainKit import palette
 from NepTrainKit.core import MessageManager
 from NepTrainKit.core.dataset import DatasetManager
 from NepTrainKit.core.dataset.services import ProjectItem
+from NepTrainKit.ui.messages import translate_runtime_error
 from NepTrainKit.ui.widgets import TreeModel, TreeItem, ProjectInfoMessageBox
 
 
@@ -244,6 +245,8 @@ class ProjectWidget(QWidget, DatasetManager):
             else:
                 box.parent_combox.setCurrentIndex(0)
 
+        box.existing_names = {p.name for p in self.project_item_dict.values()
+                              if not modify or p.project_id != project_id}
         if not box.exec_():
             return
 
@@ -260,7 +263,7 @@ class ProjectWidget(QWidget, DatasetManager):
                     parent_id=parent_id,
                 )
             except ValueError as error:
-                MessageManager.send_error_message(str(error))
+                MessageManager.send_error_message(translate_runtime_error(error))
                 return
             self.load_all_projects()
             self.projectsChanged.emit()

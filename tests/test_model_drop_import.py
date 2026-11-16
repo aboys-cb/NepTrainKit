@@ -155,6 +155,9 @@ def test_import_project_dropdown_selects_an_existing_project_and_allows_typing(m
         QTest.mouseMove(popup.viewport(), position)
         QTest.qWait(QApplication.doubleClickInterval() + 20)
         QTest.mouseClick(popup.viewport(), Qt.LeftButton, pos=position)
+        deadline = time.monotonic() + 2
+        while popup.isVisible() and time.monotonic() < deadline:
+            QTest.qWait(10)
         assert combo.currentText() == project.name and not popup.isVisible()
         combo.lineEdit().selectAll()
         QTest.keyClicks(combo.lineEdit(), "New project")
@@ -277,6 +280,63 @@ def test_existing_outputs_prefill_grouped_rmse_and_save_historical_provenance(tm
     with service.db.session() as session:
         assert session.scalars(select(BenchmarkRun)).all() == []
     dialog.close(); host.close()
+
+
+def test_unverified_reimport_preserves_verified_registry_metrics(model_page, tmp_path):
+    from sqlalchemy import select
+    from NepTrainKit.core.dataset.models import Event
+    from NepTrainKit.core.validation.service import ModelDraft
+
+    page, service = model_page
+    path = write_model(tmp_path / "run" / "nep.txt")
+    draft = ModelDraft.from_file(path)
+    verified = {"group": "test", "status": "verified", "model_sha256": draft.content_hash,
+                "metrics": {"energy_rmse": 1., "force_rmse": 2., "virial_rmse": 3.}}
+    saved = service.save_model(draft, project_name="A", name="weights", accuracy=verified)
+    (path.parent / "force_train.out").write_text(".008 .008 .008 0 0 0\n")
+    dialog = ImportModelDialog(page, service, [path], project_name="A")
+    wait_for_outputs(dialog)
+    record = dialog.save_model(dialog.draft)
+    assert record["id"] == saved["id"]
+    assert (record["energy"], record["force"], record["virial"]) == (1., 2., 3.)
+    assert service.imported_accuracy(record["id"]) == verified
+    with service.db.session() as session:
+        history = session.scalars(select(Event.payload_json).where(Event.action == "import_accuracy")
+                                  .order_by(Event.id)).all()
+    assert len(history) == 2 and history[1]["metrics"]["force_rmse"] == pytest.approx(8)
+    view = page.data_item_widget
+    view.load_models_by_project(None)
+    tip = view._model.index(0, 4).data(Qt.ToolTipRole)
+    assert "Test set · Verified" in tip and "F 2 meV/Å" in tip
+    page.model_service.modify_model(saved["id"], force=6.)
+    assert service.imported_accuracy(saved["id"]) == {}
+    view.load_models_by_project(None)
+    assert "Source not recorded" in view._model.index(0, 4).data(Qt.ToolTipRole)
+    dialog.close()
+
+
+def test_failed_accuracy_write_rolls_back_model_and_new_project(model_page, tmp_path, monkeypatch):
+    page, service = model_page
+    path = write_model(tmp_path / "run" / "nep.txt")
+    (path.parent / "energy_train.out").write_text(".001 0\n")
+    with service.db.engine.begin() as conn:
+        conn.exec_driver_sql("""CREATE TRIGGER fail_accuracy BEFORE INSERT ON events
+            BEGIN SELECT RAISE(ABORT, 'injected accuracy failure'); END""")
+    errors = []
+    monkeypatch.setattr(data_manager.MessageManager, "send_error_message", errors.append)
+    dialog = ImportModelDialog(page, service, [path], project_name="New project")
+    wait_for_outputs(dialog)
+    page._finish_model_import(dialog, dialog.DialogCode.Accepted)
+    assert errors and "injected accuracy failure" in errors[0]
+    assert service.models() == [] and service.projects() == []
+    with service.db.engine.begin() as conn:
+        conn.exec_driver_sql("DROP TRIGGER fail_accuracy")
+    retry = ImportModelDialog(page, service, [path], project_name="New project")
+    wait_for_outputs(retry)
+    page._finish_model_import(retry, retry.DialogCode.Accepted)
+    saved, = service.models()
+    assert saved["energy"] == pytest.approx(1.)
+    assert service.imported_accuracy(saved["id"])["group"] == "train"
 
 
 def test_output_scan_cancels_on_close_and_coalesces_model_changes(tmp_path, monkeypatch):

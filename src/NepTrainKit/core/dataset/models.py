@@ -67,6 +67,7 @@ class ModelVersion(Base):
     energy: Mapped[float | None] = mapped_column(Float, nullable=True)
     force: Mapped[float | None] = mapped_column(Float, nullable=True)
     virial: Mapped[float | None] = mapped_column(Float, nullable=True)
+    accuracy_source: Mapped[dict | None] = mapped_column(JSON, nullable=True)
     model_path: Mapped[str] = mapped_column(Text, nullable=False)
     notes: Mapped[str] = mapped_column(Text, default="")
     parent_id: Mapped[int | None] = mapped_column(

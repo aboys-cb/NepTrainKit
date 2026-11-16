@@ -146,9 +146,10 @@ class SaveModelDialog(MessageBoxBase):
         project = self.project_combo.currentText().strip()
         self.yesButton.setEnabled(bool(project and len(project) <= 200 and self.name_edit.text().strip()))
 
-    def save_model(self, draft):
+    def save_model(self, draft, *, accuracy=None):
         """Save the reviewed bytes and persist the selected destination."""
-        record = self.service.save_model(draft, project_name=self.project_combo.currentText(), name=self.name_edit.text())
+        record = self.service.save_model(draft, project_name=self.project_combo.currentText(),
+                                         name=self.name_edit.text(), accuracy=accuracy)
         if self.service.library.root != self._initial_library_root:
             Config.set(CONFIG_SECTION, CONFIG_LIBRARY_PATH, str(self.service.library.root))
         Config.set("validation", "last_save_project", self.project_combo.currentText().strip())
@@ -304,13 +305,12 @@ class ImportModelDialog(SaveModelDialog):
         self.output_status.setToolTip(text)
 
     def save_model(self, draft):
-        record = super().save_model(draft)
         summary = self._output_summaries.get(self.output_combo.currentData(), {})
         if summary.get("status") in {"verified", "unverified"} and any(
             value is not None for value in summary.get("metrics", {}).values()
         ):
-            record.update(self.service.save_imported_accuracy(record["id"], summary))
-        return record
+            return super().save_model(draft, accuracy=summary)
+        return super().save_model(draft)
 
     def done(self, result):
         self._pending_output_scan = None

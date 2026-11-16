@@ -16194,6 +16194,26 @@ Baseline model: {baseline}</source>
 <context>
     <name>ModelItemWidget</name>
     <message>
+        <source>Training set</source>
+        <translation>训练集</translation>
+    </message>
+    <message>
+        <source>Test set</source>
+        <translation>测试集</translation>
+    </message>
+    <message>
+        <source>Verified</source>
+        <translation>已核验</translation>
+    </message>
+    <message>
+        <source>Unverified</source>
+        <translation>未核验</translation>
+    </message>
+    <message>
+        <source>Source not recorded</source>
+        <translation>未登记来源</translation>
+    </message>
+    <message>
         <source>Matches baseline</source>
         <translation>与基准相同</translation>
     </message>
@@ -18588,6 +18608,10 @@ Done {done}    Pending {pending}    Failed {failed}    Unsupported {unsupported}
 </context>
 <context>
     <name>ProjectInfoMessageBox</name>
+    <message>
+        <source>Project name already exists.</source>
+        <translation>项目名称已存在。</translation>
+    </message>
     <message>
         <location filename="../ui/widgets/dialog.py" line="1250" />
         <location filename="../ui/widgets/dialog.py" line="1259" />

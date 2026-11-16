@@ -567,7 +567,7 @@ class BenchmarkImportDialog(QDialog):
         super().resizeEvent(event)
         narrow = self.width() < 880
         self._columns.setDirection(QBoxLayout.Direction.TopToBottom if narrow else QBoxLayout.Direction.LeftToRight)
-        self._source_row.setDirection(QBoxLayout.Direction.TopToBottom if self.width() < 680 else QBoxLayout.Direction.LeftToRight)
+        self._source_row.setDirection(QBoxLayout.Direction.TopToBottom if narrow else QBoxLayout.Direction.LeftToRight)
         self.group_table.setMaximumHeight(190 if narrow else 16777215)
 
     def accept(self):

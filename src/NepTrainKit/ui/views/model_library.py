@@ -897,7 +897,7 @@ class RunDetailPanel(QWidget):
                 pin_btn = TransparentToolButton(
                     FluentIcon.PIN.colored(palette.PLOT_CURRENT, palette.PLOT_CURRENT), holder
                 )
-                pin_btn.setToolTip("将该对比势直接设为当前方案基准势 (Baseline)")
+                pin_btn.setToolTip(self.tr("Set baseline model"))
                 pin_btn.setFixedSize(26, 26)
                 pin_btn.clicked.connect(lambda _checked=False, series=key: self.baselineRequested.emit(series))
                 row.addWidget(pin_btn)
@@ -1503,7 +1503,7 @@ class ModelLibraryWidget(QWidget):
                     pill,
                 )
                 pin.setFixedSize(22, 22)
-                pin.setToolTip("设为当前套件基准势 (Baseline)")
+                pin.setToolTip(self.tr("Set baseline model"))
                 pin.clicked.connect(lambda _=False, mid=model_id: self.set_baseline_for_model(mid))
                 pill_layout.addWidget(pin)
 

@@ -105,20 +105,25 @@ def test_parameter_edit_invalidates_completed_outputs_and_downstream():
     first.set_params(SuperCellParams(super_scale=(2, 1, 1)))
     following.set_params(SuperCellParams(super_scale=(3, 1, 1)))
     page.dataset = [Atoms("Fe", cell=[3, 3, 3], pbc=True)]
-    page.run_card()
-    assert _wait_until(lambda: following.run_outcome == "succeeded")
-    assert len(following.result_dataset[0]) == 6
-    first.collapse_button.click()
-    assert len(following.result_dataset[0]) == 6, "presentation controls must not invalidate outputs"
-    first.super_scale_condition_frame.set_input_value([4, 1, 1])
-    assert first.result_dataset == following.result_dataset == []
-    assert first.run_outcome == following.run_outcome == "idle"
-    assert not first.export_button.isEnabled()
-    assert page._cards_for_export(include_all=True) == []
-    page.run_card()
-    assert _wait_until(lambda: following.run_outcome == "succeeded")
-    assert len(following.result_dataset[0]) == 12
-    page.close()
+    try:
+        page.run_card()
+        # Two Python workers and their queued transitions share four busy CI processes.
+        assert _wait_until(lambda: following.run_outcome == "succeeded", timeout_ms=30000), (
+            first.run_outcome, following.run_outcome, first.status_label.text(), following.status_label.text())
+        assert len(following.result_dataset[0]) == 6
+        first.collapse_button.click()
+        assert len(following.result_dataset[0]) == 6, "presentation controls must not invalidate outputs"
+        first.super_scale_condition_frame.set_input_value([4, 1, 1])
+        assert first.result_dataset == following.result_dataset == []
+        assert first.run_outcome == following.run_outcome == "idle"
+        assert not first.export_button.isEnabled()
+        assert page._cards_for_export(include_all=True) == []
+        page.run_card()
+        assert _wait_until(lambda: following.run_outcome == "succeeded", timeout_ms=30000), (
+            first.run_outcome, following.run_outcome, first.status_label.text(), following.status_label.text())
+        assert len(following.result_dataset[0]) == 12
+    finally:
+        page.close()
 
 
 @pytest.mark.parametrize("container", [None, "CardGroup", "WorkflowFork"])

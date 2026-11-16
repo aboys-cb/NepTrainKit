@@ -20603,6 +20603,10 @@ Dataset SHA-256: {data}</source>
         <source>Dataset statistics and export</source>
         <translation>数据集统计与导出</translation>
     </message>
+    <message>
+        <source>Set baseline model</source>
+        <translation>设为基准势</translation>
+    </message>
 </context>
 <context>
     <name>RuntimeMessage</name>
@@ -22186,6 +22190,10 @@ Dataset SHA-256: {data}</source>
     <message>
         <source>This item selects an EOS subgroup. Keep its protocol when editing; create a new reference item for a different analysis.</source>
         <translation>此验证项引用一个 EOS 子组。编辑时保留协议；其他分析请另建验证项。</translation>
+    </message>
+    <message>
+        <source>Moment sampling requires non-zero input magnetic moments.</source>
+        <translation>磁矩采样需要非零的输入磁矩。</translation>
     </message>
 </context>
 <context>

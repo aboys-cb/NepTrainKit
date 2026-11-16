@@ -61,6 +61,7 @@ class PyqtgraphCurvePlot(pg.PlotWidget):
         if self.plotItem.legend:
             for sample, _ in self.plotItem.legend.items:
                 sample.setAcceptedMouseButtons(Qt.MouseButton.NoButton)
+        self.fit()
 
     def fit(self):
         view = self.getViewBox()

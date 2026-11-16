@@ -703,7 +703,7 @@ def test_model_color_buttons_update_live_curves_and_remember_the_version(scored)
 
 def test_model_strip_wraps_after_four_complete_cards(scored, tmp_path):
     from NepTrainKit.ui.views.validation_workspace import ValidationWorkspace
-    from test_validation_ui import _capture
+    from test_validation_ui import _capture, _wait_until
 
     extra = [_capture(scored.service, tmp_path, name) for name in ("candidate-four", "candidate-five")]
     w = ValidationWorkspace(service=scored.service)
@@ -713,11 +713,15 @@ def test_model_strip_wraps_after_four_complete_cards(scored, tmp_path):
     w.show()
     QApplication.processEvents()
     reserved = w.width() - w.card_scroll.width()
+    cards = list(w.cards.values())
+    readable = max(card.minimumSizeHint().width() + 10 * card.name.fontMetrics().averageCharWidth()
+                   for card in cards)
+    gap = w.card_scroll.flow.horizontalSpacing()
     for strip_width, columns in ((1500, 4), (970, 3)):
+        # System fonts change the space required by the role and action buttons.
+        strip_width = max(strip_width, columns * readable + (columns - 1) * gap)
         w.resize(reserved + strip_width, 700)
-        QApplication.processEvents()
-        cards = list(w.cards.values())
-        assert [c.y() == 0 for c in cards] == [True] * columns + [False] * (5 - columns)
+        assert _wait_until(lambda: [c.y() == 0 for c in cards] == [True] * columns + [False] * (5 - columns))
         assert cards[columns].x() == cards[0].x()
         assert len({c.width() for c in cards}) == 1
         assert all(c.geometry().right() < w.card_scroll.viewport().width() for c in cards)
@@ -737,14 +741,17 @@ def test_pinning_a_comparison_keeps_cards_columns_and_plot_in_place(scored):
     w.show()
     w.open_item(scored.eos["id"])
     w.comparison_picker.set_selected_ids([new])
-    w.resize(1700, 650)
     QApplication.processEvents()
     cards = w.cards.copy()
-    assert len({card.y() for card in cards.values()}) == 1
+    readable = max(card.minimumSizeHint().width() + 10 * card.name.fontMetrics().averageCharWidth()
+                   for card in cards.values())
+    reserved = w.width() - w.card_scroll.width()
+    w.resize(max(1700, reserved + 3 * readable + 2 * w.card_scroll.flow.horizontalSpacing()), 650)
+    from test_validation_ui import _wait_until
+    assert _wait_until(lambda: len({card.y() for card in cards.values()}) == 1)
     one_row = w.controls_panel.height()
     assert "evaluated" in w.suite_combo.toolTip()
     w.resize(550, 650)
-    from test_validation_ui import _wait_until
     assert _wait_until(lambda: w.controls_panel.height() > one_row)
     card_height = max(card.height() for card in cards.values())
     assert one_row < w.controls_panel.height() <= one_row + card_height + 4 + w.card_scroll.horizontalScrollBar().sizeHint().height()

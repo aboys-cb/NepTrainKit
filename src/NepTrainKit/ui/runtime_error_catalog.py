@@ -20,6 +20,7 @@ RUNTIME_ERROR_TEMPLATES = (
     ('RuntimeMessage', 'Every reference frame needs a total energy label in eV.'),
     ('RuntimeMessage', 'The file contains no structures.'),
     ('RuntimeMessage', 'No force labels; only energies will be compared.'),
+    ('RuntimeMessage', 'Moment sampling requires non-zero input magnetic moments.'),
     ('CardOperationError', 'At least one dopant ratio must be positive.'),
     ('CardOperationError', 'At least one replacement probability must be positive.'),
     ('CardOperationError', 'BainPath ca_range values must be positive.'),

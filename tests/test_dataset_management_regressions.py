@@ -1,6 +1,7 @@
 """Ownership, transactional imports, library publication and registry refresh."""
 
 import datetime as dt
+from hashlib import sha256
 from contextlib import contextmanager
 from pathlib import Path
 import subprocess
@@ -111,10 +112,12 @@ def test_large_copy_confirmation_keeps_the_reviewed_bytes(make_service, tmp_path
     service = make_service()
     path = write_xyz(tmp_path / "preview.xyz", frames())
     reviewed = path.read_bytes()
-    from types import SimpleNamespace
-    dialog = SimpleNamespace(validation_errors=lambda: [], _loaded_bytes=reviewed,
-        values=lambda: dict(path=str(path), name="reviewed", provenance={}, protocol=protocol, suite="plan"),
-        group_field_combo=SimpleNamespace(currentData=lambda: None), tr=lambda text: text, _invalidate_file=Mock())
+    dialog = BenchmarkImportDialog(suite_name="plan")
+    dialog.protocol_combo.setCurrentIndex(dialog.protocol_combo.findData(protocol))
+    dialog.load_file(path)
+    if protocol == "eos":
+        dialog.group_field_combo.setCurrentIndex(dialog.group_field_combo.findData(""))
+    assert dialog.yesButton.isEnabled()
     original = service.import_set
     monkeypatch.setattr(service, "import_set", lambda path, **kwargs: original(path, max_bytes=1, **kwargs))
     def confirm(_error):
@@ -123,10 +126,11 @@ def test_large_copy_confirmation_keeps_the_reviewed_bytes(make_service, tmp_path
         return True
     if change:
         with pytest.raises(ValueError, match="file changed"):
-            BenchmarkImportDialog.import_into(dialog, service, confirm)
+            dialog.import_into(service, confirm)
         assert service.sets() == service.suites() == []
     else:
-        imported = BenchmarkImportDialog.import_into(dialog, service, confirm)
+        imported = dialog.import_into(service, confirm)
+        assert imported[0]["object_hash"] == sha256(reviewed).hexdigest()
         assert len(service.set_frames(imported[0]["id"])) == len(frames())
         assert len(service.suite_sets(service.suites()[0]["id"])) == 1
 

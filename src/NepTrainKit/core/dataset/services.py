@@ -90,6 +90,7 @@ class ModelItem:
     tags:list[TagItem]=field( default_factory=list)
 
     children:list[ModelItem]=field( default_factory=list)
+    model_kind: str = ""
 
 
 @dataclass
@@ -387,38 +388,36 @@ class ModelService:
             session.add_all(to_create)
             session.flush()  # caller owns the transaction
         return existing + to_create
-    def _build_tree(self, node: ModelVersion) -> ModelItem:
-        """Recursively map ORM model hierarchy into ``ModelItem`` objects."""
-
-        item = ModelItem(
-            model_id=node.id,
-            name=node.name,
-            notes=node.notes,
-            parent_id=node.parent_id,
-            project_id=node.project_id,
-            model_type=node.model_type,
-            data_size=node.data_size,
-            energy=node.energy,
-            force=node.force,
-            virial=node.virial,
-            model_path=node.model_path,
-            # train_params=node.train_params,
-            # calc_params=node.calc_params,
-            created_at=node.created_at,
-
-
+    @staticmethod
+    def _model_item(node: ModelVersion) -> ModelItem:
+        return ModelItem(
+            model_id=node.id, name=node.name, notes=node.notes, parent_id=node.parent_id,
+            project_id=node.project_id, model_type=node.model_type, model_kind=node.model_kind,
+            data_size=node.data_size, energy=node.energy, force=node.force, virial=node.virial,
+            model_path=node.model_path, created_at=node.created_at,
+            tags=[TagItem(name=t.name, tag_id=t.id, notes=t.notes, color=t.color) for t in node.tags],
         )
-        for tag in node.tags:
-            item.tags.append(TagItem(name=tag.name, tag_id=tag.id,notes=tag.notes,color=tag.color))
-        # Recursive CTE to collect descendant projects
-        for child in node.children:
-            item.children.append(self._build_tree(child))
+
+    def _build_tree(self, node: ModelVersion) -> ModelItem:
+        item = self._model_item(node)
+        item.children = [self._build_tree(child) for child in node.children]
         return item
 
-
-    def get_models_by_project_id(self, project_id: int) -> list[ModelItem]:
-        return self.search_models_advanced(project_id=project_id,parent_id=-1)
-
+    def get_models_by_project_id(self, project_id: int | None) -> list[ModelItem]:
+        """List registered versions once, including versions whose parent is outside the filter."""
+        with self.db.session() as session:
+            query = select(ModelVersion).where(ModelVersion.project_id.is_not(None))
+            if project_id is not None:
+                projects = self._project_ids_with_descendants_subq(session, [project_id])
+                query = query.where(ModelVersion.project_id.in_(projects)).order_by(ModelVersion.created_at)
+            else:
+                query = query.order_by(ModelVersion.created_at.desc())
+            items = {row.id: self._model_item(row) for row in session.scalars(query.order_by(ModelVersion.id))}
+        roots = []
+        for item in items.values():
+            parent = items.get(item.parent_id)
+            (parent.children if parent is not None else roots).append(item)
+        return roots
 
     def add_version_from_path(self,
                               model_type:str,

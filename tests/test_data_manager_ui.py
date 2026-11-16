@@ -7,8 +7,8 @@ from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import MagicMock, patch
 
-from PySide6.QtCore import QModelIndex, QTranslator, Qt
-from PySide6.QtTest import QSignalSpy
+from PySide6.QtCore import QModelIndex, QPoint, QTranslator, Qt
+from PySide6.QtTest import QSignalSpy, QTest
 from PySide6.QtWidgets import QApplication, QHeaderView, QWidget
 
 import NepTrainKit.ui.pages.data_manager as data_manager_module
@@ -17,6 +17,7 @@ from NepTrainKit.ui.views.dataset_widget import ModelItemWidget
 from NepTrainKit.ui.views.project_view import ProjectWidget
 from NepTrainKit.ui.widgets.dialog import ModelInfoMessageBox
 from NepTrainKit.core.dataset.services import ModelItem
+from test_validation_ui import scored as scored, make_service as make_service
 
 
 def test_project_parent_picker_excludes_self_and_descendants(tmp_path):
@@ -25,7 +26,7 @@ def test_project_parent_picker_excludes_self_and_descendants(tmp_path):
     from NepTrainKit.core.dataset.services import ProjectService
 
     service = ProjectService(Database(tmp_path / "projects.db"))
-    root = service.create_project("root")
+    root = service.create_project("root", notes="training")
     child = service.create_project("child", parent_id=root.id)
     service.create_project("grandchild", parent_id=child.id)
     other = service.create_project("other")
@@ -33,7 +34,11 @@ def test_project_parent_picker_excludes_self_and_descendants(tmp_path):
         widget = ProjectWidget()
     widget.project_service = service
     widget.load_all_projects()
-    widget._view.setCurrentIndex(widget._model.index(0, 0))
+    index = widget._model.index(0, 0)
+    assert index.data() == "root"
+    assert index.data(Qt.ToolTipRole) == f"root  ·  ID {root.id}\ntraining"
+    assert widget.project_count.text() == "4 projects"
+    widget._view.setCurrentIndex(index)
     dialog = MagicMock()
     dialog.parent_combox = ComboBox()
     dialog.exec_.return_value = False
@@ -98,10 +103,10 @@ class TestDataManagerUi(unittest.TestCase):
         self.assertEqual(model_widget.new_model_button.text(), "New model")
         self.assertEqual(
             model_widget._model.headerData(4, Qt.Orientation.Horizontal),
-            "F(meV/Å)",
+            "F RMSE\nmeV/Å",
         )
         self.assertEqual(model_widget.search_button.text(), "Search")
-        self.assertFalse(model_widget.new_model_button.isEnabled())
+        self.assertTrue(model_widget.new_model_button.isEnabled())
         self.assertFalse(model_widget.open_folder_button.isEnabled())
 
     def test_selecting_project_enables_new_model_action(self):
@@ -160,6 +165,13 @@ class TestDataManagerUi(unittest.TestCase):
         )
         model_widget._view.clicked.emit(QModelIndex())
         self.assertEqual(spy.count(), len(expected_ids))
+
+    def test_suite_warnings_count_sets_and_keep_failures_visible(self):
+        widget = ModelItemWidget()
+        widget.score_columns = [{"set_id": key} for key in (1, 1, 2)]
+        widget.score_rows[7] = dict(total_sets=2, completed_sets=1, failed_sets=1, regressions=2,
+                                    cells=[{"verdict": "worse"}, {"verdict": "worse"}, {"verdict": None}])
+        self.assertEqual(widget.coverage_text(7), ("1 / 2 computed", "1 failed · 1 regression"))
 
     def test_new_model_routes_to_the_shared_import_dialog(self):
         model_widget = ModelItemWidget()
@@ -265,3 +277,98 @@ class TestDataManagerUi(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+def test_registry_filters_projects_and_shares_live_validation_roles(scored, monkeypatch):
+    monkeypatch.setenv("NEPTRAINKIT_LIBRARY", str(scored.service.library.root))
+    monkeypatch.setattr(data_manager_module, "seed_nep_data_git", lambda *_: None)
+    page = data_manager_module.DataManagerWidget()
+    page.resize(750, 600)
+    page.show()
+    QApplication.processEvents()
+    view = page.data_item_widget
+    assert view.project_filter.currentData() is None
+    assert scored.new["id"] in view.model_item_dict
+    assert view.score_rows[scored.new["id"]]["completed_sets"] == 2
+    assert view.coverage_text(scored.new["id"])[0] == "2 / 2 computed"
+    assert view.coverage_text(scored.fresh["id"]) == ("Not run", "")
+    assert view.role(scored.old["id"]) == "baseline"
+    view.quick_search.setText("FRESH")
+    assert view.count_label.text() == "1 version"
+    index = next(view._model.index(i, 9) for i in range(view._model.rowCount())
+                 if not view._view.isRowHidden(i, QModelIndex()))
+    fresh = scored.fresh["id"]
+    assert index.internalPointer().data(0) == fresh
+    with patch.object(page.library_widget.service(), "evaluate") as predict:
+        QTest.mouseClick(view._view.viewport(), Qt.MouseButton.LeftButton, pos=view._view.visualRect(index).center())
+        assert view.role(fresh) == "compare"
+        assert fresh in page.library_widget.selected_model_ids()
+        QTest.mouseClick(view._view.viewport(), Qt.MouseButton.LeftButton, pos=view._view.visualRect(index).center())
+        assert view.role(fresh) == "hidden"
+        view.roleRequested.emit(fresh, "baseline")
+        assert view.role(fresh) == "baseline"
+        assert scored.service.get_suite(scored.suite["id"])["baseline_model_id"] == fresh
+        predict.assert_not_called()
+    assert view._view.horizontalScrollBar().maximum() == 0
+    page.close()
+    page.deleteLater()
+
+
+def test_registry_header_sorts_all_versions_and_restores_tree():
+    widget = ModelItemWidget()
+    widget.resize(1100, 600)
+    widget.show()
+    def model(key, force):
+        return ModelItem(model_id=key, model_type="NEP", name=str(key), data_size=None, energy=None,
+                         force=force, virial=None, parent_id=None, project_id=1, model_path="", notes="", created_at=None)
+    parent, child, missing, zero = model(1, 20.), model(2, 3.), model(3, None), model(4, 0.)
+    parent.children.append(child)
+    widget.add_models_to_table([parent, missing, zero])
+    header = widget._view.header()
+    x = header.sectionViewportPosition(4) + header.sectionSize(4) // 2
+    def click():
+        QTest.mouseClick(header.viewport(), Qt.MouseButton.LeftButton, pos=QPoint(x, header.height() // 2))
+    def ids():
+        return [widget._model.index(i, 0).data() for i in range(widget._model.rowCount())]
+    widget._view.setCurrentIndex(widget._model.index(0, 1, widget._model.index(0, 0)))
+    click()
+    assert ids() == [4, 2, 1, 3]
+    click()
+    assert ids() == [1, 2, 4, 3]
+    click()
+    assert ids() == [1, 3, 4]
+    assert widget._selected_model_id() == child.model_id
+    assert widget._view.currentIndex().parent().data() == parent.model_id
+    widget.close()
+
+
+def test_registry_metric_picker_uses_the_same_cached_metric_for_every_model(scored, monkeypatch):
+    from PySide6.QtWidgets import QMenu
+
+    monkeypatch.setenv("NEPTRAINKIT_LIBRARY", str(scored.service.library.root))
+    monkeypatch.setattr(data_manager_module, "seed_nep_data_git", lambda *_: None)
+    page = data_manager_module.DataManagerWidget()
+    page.show()
+    QApplication.processEvents()
+    view = page.data_item_widget
+    i = next(i for i, c in enumerate(view.score_columns)
+             if c["set_id"] == scored.efv["id"] and c["metric"] == "force_rmse")
+    with patch.object(page.library_widget.service(), "evaluate") as predict:
+        view.metric_button.click()
+        menu = QApplication.activePopupWidget()
+        assert isinstance(menu, QMenu)
+        submenu = next(group for group in menu.findChildren(QMenu) if group.title() == scored.efv["name"])
+        action = next(action for action in submenu.actions() if action.data() == i)
+        action.trigger()
+        menu.close()
+        header = view._model.headerData(8, Qt.Orientation.Horizontal)
+        assert scored.efv["name"] in header and "Force RMSE" in header
+        assert view.metric_text(scored.fresh["id"]) == ("Not run", "")
+        old = view.score_rows[scored.old["id"]]["cells"][i]["value"]
+        new = view.score_rows[scored.new["id"]]["cells"][i]["value"]
+        assert view.metric_text(scored.new["id"]) == (f"{new:.4g} meV/Å", f"vs baseline {new-old:+.4g}")
+        assert view._model.index(0, 0).data() == scored.new["id"]
+        assert view._model.index(view._model.rowCount()-1, 0).data() == scored.fresh["id"]
+        predict.assert_not_called()
+    page.close()
+    page.deleteLater()

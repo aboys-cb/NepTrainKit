@@ -25,7 +25,7 @@ from weakref import WeakSet
 import shiboken6
 from PySide6.QtCore import QEvent, QObject, Qt
 from PySide6.QtGui import QHelpEvent
-from PySide6.QtWidgets import QAbstractItemView, QApplication, QTableView, QTreeView, QWidget
+from PySide6.QtWidgets import QAbstractItemView, QApplication, QWidget
 from qfluentwidgets import ToolTip, ToolTipFilter, ToolTipPosition
 from qfluentwidgets.components.widgets.tool_tip import ItemViewToolTip, ItemViewToolTipType
 
@@ -194,7 +194,9 @@ class _FluentToolTipRouter(QObject):
             tooltip.adjustPos(watched, ToolTipPosition.TOP)
         else:
             view = watched.parent()
-            tooltip.adjustPos(view, view.visualRect(index), self._item_tooltip_type(view))
+            # visualRect is viewport-local; the generic Fluent positioner expects view coordinates.
+            rect = view.visualRect(index).translated(watched.pos())
+            tooltip.adjustPos(view, rect, ItemViewToolTipType.LIST)
         tooltip.show()
         self._owner = watched
         return True
@@ -236,12 +238,6 @@ class _FluentToolTipRouter(QObject):
             index = view.indexAt(event.pos())
             return index if index.isValid() else None
         return None
-
-    @staticmethod
-    def _item_tooltip_type(view: QAbstractItemView) -> ItemViewToolTipType:
-        if isinstance(view, (QTableView, QTreeView)):
-            return ItemViewToolTipType.TABLE
-        return ItemViewToolTipType.LIST
 
 
 def ensure_fluent_tooltips(app: QApplication) -> _FluentToolTipRouter:

@@ -9206,6 +9206,26 @@ Fixed periodic reference structures; keep input magnetic order and moment magnit
         <source>No valid NEP model header was found in this path.</source>
         <translation>此路径中未找到有效的 NEP 模型文件头。</translation>
     </message>
+    <message>
+        <source>Manage projects</source>
+        <translation>管理项目</translation>
+    </message>
+    <message>
+        <source>All projects</source>
+        <translation>全部项目</translation>
+    </message>
+    <message>
+        <source>No validation suite</source>
+        <translation>暂无验证套件</translation>
+    </message>
+    <message>
+        <source>Wait for the current validation run to finish.</source>
+        <translation>请等待当前验证任务完成。</translation>
+    </message>
+    <message>
+        <source>This model is unavailable for this suite.</source>
+        <translation>此模型无法用于当前套件。</translation>
+    </message>
 </context>
 <context>
     <name>DatasetSummaryMessageBox</name>
@@ -16174,6 +16194,34 @@ Baseline model: {baseline}</source>
 <context>
     <name>ModelItemWidget</name>
     <message>
+        <source>Matches baseline</source>
+        <translation>与基准相同</translation>
+    </message>
+    <message>
+        <source>vs baseline {delta}</source>
+        <translation>较基准 {delta}</translation>
+    </message>
+    <message>
+        <source>No record</source>
+        <translation>无记录</translation>
+    </message>
+    <message>
+        <source>No valid value</source>
+        <translation>无有效值</translation>
+    </message>
+    <message>
+        <source>Unsupported</source>
+        <translation>不支持</translation>
+    </message>
+    <message>
+        <source>Failed</source>
+        <translation>计算失败</translation>
+    </message>
+    <message>
+        <source>Choose metric</source>
+        <translation>选择指标</translation>
+    </message>
+    <message>
         <location filename="../ui/views/dataset_widget.py" line="117" /><location filename="../ui/views/dataset_widget.py" line="118" />
         <location filename="../ui/views/dataset_widget.py" line="294" />
         <source>Select a project on the left to list its models, or drag a model folder here.</source>
@@ -16310,6 +16358,138 @@ All child items will also be deleted.</source>
     <message>
         <source>Select NEP model file</source>
         <translation>选择 NEP 模型文件</translation>
+    </message>
+    <message>
+        <source>Model registry</source>
+        <translation>势函数库</translation>
+    </message>
+    <message>
+        <source>Model / project</source>
+        <translation>势函数版本 / 项目</translation>
+    </message>
+    <message>
+        <source>Architecture</source>
+        <translation>架构 / 规模</translation>
+    </message>
+    <message>
+        <source>Suite results</source>
+        <translation>套件验证</translation>
+    </message>
+    <message>
+        <source>Comparison role</source>
+        <translation>验证对比</translation>
+    </message>
+    <message>
+        <source>Project</source>
+        <translation>项目</translation>
+    </message>
+    <message>
+        <source>Manage projects</source>
+        <translation>管理项目</translation>
+    </message>
+    <message>
+        <source>Search project or model</source>
+        <translation>搜索项目或势函数</translation>
+    </message>
+    <message>
+        <source>Validation suite</source>
+        <translation>验证套件</translation>
+    </message>
+    <message>
+        <source>More actions</source>
+        <translation>更多操作</translation>
+    </message>
+    <message>
+        <source>{count} versions</source>
+        <translation>{count} 个版本</translation>
+    </message>
+    <message>
+        <source>{count} frames</source>
+        <translation>{count} 帧</translation>
+    </message>
+    <message>
+        <source>No matching models</source>
+        <translation>没有匹配的模型</translation>
+    </message>
+    <message>
+        <source>Current model</source>
+        <translation>当前势</translation>
+    </message>
+    <message>
+        <source>Baseline model</source>
+        <translation>基准势</translation>
+    </message>
+    <message>
+        <source>In comparison</source>
+        <translation>已加入对比</translation>
+    </message>
+    <message>
+        <source>+ Compare</source>
+        <translation>＋ 加入对比</translation>
+    </message>
+    <message>
+        <source>Not run</source>
+        <translation>未计算</translation>
+    </message>
+    <message>
+        <source>{done} / {total} computed</source>
+        <translation>{done} / {total} 已计算</translation>
+    </message>
+    <message>
+        <source>{count} failed</source>
+        <translation>{count} 项失败</translation>
+    </message>
+    <message>
+        <source>Set as current</source>
+        <translation>设为当前势</translation>
+    </message>
+    <message>
+        <source>Set as baseline</source>
+        <translation>设为基准势</translation>
+    </message>
+    <message>
+        <source>Add to comparison</source>
+        <translation>加入对比</translation>
+    </message>
+    <message>
+        <source>Remove from comparison</source>
+        <translation>移出对比</translation>
+    </message>
+    <message>
+        <source>Register a model file or drop a model folder here.</source>
+        <translation>登记模型文件，或将模型文件夹拖到这里。</translation>
+    </message>
+    <message>
+        <source>{count} regressions</source>
+        <translation>{count} 项较基准退化</translation>
+    </message>
+    <message>
+        <source>1 regression</source>
+        <translation>1 项较基准退化</translation>
+    </message>
+    <message>
+        <source>Recorded RMSE</source>
+        <translation>登记 RMSE</translation>
+    </message>
+    <message>
+        <source>Open validation</source>
+        <translation>打开验证</translation>
+    </message>
+    <message>
+        <source>Set validation role</source>
+        <translation>设置验证角色</translation>
+    </message>
+    <message>
+        <source>Click to remove from comparison</source>
+        <translation>点击移出对比</translation>
+    </message>
+    <message>
+        <source>Search results</source>
+        <translation>搜索结果</translation>
+    </message>
+    <message>
+        <source>1 version</source>
+        <translation>1 个版本</translation>
     </message>
 </context>
 <context>
@@ -18428,6 +18608,26 @@ Done {done}    Pending {pending}    Failed {failed}    Unsupported {unsupported}
 </context>
 <context>
     <name>ProjectWidget</name>
+    <message>
+        <source>Project name</source>
+        <translation>项目名称</translation>
+    </message>
+    <message>
+        <source>1 project</source>
+        <translation>1 个项目</translation>
+    </message>
+    <message>
+        <source>{count} projects</source>
+        <translation>{count} 个项目</translation>
+    </message>
+    <message>
+        <source>1 model version</source>
+        <translation>1 个模型版本</translation>
+    </message>
+    <message>
+        <source>{count} model versions</source>
+        <translation>{count} 个模型版本</translation>
+    </message>
     <message>
         <location filename="../ui/views/project_view.py" line="55" />
         <source>Models</source>

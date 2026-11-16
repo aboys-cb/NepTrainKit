@@ -171,8 +171,14 @@ msgid "打开本地目录或 URL。"
 msgstr "Open a local directory or URL."
 
 #: ../../source/module/data-management.md:59 8680f2eac0e0465c8bbd6df7a7fabe80
-msgid "用 `Ctrl+F` 搜索项目、标签、备注或路径。"
-msgstr "Press `Ctrl+F` to search projects, tags, notes, or paths."
+msgid "在势函数库按项目筛选，或用查找快捷键搜索项目名、版本名。标签和备注可在“更多操作 → 搜索”中筛选。"
+msgstr "Filter the registry by project or use the Find shortcut to search project and version names. Use More actions → Search to filter tags and notes."
+
+msgid "选好套件后，用“选择指标”指定验证项和指标。各模型显示同一项的计算值、单位及与基准势的差值。默认按验证值升序排列，缺值排在末尾。点击表头可切换排序，清除排序后恢复版本树。E、F、V 三列显示模型登记时保存的 RMSE。"
+msgstr "Choose a suite and use Choose metric to select a validation item and metric. Each model shows its cached value, unit and difference from the baseline. Values initially sort in ascending order, with missing values last. Click a column header to change the order or clear sorting to restore the version tree. E, F and V show the RMSE saved at registration."
+
+msgid "在模型行末点击“加入对比”或“已加入对比”可添加或移除对比势。点击右侧箭头可指定当前势或套件基准势；选中行按空格也可打开角色菜单。点“打开验证”查看曲线与总览。"
+msgstr "Click Compare or In comparison at the end of a row to add or remove a comparison model. Use the arrow or press Space on a selected row to choose the current model or suite baseline. Open validation shows the curves and overview."
 
 #: ../../source/module/data-management.md:61 fff0e70d6ac04b7283dc105317e48796
 msgid ""

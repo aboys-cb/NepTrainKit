@@ -188,7 +188,12 @@ def test_version_edit_selects_new_child_and_updates_project_count(toolbar, tmp_p
     models.create_model(modify=True)
     selected = models._view.currentIndex()
     new_id = selected.data()
-    assert new_id != toolbar.scored.old['id'] and selected.parent().isValid()
+    assert new_id != toolbar.scored.old['id']
+    # Clearing the flat ranking reveals the selected version's parent.
+    models._view.header().setSortIndicator(-1, Qt.AscendingOrder)
+    selected = models._view.currentIndex()
+    assert selected.siblingAtColumn(0).data() == new_id
+    assert selected.parent().data() == toolbar.scored.old['id']
     assert models._view.isExpanded(selected.parent())
     assert tree.project_item_dict[project_id].model_num == before + 1
     assert page.library_widget.model_combo.findData(new_id) >= 0

@@ -166,6 +166,7 @@ def test_project_model_mutations_update_counts_and_validation_without_losing_sel
     tree._view.setExpanded(parent_index, True)
     tree._view.setCurrentIndex(selected)
     tree.item_clicked(selected)
+    previous_total = sum(tree._model.index(row, 2).data() for row in range(tree._model.rowCount()))
     current = library.model_combo.currentData()
     comparisons = library.comparison_picker.selected_ids()
     path = tmp_path / 'registered' / 'nep.txt'
@@ -183,6 +184,7 @@ def test_project_model_mutations_update_counts_and_validation_without_losing_sel
     model_id = next(iter(models.model_item_dict))
     assert tree.project_item_dict[project.id].model_num == 1
     assert tree.project_item_dict[parent.id].model_num == 1
+    assert tree.model_count.text() == f"{previous_total + 1} model versions"
     assert _project_index(tree, project.id).internalPointer().data(2) == 1
     assert tree._view.currentIndex().internalPointer().data(1) == project.id
     assert tree._view.isExpanded(_project_index(tree, parent.id))
@@ -263,7 +265,7 @@ def test_registry_sync_does_not_replace_snapshots_or_duplicate_records(make_serv
     assert ProjectService(service.db).get_project_by_id(project.id).model_num == 4
 
 
-def test_deleting_selected_project_clears_stale_models_and_actions(toolbar):
+def test_deleting_selected_project_returns_to_all_projects(toolbar):
     page, library = toolbar.page, toolbar.library
     project_id = toolbar.scored.new['project_id']
     page.show_projects()
@@ -273,7 +275,8 @@ def test_deleting_selected_project_clears_stale_models_and_actions(toolbar):
     page.project_service.remove_project(project_id)
     page.project_widget.projectsChanged.emit()
     assert page.data_item_widget.project is None
-    assert not page.data_item_widget.new_model_button.isEnabled()
+    assert page.data_item_widget.project_filter.currentData() is None
+    assert page.data_item_widget.new_model_button.isEnabled()
     assert page.data_item_widget._model.rowCount() == 0
     assert not page.data_item_widget.model_item_dict
     assert project_id not in page.project_widget.project_item_dict

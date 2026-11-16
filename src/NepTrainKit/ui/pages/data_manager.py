@@ -3,8 +3,9 @@
 # @Time    : 2025/8/27 17:18
 # @email    : 1747193328@qq.com
 from PySide6.QtCore import Qt, Signal
-from PySide6.QtWidgets import QVBoxLayout, QSplitter, QWidget
+from PySide6.QtWidgets import QDialog, QVBoxLayout, QWidget
 
+from NepTrainKit.config import Config
 from NepTrainKit.core import MessageManager
 from NepTrainKit.core.dataset.seed import seed_nep_data_git
 from NepTrainKit.core.dataset.services import ModelService, ProjectService, TagService
@@ -184,9 +185,7 @@ class DataManagerWidget(_ModelDropPage):
             return
         finally:
             dialog.deleteLater()
-        self.show_projects()
-        project = self.project_service.get_project_by_id(record["project_id"])
-        self.data_item_widget.load_models_by_project(project)
+        self.data_item_widget.project = self.project_service.get_project_by_id(record["project_id"])
         self._on_registry_changed(record["id"])
         MessageManager.send_success_message(self.tr("Model imported: {name}").format(name=record["name"]))
 
@@ -214,12 +213,95 @@ class DataManagerWidget(_ModelDropPage):
                 widget.project_service = self.project_service
                 widget.tag_service = self.tag_service
             self.data_item_widget.project = None
-            self.data_item_widget._model.clear()
-            self.data_item_widget._update_action_state()
+        view = self.data_item_widget
         self.project_widget.load_all_projects()
-        project = getattr(self.data_item_widget, "project", None)
-        if project is not None:
-            self.data_item_widget.load_models_by_project(project)
+        projects = self.project_widget.project_item_dict
+        view.project_names = {key: project.name for key, project in projects.items()}
+        selected = view.project.project_id if view.project else None
+        picker = view.project_filter
+        picker.blockSignals(True)
+        picker.clear()
+        picker.addItem(self.tr("All projects"))
+        for key, project in projects.items():
+            picker.addItem(project.name, userData=key)
+        picker.setCurrentIndex(max(0, picker.findData(selected)))
+        picker.blockSignals(False)
+        self._select_project(projects.get(selected))
+
+        library = self.library_widget
+        suites = library.service().suites()
+        picker = view.suite_filter
+        previous = library.current_suite_id() if library._library_root == library.service().library.root else None
+        if previous is None:
+            previous = picker.currentData() or Config.getint("validation", "suite", 0)
+        picker.blockSignals(True)
+        picker.clear()
+        for suite in suites:
+            picker.addItem(suite["name"], userData=suite["id"])
+        if not suites:
+            picker.addItem(self.tr("No validation suite"))
+        picker.setCurrentIndex(max(0, picker.findData(previous)))
+        picker.blockSignals(False)
+        self._update_suite_summary()
+
+    def _select_project(self, project):
+        view = self.data_item_widget
+        key = project.project_id if project else None
+        view.project_filter.blockSignals(True)
+        search = view.project_filter.findData("search")
+        if search >= 0:
+            view.project_filter.removeItem(search)
+        view.project_filter.setCurrentIndex(max(0, view.project_filter.findData(key)))
+        view.project_filter.blockSignals(False)
+        view.load_models_by_project(project)
+
+    def _update_suite_summary(self, *_):
+        view, library = self.data_item_widget, self.library_widget
+        suite_id = view.suite_filter.currentData()
+        active = (library._loaded and library.current_suite_id() == suite_id
+                  and library._library_root == library.service().library.root)
+        if active:
+            rows, columns = library.model._rows, library.model._columns
+        else:
+            card = library.service().scorecard(suite_id)
+            rows, columns = card["rows"], card["columns"]
+        view.baseline_id = next((r["model_id"] for r in rows if r["is_baseline"]), None)
+        view.current_id = library.model_combo.currentData() if active else None
+        view.comparison_ids = set(library.comparison_picker.selected_ids()) if active else set()
+        view.set_suite_results(rows, [dict(c, display_label=library.model.metric_label(c)) for c in columns])
+
+    def _active_scorecard_changed(self):
+        if self.isVisible() and self.library_widget.current_suite_id() == self.data_item_widget.suite_filter.currentData():
+            self._update_suite_summary()
+
+    def _open_registry_suite(self):
+        library = self.library_widget
+        suite = self.data_item_widget.suite_filter.currentData()
+        if library.current_suite_id() != suite and library._run_task is not None:
+            MessageManager.send_info_message(self.tr("Wait for the current validation run to finish."))
+            return
+        if not library._loaded or library.current_suite_id() != suite or library._library_root != library.service().library.root:
+            library.refresh(suite)
+        self.navigateRequested.emit(self.validation_page)
+
+    def _set_registry_role(self, key, role):
+        library = self.library_widget
+        if library._run_task is not None:
+            MessageManager.send_info_message(self.tr("Wait for the current validation run to finish."))
+            return
+        suite = self.data_item_widget.suite_filter.currentData()
+        if (not library._loaded or library.current_suite_id() != suite
+                or library._library_root != library.service().library.root or library.model.row_of_model(key) < 0):
+            library.refresh(suite)
+        if library.model.row_of_model(key) < 0:
+            MessageManager.send_info_message(library._unavailable_models.get(key) or self.tr("This model is unavailable for this suite."))
+            return
+        if role == "open":
+            self.navigateRequested.emit(self.validation_page)
+        else:
+            library._choose_model_role(key, role)
+            self._update_suite_summary()
+        return True
 
     def open_scorecard(self, suite_id, model_id=None, *, draft=None):
         """Open the validation page with ``suite_id`` and ``model_id`` selected."""
@@ -228,45 +310,34 @@ class DataManagerWidget(_ModelDropPage):
 
     def validate_registered_model(self, model_id: int) -> None:
         """Open the selected registered model directly as the Current Model in the validation workbench."""
-        suite_id = self.library_widget.current_suite_id()
-        self.open_scorecard(suite_id, model_id)
+        if self._set_registry_role(model_id, "current"):
+            self.navigateRequested.emit(self.validation_page)
 
     def compare_registered_model(self, model_id: int) -> None:
-        """Add the selected registered model to the comparison dock in the validation workbench."""
-        self.navigateRequested.emit(self.validation_page)
-        current_id = self.library_widget.model_combo.currentData()
-        if current_id is None or current_id == model_id:
-            self.library_widget.open_scorecard(self.library_widget.current_suite_id(), model_id)
-            return
-        selected = self.library_widget.comparison_picker.selected_ids()
-        if model_id not in selected:
-            self.library_widget.comparison_picker.set_selected_ids(selected + [model_id])
-            MessageManager.send_success_message("已将该势版本加入顶部对比势槽。")
+        self._set_registry_role(model_id, "compare")
 
     def _on_registry_changed(self, model_id=None):
         """Keep the project counts and validation selectors in sync after edits."""
-        self.project_widget.load_all_projects()
-        current = self.data_item_widget.project
-        if current is not None:
-            updated = self.project_widget.project_item_dict.get(current.project_id)
-            if updated is None:
-                self.data_item_widget.load_models_by_project(None)
-            else:
-                self.data_item_widget.load_models_by_project(updated)
         if self.library_widget._run_task is None:
             self.library_widget.refresh()
             reason = getattr(self.library_widget, "_unavailable_models", {}).get(model_id)
             if reason:
                 MessageManager.send_info_message("模型已登记，但暂不能用于验证：" + reason)
+        self._refresh_projects()
 
     def init_ui(self):
-        """Build the project and model split view."""
+        """Keep project organization available without taking width from the registry."""
         self.gridLayout = QVBoxLayout(self)
         self.gridLayout.setObjectName("DataManagerWidget_gridLayout")
         self.gridLayout.setContentsMargins(0, 0, 0, 0)
 
-        self.splitter = QSplitter(Qt.Orientation.Horizontal, self)
-        self.project_widget = ProjectWidget(self)
+        self.project_dialog = QDialog(self)
+        self.project_dialog.setWindowTitle(self.tr("Manage projects"))
+        self.project_dialog.resize(520, 360)
+        self.project_widget = ProjectWidget(self.project_dialog)
+        dialog_layout = QVBoxLayout(self.project_dialog)
+        dialog_layout.setContentsMargins(0, 0, 0, 0)
+        dialog_layout.addWidget(self.project_widget)
         self.project_widget.setObjectName("project_widget")
         self.project_widget.setAutoFillBackground(True)
         self.project_widget.db = self._db
@@ -279,18 +350,19 @@ class DataManagerWidget(_ModelDropPage):
         self.data_item_widget.model_service = self.model_service
         self.data_item_widget.tag_service = self.tag_service
 
-        self.project_widget.projectChangedSignal.connect(self.data_item_widget.load_models_by_project)
+        view = self.data_item_widget
+        view.project_filter.currentIndexChanged.connect(lambda _: self._select_project(
+            self.project_widget.project_item_dict.get(view.project_filter.currentData())))
+        view.suite_filter.currentIndexChanged.connect(self._update_suite_summary)
+        view.manageProjectsRequested.connect(self.project_dialog.show)
+        view.open_validation.clicked.connect(self._open_registry_suite)
+        view.roleRequested.connect(self._set_registry_role)
+        self.library_widget.scorecardChanged.connect(self._active_scorecard_changed, Qt.ConnectionType.QueuedConnection)
+        self.project_widget.projectChangedSignal.connect(self._select_project)
         self.data_item_widget.importRequested.connect(self.import_model_path)
         self.data_item_widget.validateModelRequested.connect(self.validate_registered_model)
         self.data_item_widget.compareModelRequested.connect(self.compare_registered_model)
 
-        self.splitter.addWidget(self.project_widget)
-        self.splitter.addWidget(self.data_item_widget)
-
-        self.splitter.setSizes([260, 740])
-        self.splitter.setStretchFactor(0, 1)
-        self.splitter.setStretchFactor(1, 8)
-
-        self.gridLayout.addWidget(self.splitter)
+        self.gridLayout.addWidget(view)
         self.data_item_widget.modelsChanged.connect(self._on_registry_changed)
         self.project_widget.projectsChanged.connect(self._on_registry_changed)

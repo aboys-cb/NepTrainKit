@@ -3,8 +3,8 @@
 import pytest
 import shiboken6
 from PySide6.QtCore import QCoreApplication, QEvent, QPoint
-from PySide6.QtGui import QHelpEvent
-from PySide6.QtWidgets import QApplication, QListWidget, QListWidgetItem, QWidget
+from PySide6.QtGui import QHelpEvent, QStandardItem, QStandardItemModel
+from PySide6.QtWidgets import QApplication, QListWidget, QListWidgetItem, QTableView, QTreeView, QWidget
 from qfluentwidgets import ToolTipFilter, ToolTipPosition
 from qfluentwidgets.components.widgets.tool_tip import ItemViewToolTip
 
@@ -134,6 +134,26 @@ def test_router_ignores_tooltip_less_widgets(router, qapp):
         assert router._tooltip is None
     finally:
         _drop(widget)
+
+
+@pytest.mark.parametrize("view_type", [QTreeView, QTableView])
+def test_hover_moves_tooltip_between_cells_with_headers(router, qapp, view_type):
+    view = view_type()
+    model = QStandardItemModel(view)
+    items = [QStandardItem(name) for name in ("model", "score")]
+    for item in items:
+        item.setToolTip(item.text())
+    model.appendRow(items)
+    view.setModel(model)
+    view.resize(420, 180)
+    view.show()
+    try:
+        for item in items:
+            _hover(view.viewport(), view.visualRect(item.index()).center())
+            assert router._tooltip.isVisible()
+            assert router._tooltip.text() == item.text()
+    finally:
+        _drop(view)
 
 
 def test_router_rebuilds_its_tooltip_when_its_window_dies(router, qapp):

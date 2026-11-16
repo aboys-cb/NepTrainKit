@@ -112,6 +112,22 @@ class ScorecardTableModel(QAbstractTableModel):
     def first_column_of_set(self, set_id: str) -> int:
         return next((i + 1 for i, column in enumerate(self._columns) if column["set_id"] == set_id), -1)
 
+    def metric_label(self, column):
+        labels = {
+            "shape_rmse": self.tr("Curve RMSE (offset removed)"),
+            "max_shape_error": self.tr("Max curve error"),
+            "raw_rmse": self.tr("Raw RMSE"),
+            "v0_error": self.tr("V₀ error"),
+            "b0_error": self.tr("B₀ error"),
+            "energy_rmse": self.tr("Energy RMSE"),
+            "force_rmse": self.tr("Force RMSE"),
+            "mforce_rmse": self.tr("Magnetic force RMSE"),
+            "virial_rmse": self.tr("Virial RMSE"),
+            "response_rmse": self.tr("Response RMSE"),
+            "max_response_error": self.tr("Max response error"),
+        }
+        return labels.get(column.get("metric"), column["label"])
+
     def headerData(self, section, orientation, role=Qt.ItemDataRole.DisplayRole):
         if orientation != Qt.Orientation.Horizontal:
             return None
@@ -120,20 +136,7 @@ class ScorecardTableModel(QAbstractTableModel):
             if column is None:
                 return self.tr("Model version")
             unit = f" ({column['unit']})" if column["unit"] else ""
-            labels = {
-                "shape_rmse": self.tr("Curve RMSE (offset removed)"),
-                "max_shape_error": self.tr("Max curve error"),
-                "raw_rmse": self.tr("Raw RMSE"),
-                "v0_error": self.tr("V₀ error"),
-                "b0_error": self.tr("B₀ error"),
-                "energy_rmse": self.tr("Energy RMSE"),
-                "force_rmse": self.tr("Force RMSE"),
-                "mforce_rmse": self.tr("Magnetic force RMSE"),
-                "virial_rmse": self.tr("Virial RMSE"),
-                "response_rmse": self.tr("Response RMSE"),
-                "max_response_error": self.tr("Max response error"),
-            }
-            label = labels.get(column.get("metric"), column["label"])
+            label = self.metric_label(column)
             return f"{column['set_name']}\n{label}{unit}"
         if role == Qt.ItemDataRole.ToolTipRole and column is not None:
             return self.tr("{set} · {protocol}").format(set=column["set_name"], protocol=column["protocol"])

@@ -179,7 +179,7 @@ def test_project_model_mutations_update_counts_and_validation_without_losing_sel
     monkeypatch.setattr(model_module, 'ModelInfoMessageBox', lambda *_: box)
     monkeypatch.setattr(model_module, 'call_path_dialog', lambda *args, **kwargs: str(path))
     from NepTrainKit.ui.widgets.validation_dialogs import ImportModelDialog
-    monkeypatch.setattr(ImportModelDialog, 'exec', lambda self: 1)
+    monkeypatch.setattr(ImportModelDialog, 'open', lambda dialog: dialog.finished.emit(1))
     models.create_model()
     model_id = next(iter(models.model_item_dict))
     assert tree.project_item_dict[project.id].model_num == 1

@@ -4,6 +4,7 @@ import pytest
 import time
 from PySide6.QtCore import QCoreApplication, QEvent, QMimeData, QPoint, QPointF, Qt, QUrl
 from PySide6.QtGui import QDragEnterEvent, QDropEvent
+from PySide6.QtTest import QTest
 from PySide6.QtWidgets import QApplication, QWidget
 
 from NepTrainKit.core.validation import Library, ValidationService
@@ -87,24 +88,28 @@ def test_valid_drop_is_prefilled_and_one_confirmation_saves_snapshot(
     assert service.models() == []
 
     def confirm(dialog):
+        assert returned_from_drop
         wait_for_outputs(dialog)
         assert dialog.draft.source_path == str(path)
         assert dialog.name_edit.text() == "training-run"
         assert "nep4" in dialog.model_details.text() and "Fe, O" in dialog.model_details.text()
         assert dialog.yesButton.isEnabled()
         if selected_project:
-            assert dialog.project_combo.text() == "Selected project"
+            assert dialog.project_combo.currentText() == "Selected project"
         else:
-            assert dialog.project_combo.text() == "Inbox"
+            assert dialog.project_combo.currentText() == "Inbox"
         assert not service.models()
         # Save the reviewed bytes even if the external training job overwrites nep.txt.
         path.write_text(MODEL + "new weights")
-        return 1
+        dialog.finished.emit(1)
 
-    monkeypatch.setattr(ImportModelDialog, "exec", confirm)
+    monkeypatch.setattr(ImportModelDialog, "open", confirm)
     event = QDropEvent(QPointF(1, 1), Qt.DropAction.CopyAction, mime, Qt.MouseButton.LeftButton, Qt.KeyboardModifier.NoModifier)
+    returned_from_drop = False
     page.dropEvent(event)
+    returned_from_drop = True
     assert event.isAccepted()
+    QCoreApplication.sendPostedEvents(page, QEvent.Type.MetaCall)
     saved, = service.models()
     assert saved["name"] == "training-run" and saved["dataset_ref"] == {}
     assert all(saved[key] is None for key in ("energy", "force", "virial", "data_size"))
@@ -116,13 +121,55 @@ def test_valid_drop_is_prefilled_and_one_confirmation_saves_snapshot(
 def test_cancelling_valid_drop_does_not_publish_model_or_create_default_project(model_page, tmp_path, monkeypatch):
     page, service = model_page
     path = write_model(tmp_path / "weights.txt")
-    monkeypatch.setattr(ImportModelDialog, "exec", lambda self: 0)
+    monkeypatch.setattr(ImportModelDialog, "open", lambda dialog: dialog.finished.emit(0))
     mime = mime_for(path)
     event = QDropEvent(QPointF(1, 1), Qt.DropAction.CopyAction, mime, Qt.MouseButton.LeftButton, Qt.KeyboardModifier.NoModifier)
     page.dropEvent(event)
     assert event.isAccepted()
+    QCoreApplication.sendPostedEvents(page, QEvent.Type.MetaCall)
     assert service.models() == [] and service.projects() == []
     assert list(service.library.iter_objects()) == []
+
+
+def test_import_project_dropdown_selects_an_existing_project_and_allows_typing(model_page, tmp_path):
+    page, service = model_page
+    project = page.project_service.create_project("Existing")
+    path = write_model(tmp_path / "weights.txt")
+    page.resize(800, 600)
+    page.show()
+    mime = mime_for(path)
+    event = QDropEvent(QPointF(1, 1), Qt.CopyAction, mime, Qt.LeftButton, Qt.NoModifier)
+    page.validation_page.dropEvent(event)
+    assert event.isAccepted() and page.findChild(ImportModelDialog) is None
+    QCoreApplication.sendPostedEvents(page, QEvent.Type.MetaCall)
+    dialog = page.findChild(ImportModelDialog)
+    assert dialog is not None and dialog.isVisible()
+    QApplication.processEvents()
+    combo = dialog.project_combo
+    try:
+        QTest.mouseClick(combo, Qt.LeftButton, pos=QPoint(combo.width() - 7, combo.height() // 2))
+        popup = combo.view()
+        assert popup.isVisible()
+        item = combo.model().index(combo.findText(project.name), 0)
+        position = popup.visualRect(item).center()
+        QTest.mouseMove(popup.viewport(), position)
+        QTest.qWait(QApplication.doubleClickInterval() + 20)
+        QTest.mouseClick(popup.viewport(), Qt.LeftButton, pos=position)
+        assert combo.currentText() == project.name and not popup.isVisible()
+        combo.lineEdit().selectAll()
+        QTest.keyClicks(combo.lineEdit(), "New project")
+        assert combo.currentText() == "New project" and dialog.yesButton.isEnabled()
+        assert service.models() == []
+        combo.setCurrentIndex(item.row())
+        dialog.yesButton.click()
+        deadline = time.monotonic() + 3
+        while not service.models() and time.monotonic() < deadline:
+            QTest.qWait(10)
+        saved, = service.models()
+        assert saved["project_id"] == project.id
+        assert service.model_file(saved["id"]).read_bytes() == path.read_bytes()
+    finally:
+        page.close()
 
 
 def test_multiple_candidates_require_selection_and_update_model_information(tmp_path):
@@ -137,9 +184,9 @@ def test_multiple_candidates_require_selection_and_update_model_information(tmp_
     assert dialog.name_edit.text() == "b"
     assert "nep4_spin" in dialog.model_details.text()
     assert dialog.draft.source_path == str(files[1])
-    dialog.project_combo.setText("")
+    dialog.project_combo.setCurrentText("")
     assert not dialog.yesButton.isEnabled()
-    dialog.project_combo.setText("New project")
+    dialog.project_combo.setCurrentText("New project")
     dialog.model_combo.setCurrentIndex(0)
     assert dialog.name_edit.text() == "a"
     files[1].unlink()
@@ -151,7 +198,7 @@ def test_multiple_candidates_require_selection_and_update_model_information(tmp_
 def test_invalid_or_remote_drop_is_rejected(model_page, tmp_path, monkeypatch):
     page, _ = model_page
     called = []
-    monkeypatch.setattr(ImportModelDialog, "exec", lambda self: called.append(True))
+    monkeypatch.setattr(ImportModelDialog, "open", lambda self: called.append(True))
     for mime in (mime_for(write_model(tmp_path / "notes.txt", "not a model")), QMimeData()):
         if not mime.hasUrls():
             mime.setUrls([QUrl("https://example.com/nep.txt")])

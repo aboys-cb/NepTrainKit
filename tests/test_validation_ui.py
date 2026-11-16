@@ -831,7 +831,7 @@ def test_unsaved_viewer_to_temporary_validation_then_save(scored, tmp_path, monk
     assert stub.validation_status_action.text().startswith("Temporary")
 
     def accept(dialog):
-        dialog.project_combo.setText("New project")
+        dialog.project_combo.setCurrentText("New project")
         dialog.name_edit.setText("v1")
         return 1
 
@@ -852,7 +852,7 @@ def test_save_dialog_requires_explicit_project_and_version(make_service):
     host = QWidget()
     dialog = SaveModelDialog(host, make_service(), "v1")
     assert not dialog.yesButton.isEnabled()
-    dialog.project_combo.setText("FeRh")
+    dialog.project_combo.setCurrentText("FeRh")
     assert dialog.yesButton.isEnabled()
     dialog.name_edit.clear()
     assert not dialog.yesButton.isEnabled()
@@ -875,7 +875,7 @@ def test_save_dialog_can_choose_library_without_retargeting_on_cancel(make_servi
     def choose(dialog):
         assert dialog.location_button.isEnabled()
         dialog._choose_library()
-        dialog.project_combo.setText("Chosen project")
+        dialog.project_combo.setCurrentText("Chosen project")
         dialog.name_edit.setText("v2")
         return int(accept)
 
@@ -906,7 +906,7 @@ def test_viewer_save_can_add_a_second_project_without_reopening(model_file, make
     ShowNepWidget._associate_model_version(stub)
 
     def accept(dialog):
-        dialog.project_combo.setText("A" if not service.projects() else "B")
+        dialog.project_combo.setCurrentText("A" if not service.projects() else "B")
         dialog.name_edit.setText("v1")
         return 1
 
@@ -932,7 +932,7 @@ def test_unsaved_model_is_visible_without_any_suites(make_service, model_file):
     assert service.models() == [] and service.projects() == []
 
     def accept(dialog):
-        dialog.project_combo.setText("First project")
+        dialog.project_combo.setCurrentText("First project")
         dialog.name_edit.setText("v1")
         return 1
 

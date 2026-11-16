@@ -7,9 +7,9 @@ import os
 from pathlib import Path
 from html import escape
 
-from PySide6.QtCore import QEvent, Qt, Slot
+from PySide6.QtCore import QEvent, QSize, Qt, Slot
 from PySide6.QtGui import QColor
-from PySide6.QtWidgets import QApplication, QAbstractItemView, QBoxLayout, QDialog, QFrame, QSizePolicy, QStackedWidget, QFileDialog, QFormLayout, QHeaderView, QHBoxLayout, QLayout, QTableWidgetItem, QVBoxLayout, QWidget
+from PySide6.QtWidgets import QApplication, QAbstractItemView, QBoxLayout, QComboBox, QDialog, QFrame, QSizePolicy, QStackedWidget, QFileDialog, QFormLayout, QHeaderView, QHBoxLayout, QLayout, QListView, QStyledItemDelegate, QTableWidgetItem, QVBoxLayout, QWidget
 from qfluentwidgets import (
     BodyLabel,
     CaptionLabel,
@@ -43,6 +43,49 @@ from NepTrainKit.ui.widgets.validation_model_picker import GroupMarkerButton, de
 from NepTrainKit.ui.widgets.validation_presentation import file_import_choices, presentation_for
 
 
+class _ProjectComboBox(QComboBox):
+    """Use a Qt-owned editable popup with the project library's folder styling."""
+
+    def __init__(self, parent):
+        super().__init__(parent)
+        self.setObjectName("importProject")
+        self.setEditable(True)
+        self.setInsertPolicy(QComboBox.InsertPolicy.NoInsert)
+        self.setMinimumHeight(32)
+        self.setView(QListView(self))
+        self.setIconSize(QSize(16, 16))
+        self.view().setIconSize(self.iconSize())
+        self.setItemDelegate(QStyledItemDelegate(self.view()))
+        self.view().setMouseTracking(True)
+        self.view().setUniformItemSizes(True)
+        self.setStyleSheet(f"""
+            QComboBox#importProject {{background: white; color: {palette.TEXT_PRIMARY};
+                border: 1px solid {palette.BORDER_STRONG}; border-radius: 6px; padding: 1px 28px 1px 8px;}}
+            QComboBox#importProject:hover {{border-color: {palette.ACCENT_BORDER};}}
+            QComboBox#importProject:focus, QComboBox#importProject:on {{border-color: {palette.ACCENT};}}
+            QComboBox#importProject QLineEdit {{background: transparent; border: none; padding: 0;}}
+            QComboBox#importProject::drop-down {{subcontrol-origin: border; subcontrol-position: right center;
+                width: 28px; border: none;}}
+            QComboBox#importProject::down-arrow {{image: url({FluentIcon.ARROW_DOWN.path()}); width: 12px; height: 12px;}}
+            QListView {{background: white; color: {palette.TEXT_PRIMARY}; border: 1px solid {palette.BORDER_STRONG};
+                border-radius: 7px; padding: 4px; outline: none;}}
+            QListView::item {{height: 31px; padding: 0 8px; border: none; border-radius: 4px;}}
+            QListView::item:hover {{background: {palette.SURFACE_SUBTLE};}}
+            QListView::item:selected {{background: {palette.ACCENT_SOFT}; color: {palette.ACCENT_PRESSED};}}
+        """)
+
+    def load_projects(self, projects):
+        self.clear()
+        folder = FluentIcon.FOLDER.icon(color=palette.ACCENT_PRESSED)
+        for project in projects:
+            self.addItem(folder, project["name"])
+        self.setCurrentIndex(-1)
+
+    def select_name(self, name):
+        self.setCurrentIndex(self.findText(name))
+        self.setEditText(name)
+
+
 class SaveModelDialog(MessageBoxBase):
     """Choose an existing/new project and a version name before writing a snapshot."""
 
@@ -63,13 +106,12 @@ class SaveModelDialog(MessageBoxBase):
             self.location_button.setToolTip(self.tr("Library location is controlled by NEPTRAINKIT_LIBRARY"))
         location_row.addWidget(self.location_button)
         self.viewLayout.addLayout(location_row)
-        self.project_combo = EditableComboBox(self)
-        self.project_combo.setPlaceholderText(self.tr("Choose a project or type a new name"))
-        projects = service.projects()
-        for project in projects:
-            self.project_combo.addItem(project["name"])
+        self.project_combo = _ProjectComboBox(self)
+        self.project_combo.setAccessibleName(self.tr("Project"))
+        self.project_combo.lineEdit().setPlaceholderText(self.tr("Choose a project or type a new name"))
+        self.project_combo.load_projects(service.projects())
         previous = Config.get("validation", "last_save_project", "")
-        self.project_combo.setText(previous if any(p["name"] == previous for p in projects) else "")
+        self.project_combo.setCurrentIndex(self.project_combo.findText(previous))
         self.name_edit = LineEdit(self)
         self.name_edit.setMaxLength(80)
         self.name_edit.setText(name)
@@ -79,7 +121,7 @@ class SaveModelDialog(MessageBoxBase):
         self.viewLayout.addLayout(form)
         self.yesButton.setText(self.tr("Save"))
         self.cancelButton.setText(self.tr("Cancel"))
-        self.project_combo.textChanged.connect(self._validate)
+        self.project_combo.currentTextChanged.connect(self._validate)
         self.name_edit.textChanged.connect(self._validate)
         self._validate()
         self.widget.setMinimumWidth(480)
@@ -97,22 +139,19 @@ class SaveModelDialog(MessageBoxBase):
             return
         self.service = service
         self.location_label.setText(self.tr("Library: {path}").format(path=service.library.root))
-        self.project_combo.clear()
-        for project in projects:
-            self.project_combo.addItem(project["name"])
-        self.project_combo.setText("")
+        self.project_combo.load_projects(projects)
         self._validate()
 
     def _validate(self, *_args):
-        project = self.project_combo.text().strip()
+        project = self.project_combo.currentText().strip()
         self.yesButton.setEnabled(bool(project and len(project) <= 200 and self.name_edit.text().strip()))
 
     def save_model(self, draft):
         """Save the reviewed bytes and persist the selected destination."""
-        record = self.service.save_model(draft, project_name=self.project_combo.text(), name=self.name_edit.text())
+        record = self.service.save_model(draft, project_name=self.project_combo.currentText(), name=self.name_edit.text())
         if self.service.library.root != self._initial_library_root:
             Config.set(CONFIG_SECTION, CONFIG_LIBRARY_PATH, str(self.service.library.root))
-        Config.set("validation", "last_save_project", self.project_combo.text().strip())
+        Config.set("validation", "last_save_project", self.project_combo.currentText().strip())
         record["library_root"] = str(self.service.library.root)
         return record
 
@@ -130,7 +169,7 @@ class ImportModelDialog(SaveModelDialog):
         super().__init__(parent, service, "")
         self.title_label.setText(self.tr("Import NEP model"))
         self.yesButton.setText(self.tr("Import"))
-        self.project_combo.setText(project_name or self.project_combo.text() or INBOX_PROJECT)
+        self.project_combo.select_name(project_name or self.project_combo.currentText() or INBOX_PROJECT)
         self.model_combo = ComboBox(self)
         self.model_combo.setAccessibleName(self.tr("Model file"))
         for path in paths:

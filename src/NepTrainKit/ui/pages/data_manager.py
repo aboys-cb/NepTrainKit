@@ -155,8 +155,9 @@ class DataManagerWidget(_ModelDropPage):
         self.validation_page = ValidationPage(parent or self)
         self.validation_page.hide()
         self.library_widget = self.validation_page.library_widget
-        self.modelsDropped.connect(self._import_models)
-        self.validation_page.modelsDropped.connect(self._import_models)
+        # Finish the native drop before entering the modal import dialog.
+        self.modelsDropped.connect(self._import_models, Qt.ConnectionType.QueuedConnection)
+        self.validation_page.modelsDropped.connect(self._import_models, Qt.ConnectionType.QueuedConnection)
         self.init_ui()
         seed_nep_data_git(self._db, self.project_service, self.model_service)
 
@@ -176,8 +177,12 @@ class DataManagerWidget(_ModelDropPage):
         dialog = ImportModelDialog(
             self.window(), service, paths, project_name=project.name if project else ""
         )
+        dialog.finished.connect(lambda result: self._finish_model_import(dialog, result))
+        dialog.open()
+
+    def _finish_model_import(self, dialog, result):
         try:
-            if not dialog.exec():
+            if result != QDialog.DialogCode.Accepted:
                 return
             record = dialog.save_model(dialog.draft)
         except (OSError, ValueError) as error:

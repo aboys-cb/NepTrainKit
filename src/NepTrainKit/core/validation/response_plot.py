@@ -1,6 +1,7 @@
 """Measured response coordinates, shared by reference previews and saved plots."""
 
 from itertools import combinations
+import re
 
 import numpy as np
 
@@ -90,6 +91,39 @@ def _angular_series(frames, summary):
 def response_plot_series(frames, summary):
     """Describe display coordinates without changing signed values or frame terms."""
     spec = summary["analysis"]
+    if spec["mode"] == "four_state":
+        records = []
+        for row in summary["rows"]:
+            info = frames[row["terms"][0][0]].info
+            fields = tuple(spec.get("axis_fields", ("axis_i", "axis_j"))) + tuple(spec.get("pair_fields", ("site_i", "site_j")))
+            if any(field not in info for field in fields):
+                return []
+            angle = str(info.get("theta_deg", ""))
+            if not angle and "theta_i_deg" in info and "theta_j_deg" in info:
+                angle = f"{info['theta_i_deg']}/{info['theta_j_deg']}"
+            condition = (str(info[fields[2]]), str(info[fields[3]]), angle)
+            structure = str(info.get("geometry", info.get("geometry_id", info.get("phase", ""))))
+            if not structure and "pair_geometry" in info:
+                structure = f"geometry {info['pair_geometry']}"
+            if not structure:
+                return []
+            records.append((condition, (str(info[fields[0]]), str(info[fields[1]])), structure))
+        structures = sorted({r[2] for r in records},
+                            key=lambda name: [int(p) if p.isdigit() else p for p in re.split(r"(\d+)", name)])
+        positions = {name: i + 1 for i, name in enumerate(structures)}
+        grouped = {}
+        for i, (condition, axes, structure) in enumerate(records):
+            grouped.setdefault((condition, axes), []).append((positions[structure], i, structure))
+        result = []
+        for (condition, axes), points in grouped.items():
+            points.sort(key=lambda point: point[0])
+            if len({p[0] for p in points}) != len(points):
+                return []
+            angle = f" · θ={condition[2]}°" if condition[2] else ""
+            result.append(dict(name=f"{axes[0]} / {axes[1]} · i={condition[0]}, j={condition[1]}{angle}",
+                               axis="structure", x=[p[0] for p in points], indices=[p[1] for p in points],
+                               labels=[p[2] for p in points], connected=False, condition=list(condition)))
+        return result
     if spec["mode"] == "difference" and "rotation_state" in spec["state_fields"]:
         from .spin_rotation import rotation_series
 

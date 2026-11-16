@@ -192,6 +192,8 @@ class ValidationService:
         self._temporary_data = {}
         self._temporary_runs = {}
         self._temporary_results = {}
+        self._accuracy_view_cache = {}
+        self._plot_series_cache = {}
 
     # -- models ---------------------------------------------------------------
     def _inbox_project_id(self, session) -> int:
@@ -1040,14 +1042,53 @@ class ValidationService:
                     if key not in ("protocol", "mode", "analysis", "reference_label_counts")}
         return CachedPrediction(predictor, self.library.root / "cache" / "predictions", identity, refresh=refresh)
 
+    def accuracy_view_data(self, benchmark, run, details):
+        """Restore frame errors from verified prediction caches without evaluating a model."""
+        from .accuracy import accuracy_labels, frame_error_statistics, frame_group_labels, prediction_values
+        from types import SimpleNamespace
+
+        if "frame_errors" in details and "frame_groups" in details:
+            return details
+        if run.get("set_id") != benchmark["id"] or run.get("environment", {}).get("dataset_sha256") != benchmark["object_hash"]:
+            return details
+        cache = self._accuracy_view_cache
+        if cache.get("benchmark") != benchmark["id"]:
+            frames = protocol_for_set(benchmark)._frames(self.set_frames(benchmark["id"]))
+            cache.clear()
+            cache.update(benchmark=benchmark["id"], labels=accuracy_labels(frames),
+                         groups=frame_group_labels(frames), runs={})
+        cached = cache["runs"].get(run["model_id"])
+        if cached and cached[0] == run["id"]:
+            return dict(details, **cached[1])
+        labels = cache["labels"]
+        expected = dict(energy=(len(labels.atom_counts),), forces=(int(labels.atom_counts.sum()), 3),
+                        structure_virials=(len(labels.atom_counts), 9), mforces=(int(labels.atom_counts.sum()), 3))
+        arrays = self._prediction_cache(run["environment"]).read_arrays(
+            expected, required={"energy", "forces", "structure_virials"})
+        restored = {"frame_groups": cache["groups"]}
+        if arrays is not None:
+            predicted = prediction_values(SimpleNamespace(**{"mforces": None, **arrays}), labels)
+            restored["frame_errors"] = frame_error_statistics(labels, predicted)
+        elif "errors" in details:
+            energy = [None] * len(labels.atom_counts)
+            for row, value in zip(details["rows"], details["errors"]):
+                energy[row["terms"][0][0]] = None if value is None else abs(value)
+            restored["frame_errors"] = {"energy": energy}
+        cache["runs"][run["model_id"]] = (run["id"], restored)
+        return dict(details, **restored)
+
     def response_plot_series(self, benchmark):
         """Add plot coordinates to old references using their sealed input frames."""
         from .response_plot import response_plot_series
 
         summary = benchmark["summary"]
-        if "plot_series" not in summary:
+        if "plot_series" not in summary or (not summary["plot_series"] and summary["analysis"]["mode"] == "four_state"):
+            if benchmark["id"] in self._plot_series_cache:
+                summary["plot_series"] = self._plot_series_cache[benchmark["id"]]
+                return summary["plot_series"]
             frames = protocol_for_set(benchmark)._frames(self.set_frames(benchmark["id"]))
             summary["plot_series"] = response_plot_series(frames, summary)
+            self._plot_series_cache[benchmark["id"]] = summary["plot_series"]
         return summary["plot_series"]
 
     def absolute_scan_energies(self, benchmark, run=None):

@@ -118,3 +118,48 @@ def accuracy_statistics(labels: AccuracyLabels, predicted: dict) -> tuple[dict, 
     if not any(value is not None for value in metrics.values()):
         raise ValueError("The model cannot evaluate any labelled quantity in this dataset.")
     return metrics, details
+
+
+def frame_error_statistics(labels: AccuracyLabels, predicted: dict) -> dict:
+    """Per-frame absolute energy error or component RMS, in the displayed meV units."""
+    result = {}
+    boundaries = np.r_[0, np.cumsum(labels.atom_counts)]
+    for key in QUANTITIES:
+        available = predicted.get(key)
+        if available is None:
+            continue
+        delta = (np.asarray(available) - labels.values[key]) * 1000
+        errors = np.full(len(labels.atom_counts), np.nan)
+        if key in ("energy", "virial"):
+            valid = labels.masks[key]
+            errors[valid] = (np.abs(delta[valid]) if key == "energy" else
+                             np.sqrt(np.mean(delta[valid] ** 2, axis=1)))
+        else:
+            for i, (start, stop) in enumerate(zip(boundaries[:-1], boundaries[1:])):
+                selected = delta[start:stop][labels.masks[key][start:stop]]
+                if selected.size:
+                    errors[i] = np.sqrt(np.mean(selected ** 2))
+        result[key] = [float(v) if np.isfinite(v) else None for v in errors]
+    return result
+
+
+def frame_group_labels(frames) -> dict:
+    fields = ("Config_type", "config_type", "geometry_id", "geometry", "family", "group")
+    result = {}
+    for field in fields:
+        values = [str(a.info[field]).strip() if a.info.get(field) is not None else None for a in frames]
+        distinct = {v for v in values if v}
+        if distinct and len(distinct) <= 64:
+            result[field] = [v or None for v in values]
+    return result
+
+
+def compare_frame_errors(errors, baseline=None, selected=None):
+    """Keep source indices; every model uses the same descending baseline-error ranks."""
+    indices = list(range(len(errors))) if selected is None else list(selected)
+    reference = baseline if baseline is not None else errors
+    indices = [i for i in indices if i < len(reference) and reference[i] is not None]
+    indices.sort(key=lambda i: (-reference[i], i))
+    return [dict(rank=rank, frame=i, error=errors[i], baseline=reference[i] if baseline is not None else None,
+                 delta=errors[i] - reference[i] if baseline is not None else errors[i])
+            for rank, i in enumerate(indices, 1) if errors[i] is not None]

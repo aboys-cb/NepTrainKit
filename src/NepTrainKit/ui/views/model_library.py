@@ -39,7 +39,7 @@ from qfluentwidgets import (
 
 from NepTrainKit import palette
 from NepTrainKit.ui.widgets.validation_model_picker import GroupMarkerButton
-from NepTrainKit.ui.widgets.validation_presentation import presentation_for, uses_curve_chart
+from NepTrainKit.ui.widgets.validation_presentation import presentation_for, uses_accuracy_cards, uses_curve_chart
 from NepTrainKit.ui.widgets.eos_plot import EOS_REFERENCE_WIDTH, update_residual_placeholder
 from NepTrainKit.config import Config
 from NepTrainKit.core import MessageManager
@@ -366,6 +366,7 @@ class RunDetailPanel(QWidget):
         self._total_groups = 0
         self._series_styles = {}
         self.model_colors = {}
+        self.baseline_id = None
         self._hidden_series = set()
         self._curves = {}
         self._eos_overlay = False
@@ -385,6 +386,10 @@ class RunDetailPanel(QWidget):
         # Attach before populating: the validation workspace later moves these widgets.
         layout.addLayout(header)
         self.header_layout = header
+        from NepTrainKit.ui.widgets.accuracy_comparison_plot import accuracy_controls
+
+        self.accuracy_tools = accuracy_controls(self)
+        header.addWidget(self.accuracy_tools)
         header.setSpacing(16)
         self.title_label = BodyLabel(self)
         self.offset_checkbox = CheckBox(self.tr("Remove constant offset"), self)
@@ -577,6 +582,7 @@ class RunDetailPanel(QWidget):
         groups = self._groups if self._groups is not None else [("", *self._args)] if self._args[0] else []
         self._diagnostic_charts = []
         diagnostic = bool(groups and groups[0][1]["protocol"] == "diagnostic")
+        self.accuracy_tools.setVisible(bool(groups and uses_accuracy_cards(groups[0][1])))
         self.diagnostic_mode.setVisible(diagnostic)
         self.wheel_zoom_checkbox.setVisible(bool(self._groups))
         self._rebuild_legend(groups)
@@ -919,6 +925,9 @@ class RunDetailPanel(QWidget):
 
     def set_series_color(self, key, color):
         self.model_colors[key] = color.name()
+        if self._groups and uses_accuracy_cards(self._groups[0][1]):
+            self._redraw()
+            return
         for curve in self._curves.get(key, ()):
             if curve.opts["pen"] is not None:
                 curve.setPen(self._series_pen(key))
@@ -953,6 +962,10 @@ class RunDetailPanel(QWidget):
             self._hidden_series.discard(key)
         else:
             self._hidden_series.add(key)
+        if self._groups and uses_accuracy_cards(self._groups[0][1]):
+            self._redraw()
+            self.seriesVisibilityChanged.emit(key, visible)
+            return
         for curve in self._curves.get(key, []):
             curve.setVisible(visible)
         for plot in self.eos_plots:
@@ -992,7 +1005,8 @@ class RunDetailPanel(QWidget):
 
     def _layout_cards(self):
         protocol = self._groups[0][1]["protocol"] if self._groups else None
-        adaptive_eos = self._adaptive_layout and self._groups and uses_curve_chart(self._groups[0][1])
+        adaptive_eos = self._adaptive_layout and self._groups and (
+            uses_curve_chart(self._groups[0][1]) or uses_accuracy_cards(self._groups[0][1]))
         single_eos = adaptive_eos and len(self.eos_cards) == 1
         limit = 2 if adaptive_eos or protocol == "diagnostic" else 3
         available_width = self.plot_pane.width() if self._adaptive_layout and self.plot_pane.width() > 200 else self.width()
@@ -1933,6 +1947,7 @@ class ModelLibraryWidget(QWidget):
     def _update_detail(self, *, group_rows=None, group_total=None) -> None:
         if not self.curves_button.isChecked():
             return  # Do not read result files or instantiate charts for an overview.
+        self.detail.baseline_id = next((row["model_id"] for row in self.model._rows if row["is_baseline"]), None)
         benchmarks = self.metrics_model.benchmarks
         if not benchmarks:
             self.detail.show_runs(None, [])
@@ -1987,6 +2002,8 @@ class ModelLibraryWidget(QWidget):
                 try:
                     result = service.run_details(run)
                     details = dict(result.get("details", {}), warnings=result.get("warnings", []))
+                    if uses_accuracy_cards(benchmark):
+                        details = service.accuracy_view_data(benchmark, run, details)
                 except OSError:
                     pass
             entries.append(

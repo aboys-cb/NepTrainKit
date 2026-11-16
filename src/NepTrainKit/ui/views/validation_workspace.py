@@ -56,7 +56,7 @@ from NepTrainKit.core.validation.service import ModelDraft, parse_model_header
 from NepTrainKit.ui.views.model_library import ModelLibraryWidget, RunDetailPanel, format_metric
 from NepTrainKit.ui.widgets.layout import FlowLayout
 from NepTrainKit.ui.widgets.validation_gallery import ValidationGallery
-from NepTrainKit.ui.widgets.validation_presentation import presentation_for, uses_curve_chart
+from NepTrainKit.ui.widgets.validation_presentation import presentation_for, uses_accuracy_cards, uses_curve_chart
 from NepTrainKit.ui.widgets.reference_response_plot import is_magnetic_eos, response_branches
 from NepTrainKit.ui.widgets.validation_group_comparison import ValidationGroupComparison
 from NepTrainKit.ui.widgets.validation_dialogs import BenchmarkImportDialog
@@ -1549,6 +1549,9 @@ class ValidationWorkspace(ModelLibraryWidget):
                 if presentation_for("response").item_badge(benchmark) == "MAE" and series:
                     self.groups.comparisons = {key for key, branch in zip(keys[1:], series[1:])
                                               if branch.get("plane") == series[0].get("plane")}
+                elif series and benchmark["summary"]["analysis"]["mode"] == "four_state":
+                    self.groups.comparisons = {key for key, branch in zip(keys[1:], series[1:])
+                                              if branch.get("condition") == series[0].get("condition")}
                 else:
                     self.groups.comparisons = set(keys[1:])
                 self.groups.focused = False
@@ -1566,10 +1569,11 @@ class ValidationWorkspace(ModelLibraryWidget):
         self.detail.eos_current_id = current if len(candidates) > 1 else None
         self.add_eos_groups.setVisible(len(candidates) > 1)
         eos = bool(benchmark and uses_curve_chart(benchmark))
+        accuracy = bool(benchmark and uses_accuracy_cards(benchmark))
         self.chart_tools.setVisible(eos)
-        self.standard_options.setVisible(not eos)
-        self.detail.title_label.setVisible(not eos)
-        self.detail.info_label.setVisible(not eos)
+        self.standard_options.setVisible(not eos and not accuracy)
+        self.detail.title_label.setVisible(not eos and not accuracy)
+        self.detail.info_label.setVisible(not eos and not accuracy)
         comparing = bool(self.groups.comparisons) and not self.groups.focused
         self.eos_layout.setVisible(comparing)
 

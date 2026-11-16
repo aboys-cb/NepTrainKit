@@ -66,6 +66,8 @@ class PyqtgraphCurvePlot(pg.PlotWidget):
         view = self.getViewBox()
         view.enableAutoRange(x=True, y=True)
         view.updateAutoRange()
+        if hasattr(self, "comparison_y_range"):
+            self.setYRange(*self.comparison_y_range, padding=.08)
 
     def add_zero_line(self, pen):
         self.addLine(y=0, pen=pen)

@@ -248,6 +248,7 @@ def four_state_candidates(frames):
                 metadata[str(indices[k])] = dict(
                     pair_group=f"{sites[0]}–{sites[1]} · {indices[0]} · {angles[0]}°/{angles[1]}°",
                     site_i=sites[0], site_j=sites[1],
+                    pair_geometry=indices[0], theta_i_deg=angles[0], theta_j_deg=angles[1],
                     axis_i=axes[0], axis_j=axes[1],
                     sign_i=1 if codes[0][k] == left[2] else -1,
                     sign_j=1 if codes[1][k] == right[2] else -1)

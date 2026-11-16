@@ -479,6 +479,10 @@ class ReferenceResponseProtocol(ValidationProtocol):
         from ..response_plot import response_plot_series
 
         result["plot_series"] = response_plot_series(frames, result)
+        if self.spec.mode == "slices":
+            from ..accuracy import frame_group_labels
+
+            result["frame_groups"] = frame_group_labels(frames)
         if self.spec.mode == "scan" and self.spec.quantity == "energy" and self.spec.relative:
             result["absolute_reference"] = _scan_points(raw_reference, rows)
         if self.spec.extract_exchange:
@@ -539,7 +543,7 @@ class ReferenceResponseProtocol(ValidationProtocol):
         return result
 
     def _accuracy_slices(self, prediction, frames, summary):
-        from ..accuracy import accuracy_labels, accuracy_statistics, prediction_values
+        from ..accuracy import accuracy_labels, accuracy_statistics, frame_error_statistics, prediction_values
 
         labels = accuracy_labels(frames)
         values = prediction_values(prediction, labels)
@@ -567,6 +571,7 @@ class ReferenceResponseProtocol(ValidationProtocol):
             for row, reference in zip(summary["rows"], summary["reference"])
         ]
         summary["errors"] = [None if r is None else p - r for r, p in zip(summary["reference"], summary["predicted"])]
+        summary["frame_errors"] = frame_error_statistics(labels, values)
         return Evaluation(metrics, summary)
 
 

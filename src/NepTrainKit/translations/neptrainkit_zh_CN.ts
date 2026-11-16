@@ -20487,6 +20487,122 @@ Dataset SHA-256: {data}</source>
         <source>Show a model curve above to see its residuals.</source>
         <translation>请在上方显示势函数曲线以查看残差。</translation>
     </message>
+    <message>
+        <source>Force</source>
+        <translation>力</translation>
+    </message>
+    <message>
+        <source>Energy</source>
+        <translation>能量</translation>
+    </message>
+    <message>
+        <source>Virial</source>
+        <translation>维里</translation>
+    </message>
+    <message>
+        <source>Magnetic force</source>
+        <translation>磁力</translation>
+    </message>
+    <message>
+        <source>Configuration group</source>
+        <translation>构型分组</translation>
+    </message>
+    <message>
+        <source>Frame {frame} (zero based)</source>
+        <translation>原始帧 {frame}（从 0 计数）</translation>
+    </message>
+    <message>
+        <source>Baseline</source>
+        <translation>基准</translation>
+    </message>
+    <message>
+        <source>Frame errors</source>
+        <translation>逐帧误差</translation>
+    </message>
+    <message>
+        <source>Largest deterioration first</source>
+        <translation>按退化程度降序</translation>
+    </message>
+    <message>
+        <source>Largest error first</source>
+        <translation>按误差降序</translation>
+    </message>
+    <message>
+        <source>Frame (zero based)</source>
+        <translation>原始帧（从 0 计数）</translation>
+    </message>
+    <message>
+        <source>Rank</source>
+        <translation>排序位置</translation>
+    </message>
+    <message>
+        <source>All configurations</source>
+        <translation>全部构型</translation>
+    </message>
+    <message>
+        <source>Unassigned</source>
+        <translation>未分组</translation>
+    </message>
+    <message>
+        <source>{count} paired frames</source>
+        <translation>{count} 个有效配对帧</translation>
+    </message>
+    <message>
+        <source>Improved</source>
+        <translation>改善</translation>
+    </message>
+    <message>
+        <source>Worse</source>
+        <translation>退化</translation>
+    </message>
+    <message>
+        <source>Unchanged {count}</source>
+        <translation>不变 {count}</translation>
+    </message>
+    <message>
+        <source>Absolute frame errors · {count} frames</source>
+        <translation>逐帧绝对误差 · {count} 帧</translation>
+    </message>
+    <message>
+        <source>Choose and evaluate a baseline model to compare frame errors.</source>
+        <translation>设置并计算基准势后，可比较逐帧误差变化。</translation>
+    </message>
+    <message>
+        <source>Rank · baseline error descending</source>
+        <translation>排序位置 · 基准误差降序</translation>
+    </message>
+    <message>
+        <source>Rank · model error descending</source>
+        <translation>排序位置 · 当前误差降序</translation>
+    </message>
+    <message>
+        <source>Rank {}</source>
+        <translation>排序位置 {}</translation>
+    </message>
+    <message>
+        <source>No valid frame errors. Double-click the item to evaluate it.</source>
+        <translation>暂无有效逐帧误差。双击左侧验证项即可计算。</translation>
+    </message>
+    <message>
+        <source>Structure variant</source>
+        <translation>结构变体</translation>
+    </message>
+    <message>
+        <source>Absolute energy error</source>
+        <translation>能量绝对误差</translation>
+    </message>
+    <message>
+        <source>Frame RMS</source>
+        <translation>逐帧 RMS</translation>
+    </message>
+    <message>
+        <source>{metric} change</source>
+        <translation>{metric} 变化</translation>
+    </message>
+    <message>
+        <source>Dataset statistics and export</source>
+        <translation>数据集统计与导出</translation>
+    </message>
 </context>
 <context>
     <name>RuntimeMessage</name>

@@ -1,5 +1,7 @@
 """Visible data determine plot bounds and categorical labels stay readable."""
 
+import pytest
+
 from PySide6.QtCore import QPoint
 from PySide6.QtGui import QFont, QFontMetrics
 from PySide6.QtWidgets import QApplication
@@ -105,3 +107,28 @@ def test_four_state_plot_uses_indices_and_keeps_full_hover_labels(scored, tmp_pa
     show_curve_values(w.detail, plot, {item["id"]: item["name"]})
     w.close()
     w.deleteLater()
+
+
+def test_four_state_facets_use_one_structure_order_and_keep_conditions_separate():
+    import random
+    from NepTrainKit.core.validation.protocols.response import ReferenceResponseProtocol, ResponseSpec
+
+    frames = []
+    for geometry in ("variant10", "variant2"):
+        for theta in (5., 2.5):
+            for left, right in ((1, 1), (1, 2), (2, 1), (2, 2)):
+                for frame in four_states(geometry):
+                    frame.info.update(axis_i=left, axis_j=right, site_i=0, site_j=1, theta_deg=theta)
+                    frames.append(frame)
+    random.Random(7).shuffle(frames)
+    spec = ResponseSpec(mode="four_state", group_fields=("geometry", "axis_i", "axis_j", "theta_deg"),
+                        state_fields=("sign_i", "sign_j"), normalization="total")
+    summary = ReferenceResponseProtocol(spec.to_dict()).summarize_reference(frames)
+    branches = summary["plot_series"]
+    assert len(branches) == 8
+    for branch in branches:
+        assert branch["labels"] == ["variant2", "variant10"]
+        assert branch["x"] == [1, 2] and branch["connected"] is False
+        assert [summary["reference"][i] for i in branch["indices"]] == pytest.approx([4., 4.])
+        assert branch["condition"] in (["0", "1", "5.0"], ["0", "1", "2.5"])
+    assert len({tuple(b["condition"]) for b in branches}) == 2

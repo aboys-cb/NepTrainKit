@@ -65,6 +65,10 @@ def uses_curve_chart(item):
                                       and item["summary"]["analysis"]["mode"] != "slices")
 
 
+def uses_accuracy_cards(item):
+    return item["protocol"] == "response" and item["summary"]["analysis"]["mode"] == "slices"
+
+
 def presentation_for(kind):
     return _PRESENTATIONS[kind]
 

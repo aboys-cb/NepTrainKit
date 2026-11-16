@@ -291,6 +291,7 @@ class VispyCurvePlot(QWidget):
         if data:
             x = (min(c.xData.min() for c in data), max(c.xData.max() for c in data))
             y = (min(c.yData.min() for c in data), max(c.yData.max() for c in data))
+            y = getattr(self, "comparison_y_range", y)
             self.view.camera.set_range(x=x, y=y, z=(-1, 1), margin=.08)
             self._view_changed()
 

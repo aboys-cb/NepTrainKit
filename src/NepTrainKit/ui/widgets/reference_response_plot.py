@@ -4,9 +4,9 @@ import csv
 from functools import partial
 from html import escape
 
-from PySide6.QtCore import QCoreApplication, Qt
+from PySide6.QtCore import QCoreApplication
 from PySide6.QtWidgets import QFileDialog, QTabWidget, QFrame, QHBoxLayout, QTableWidgetItem, QVBoxLayout
-from qfluentwidgets import BodyLabel, CaptionLabel, FluentIcon, PrimaryPushButton, PushButton, TransparentToolButton
+from qfluentwidgets import CaptionLabel, FluentIcon, PrimaryPushButton, PushButton, TransparentToolButton
 
 from NepTrainKit import palette
 from NepTrainKit.ui.widgets.eos_plot import (EOS_POINT_SIZE, overlay_header, add_overlay_group, energy_card_header,
@@ -276,10 +276,12 @@ def _draw_response_curves(panel, benchmark, entries):
         xlabel = panel.tr("Rotation angle θ (°)") if coordinate == "angle_deg" else (
             panel.tr("Path image") if coordinate == "image" else
             panel.tr("Direction · angle unavailable") if coordinate == "direction" else coordinate)
+        if coordinate == "structure":
+            xlabel = panel.tr("Structure variant")
         is_category = categorical or branch_meta.get("connected") is False or (
             not branch_meta and any(not isinstance(rows[i]["x"], (int, float))
                                     for _, _, indices in batch for i in indices))
-        indexed = is_category and any(len(indices) > 8 for _, _, indices in batch)
+        indexed = is_category and coordinate != "structure" and any(len(indices) > 8 for _, _, indices in batch)
         if indexed:
             xlabel = panel.tr("Combination index")
         card = QFrame(panel.grid_container)
@@ -383,130 +385,10 @@ def redraw_reference_responses(panel):
     for tag, benchmark, entries in panel._groups:
         summary = benchmark["summary"]
         recipe = summary["analysis"]
-        grouped_points = recipe["mode"] in ("combination", "four_state", "cross")
-        series = (
-            [dict(name=benchmark["name"], indices=list(range(len(summary["rows"]))))]
-            if grouped_points
-            else summary["series"]
-        )
         if recipe["mode"] != "slices":
             _draw_response_curves(panel, benchmark, entries)
             continue
-        for group in series:
-            selected = group["indices"]
-            card = QFrame(panel.grid_container)
-            card.setObjectName("referenceResponseCard")
-            card.setStyleSheet(
-                f"#referenceResponseCard {{background:{palette.SURFACE};border:1px solid {palette.BORDER};border-radius:10px;}}"
-            )
-            layout = QVBoxLayout(card)
-            layout.setContentsMargins(12, 10, 12, 10)
-            layout.setSpacing(4)
-            heading = QHBoxLayout()
-            title = BodyLabel(f"{tag} · {group['name']}", card)
-            title.setMinimumWidth(0)
-            title.setToolTip(benchmark["name"] + "\n" + group["name"])
-            heading.addWidget(title, 1)
-            reset = TransparentToolButton(FluentIcon.SYNC, card)
-            reset.setToolTip(panel.tr("Reset view"))
-            reset.setAccessibleName(reset.toolTip())
-            heading.addWidget(reset)
-            data = TransparentToolButton(TABLE_ICON, card)
-            data.setToolTip(panel.tr("Response values and frame combinations"))
-            data.clicked.connect(
-                lambda _=False, s=summary, indices=selected, versions=entries: _show_values(panel, s, indices, versions)
-            )
-            data.setAccessibleName(data.toolTip())
-            heading.addWidget(data)
-            layout.addLayout(heading)
-            roles = {
-                "unknown": panel.tr("Not declared"),
-                "training": panel.tr("Training regression"),
-                "development": panel.tr("Development validation"),
-                "validation": panel.tr("Validation (user declared)"),
-            }
-            description = CaptionLabel(f"{summary['unit']} · {len(selected)} · {roles[recipe['role']]}", card)
-            notes = list(summary.get("warnings", []))
-            for _, name, run, details in entries:
-                if not run or run["status"] != "succeeded" or not details:
-                    notes.append(name + ": " + panel.tr("Not run"))
-                    continue
-                if recipe["mode"] == "slices":
-                    matching = next(
-                        (item for item in details["accuracy_slices"] if item["group"] == group["name"]), None
-                    )
-                    if matching:
-                        notes.append(
-                            name
-                            + ": "
-                            + " / ".join(
-                                key + "=" + ("—" if value is None else f"{value:.4g}")
-                                for key, value in matching["metrics"].items()
-                                if key.endswith("_rmse")
-                            )
-                        )
-                else:
-                    matching = next((item for item in details["series"] if item["name"] == group["name"]), None)
-                    if matching:
-                        notes.append(name + ": RMSE " + f"{matching['rmse']:.4g}")
-            description.setToolTip("\n".join(notes))
-            layout.addWidget(description)
-            plot = panel._pg.PlotWidget(card)
-            panel._configure_subplot(plot)
-            plot.setMinimumWidth(0)
-            plot.setMinimumHeight(190)
-            plot.setLabel("left", summary["unit"])
-            x = [summary["rows"][i]["x"] for i in selected]
-            categorical = grouped_points or not all(isinstance(value, (int, float)) for value in x)
-            if categorical:
-                x = list(range(1, len(selected) + 1))
-                labels = [summary["rows"][i]["label"] for i in selected]
-                if len(labels) <= 12 and not grouped_points:
-                    plot.getAxis("bottom").setTicks([list(enumerate(labels, 1))])
-            plot.setLabel("bottom", summary["x_label"] if recipe["mode"] == "scan" else panel.tr("State / combination"))
-            if recipe["mode"] == "slices":
-                selected = [i for i in selected if summary["reference"][i] is not None]
-                x = [summary["rows"][i]["x"] for i in selected]
-            if recipe["second_axis"]:
-                # Sparse two-dimensional scans are shown as separate measured slices.
-                ys = sorted({summary["rows"][i]["second_axis"] for i in selected})
-            else:
-                ys = [None]
-            for y in ys:
-                subset = [offset for offset, i in enumerate(selected) if summary["rows"][i]["second_axis"] == y]
-                xx = [x[i] for i in subset]
-                label = "" if y is None else f" · {recipe['second_axis']}={y}"
-                curve = plot.plot(
-                    xx,
-                    [summary["reference"][selected[i]] for i in subset],
-                    pen=None
-                    if grouped_points
-                    else panel._pg.mkPen(palette.PLOT_AXIS, width=1.5, style=Qt.PenStyle.DashLine),
-                    symbol="o",
-                    symbolSize=5,
-                    antialias=True,
-                    name=panel.tr("Reference") + label,
-                )
-                panel._register_curve(None, curve)
-                for key, name, run, details in entries:
-                    if not run or run["status"] != "succeeded" or not details:
-                        continue
-                    curve = plot.plot(
-                        xx,
-                        [details["predicted"][selected[i]] for i in subset],
-                        pen=None if grouped_points else panel._series_pen(key),
-                        symbol="o",
-                        symbolSize=4,
-                        antialias=True,
-                        symbolBrush=panel._series_pen(key).color(),
-                        symbolPen=panel._series_pen(key).color(),
-                        name=name + label,
-                    )
-                    panel._register_curve(key, curve)
-            reset.clicked.connect(lambda _=False, target=plot: panel._reset_plot_view(target))
-            layout.addWidget(plot, 1)
-            card.setFixedHeight(300)
-            card.setMaximumWidth(460)
-            panel.eos_cards.append(card)
-            panel.eos_plots.append(plot)
+        from NepTrainKit.ui.widgets.accuracy_comparison_plot import draw_accuracy_cards
+
+        draw_accuracy_cards(panel, benchmark, entries)
     panel._layout_cards()

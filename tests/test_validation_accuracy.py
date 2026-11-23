@@ -244,8 +244,10 @@ def test_accuracy_controls_report_counts_and_route_recalculation_and_cache(accur
     widget.output_cache_action.trigger()
     assert calls[-1][1] == {'jobs': [(case.model['id'], case.benchmark['id'])], 'cache_directory': str(tmp_path)}
     dialog = BenchmarkImportDialog(widget, suites=[suite], suite_name=suite['name'])
-    dialog.protocol_combo.setCurrentIndex(dialog.protocol_combo.findData('efv'))
+    assert dialog.protocol_combo.findData('efv') == -1
+    dialog.protocol_combo.setCurrentIndex(dialog.protocol_combo.findData('response'))
     dialog.load_file(case.data)
+    dialog.analysis_editor.set_settings({'mode': 'slices'})
     assert not dialog.validation_errors()
     assert 'MF 3' in dialog.preview_summary.text()
     widget.close()

@@ -13,6 +13,7 @@ from NepTrainKit.core.validation.service import ModelDraft, compare
 from NepTrainKit.core.dataset.models import BenchmarkSuite, BenchmarkSet, BenchmarkRun
 from NepTrainKit.core.validation.protocols import read_frames
 from NepTrainKit.core.validation.protocols.diagnostic import DiagnosticSpec, DiagnosticProtocol, UnsupportedDiagnostic, encode_experiment, experiment, scan_frames
+from test_accuracy_comparison_plot import curve_mode as curve_mode
 
 
 @pytest.fixture(autouse=True)
@@ -261,14 +262,15 @@ def test_workbench_editor_draft_run_overlays_focus_and_save(service,seed,tmp_pat
     assert counts(service)==(0,0,0)
     assert len(service.models())==1 and service.models()[0]['project_id'] is None
     current=widget.current_model_row()['model_id']
-    assert len(widget.detail._curves[current])==3
+    assert len(widget.detail._diagnostic_charts)==3
+    assert all(len(curve.derivative_parts)==2 for _, curves in widget.detail._diagnostic_charts for curve, _ in curves)
     second=service.capture_model(ModelDraft(b'nep4_spin3 1 Fe\nold','/test/old.txt'),auto=False)
     widget.refresh(model_id=current)
     widget.comparison_picker.set_options([(second['id'],'old','not run')],[second['id']])
     widget._on_selection_changed()
     task=widget.run_selected()
     assert task and _wait_until(lambda:widget._run_task is None)
-    assert len(widget.detail._curves[second['id']])==3
+    assert sum(c.property('diagnosticRole')=='analytic' for c in widget.detail._curves[second['id']])==3
     widget.detail.legend_buttons[second['id']].click()
     assert not any(c.isVisible() for c in widget.detail._curves[second['id']])
     focus=widget.detail.eos_cards[0].findChild(TransparentToolButton,'toggleDiagnosticFocus')
@@ -283,7 +285,8 @@ def test_workbench_editor_draft_run_overlays_focus_and_save(service,seed,tmp_pat
     saved=service.save_diagnostic_plan(widget.current_suite_id(),'saved')
     widget.refresh(saved['id'],current)
     assert not widget.save_plan_action.isEnabled()
-    assert len(widget.detail.eos_plots)==3 and len(widget.detail._curves[current])==3
+    assert len(widget.detail.eos_plots)==3
+    assert sum(c.property('diagnosticRole')=='analytic' for c in widget.detail._curves[current])==3
     widget.close()
 
 
@@ -356,7 +359,7 @@ def test_edit_saved_experiment_creates_copy_and_preserves_original(service,seed)
     widget.close()
 
 
-def test_global_response_mode_preserves_hidden_curves_and_evidence(service,seed):
+def test_global_response_mode_preserves_hidden_curves_and_evidence(service,seed,curve_mode,monkeypatch):
     from PySide6.QtWidgets import QTextBrowser
     from qfluentwidgets import TransparentPushButton
     from NepTrainKit.ui.views.model_library import ModelLibraryWidget
@@ -369,12 +372,35 @@ def test_global_response_mode_preserves_hidden_curves_and_evidence(service,seed)
     panel=widget.detail
     from test_validation_ui import _wait_until
     assert _wait_until(lambda: all(card.isVisible() for card in panel.eos_cards))
+    for _, curves in panel._diagnostic_charts:
+        for _, details in curves:
+            details.pop('scan_numeric_derivative')  # Results saved before scan derivatives were added.
+    def no_prediction(*_):
+        raise AssertionError('Changing the view must not predict again')
+    monkeypatch.setattr(service,'predictor_factory',no_prediction)
     panel.legend_buttons[model['id']].click()
     panel.diagnostic_mode.setCurrentIndex(1)
-    for curve, benchmark in zip(panel._curves[model['id']],service.suite_sets(suite['id'])):
+    analytic = [c for c in panel._curves[model['id']] if c.property('diagnosticRole')=='analytic']
+    for curve, benchmark in zip(analytic,service.suite_sets(suite['id'])):
         details=service.run_details(service.latest_run(model['id'],benchmark['id']))['details']
         np.testing.assert_allclose(curve.getData()[1],details['derivative'])
+        coarse, exact = curve.derivative_parts
+        np.testing.assert_allclose(coarse.yData,details['scan_numeric_derivative'])
+        np.testing.assert_allclose(exact.yData,[details['checks'][0]['numeric'][-1]])
         assert not curve.isVisible()
+        assert not coarse.isVisible() and not exact.isVisible()
+    assert not any(plot.origin_line.isVisible() for plot in panel.eos_plots)
+    panel.set_series_visible(model['id'], True)
+    assert all(c.isVisible() for c in panel._curves[model['id']])
+    panel.diagnostic_mode.setCurrentIndex(2)
+    for plot, curves in panel._diagnostic_charts:
+        for curve, details in curves:
+            np.testing.assert_allclose(curve.yData,np.array(details['derivative'])-details['scan_numeric_derivative'])
+            coarse, exact = curve.derivative_parts
+            assert not coarse.isVisible() and exact.isVisible()
+            assert plot.origin_line.xData[0] == 0
+    panel.set_series_visible(model['id'], False)
+    panel.diagnostic_mode.setCurrentIndex(1)
     panel.eos_cards[0].findChild(TransparentPushButton,'diagnosticEvidenceButton').click()
     evidence=panel.eos_cards[0].findChild(QTextBrowser,'diagnosticEvidence')
     assert evidence.isVisible() and '解析导数' in evidence.toPlainText() and '差分步长' in evidence.toPlainText()
@@ -382,8 +408,30 @@ def test_global_response_mode_preserves_hidden_curves_and_evidence(service,seed)
     assert panel.diagnostic_mode.currentData()=='derivative'
     assert not panel._curves[model['id']][0].isVisible()
     panel.diagnostic_mode.setCurrentIndex(0)
-    assert 'meV/atom' in panel.eos_plots[0].getAxis('left').labelText
+    assert 'meV/atom' in panel.eos_plots[0].axis_titles[1]
+    for _, curves in panel._diagnostic_charts:
+        for curve, _ in curves:
+            for part in curve.derivative_parts:
+                assert not part.isVisible() and (part.yData is None or not len(part.yData))
+                if hasattr(part,'points'):
+                    assert not part.points.visible and not part.line.visible
     widget.close()
+
+
+def test_scan_difference_uses_nonuniform_coordinate_and_keeps_origin_check(seed):
+    from NepTrainKit.core.validation.protocols.diagnostic import scan_numeric_derivative
+
+    x = np.array([-.2, -.05, 0., .08, .2])
+    np.testing.assert_allclose(scan_numeric_derivative(x, 2*x*x-3*x+7), 4*x-3, atol=1e-11)
+    assert scan_numeric_derivative([0, 0, 1], [1, 1, 2]) is None
+    assert scan_numeric_derivative([0, 1], [1, 2]) is None
+    predictor = AnalyticPredictor()
+    predictor.wrong_force = True
+    result = DiagnosticProtocol().evaluate(predictor,frames(seed,'displacement'))
+    details = result.details
+    np.testing.assert_allclose(details['scan_numeric_derivative'], -np.array(details['derivative']), atol=1e-9)
+    assert details['checks'][0]['status'] == 'fail'
+    assert len(details['checks'][0]['numeric']) == 3
 
 
 def test_editor_selection_preserves_parameters_and_keeps_creation_visible(seed):

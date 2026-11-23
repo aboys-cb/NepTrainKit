@@ -52,7 +52,8 @@ _PRESENTATIONS = {
         "EOS", redraw_eos, source_group="eos_group", group_title=eos_group_title,
         choose_table_metric=True, import_label="EOS · Energy–volume curve", draw_import_preview=preview_eos,
     ),
-    "efv": PropertyPresentation("EFV", import_label="Energy / force / virial errors"),
+    # Sealed legacy records remain readable; new accuracy items use response/slices.
+    "efv": PropertyPresentation("EFV"),
     "response": PropertyPresentation(
         "Resp", redraw_reference_responses, import_label="Reference response · scans / differences / combinations",
     ),

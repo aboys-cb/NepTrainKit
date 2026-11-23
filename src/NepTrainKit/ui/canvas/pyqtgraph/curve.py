@@ -33,8 +33,13 @@ class PyqtgraphCurvePlot(pg.PlotWidget):
     def __init__(self, parent):
         super().__init__(parent, background=palette.PLOT_BACKGROUND, axisItems={side: _CurveAxis(side) for side in ("left", "bottom")})
 
-    def plot(self, *args, antialias=True, **kwargs):
-        return self.plotItem.plot(*args, antialias=antialias, **kwargs)
+    def plot(self, *args, antialias=True, auxiliary=False, **kwargs):
+        curve = self.plotItem.plot(*args, antialias=antialias, **kwargs)
+        curve.setProperty("auxiliary", auxiliary)
+        return curve
+
+    def listDataItems(self):
+        return [curve for curve in self.plotItem.listDataItems() if not curve.property("auxiliary")]
 
     def configure(self, xlabel, ylabel, legend, zero_pen=None):
         self.getAxis("bottom").categories = None

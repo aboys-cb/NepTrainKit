@@ -446,7 +446,7 @@ def test_response_package_round_trip_preserves_analysis(tmp_path):
     assert restored["summary"]["reference"] == pytest.approx([4])
 
 
-def test_explicit_unit_spin_projections_recover_symmetric_and_chiral_parts():
+def exchange_frames():
     theta = 0.13
     reference = np.array([[0.002, 0.0007, 0], [0.0001, 0.003, 0], [0, 0, 0.004]])
     frames = []
@@ -460,6 +460,11 @@ def test_explicit_unit_spin_projections_recover_symmetric_and_chiral_parts():
             a.set_initial_magnetic_moments(np.array([ui, uj]) * 2)
             a.info["energy"] = -10 + ui @ reference @ uj
             frames.append(a)
+    return frames
+
+
+def test_explicit_unit_spin_projections_recover_symmetric_and_chiral_parts():
+    frames = exchange_frames()
     spec = ResponseSpec(
         mode="four_state",
         group_fields=("geometry", "axis_i", "axis_j", "site_i", "site_j"),
@@ -476,6 +481,19 @@ def test_explicit_unit_spin_projections_recover_symmetric_and_chiral_parts():
     assert chiral["reference_symmetric"] == pytest.approx(0.4)
     assert chiral["reference_d_projection"] == pytest.approx(0.3)
     assert chiral["direction"] == pytest.approx([0, 0, 1])
+    from NepTrainKit.core.validation.response_plot import exchange_plot_view
+
+    assert exchange_plot_view(summary, 'response') is summary
+    projected = exchange_plot_view(summary, 'projections')
+    assert projected['reference'] == pytest.approx([2, .7, .1, 3])
+    assert projected['unit'] == 'meV'
+    assert projected['source_rows'] == [[i] for i in range(4)]
+    d_view = exchange_plot_view(summary, 'd_projection')
+    assert d_view['reference'] == pytest.approx([.3])
+    assert d_view['source_rows'] == [[0, 1, 2, 3]]
+    assert d_view['plot_series'][0]['labels'] == ['same']
+    assert exchange_plot_view(summary, 'symmetric')['reference'] == pytest.approx([.4])
+    assert summary['reference'] != projected['reference']
     broken = [a.copy() for a in frames]
     broken[0].set_initial_magnetic_moments(np.array([[0, 0, 2], [0, 0, -1.9]]))
     assert any(i.level == "error" for i in protocol.check(broken))

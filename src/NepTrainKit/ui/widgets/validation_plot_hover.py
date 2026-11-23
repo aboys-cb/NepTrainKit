@@ -78,19 +78,28 @@ class PlotPointHover(QLabel):
                 curve.read_point(curve, index)
             return
 
+        hit_curve, hit_index = hit
+        sample = getattr(hit_curve, "sample_x", hit_curve.xData)[hit_index]
+        point_id = hit_curve.point_ids[hit_index] if hasattr(hit_curve, "point_ids") else None
         # Match the physical coordinate, since each scan may have its own sampling grid.
         lines = [f"<b>{escape(self.x_label.format(sample))}</b>"]
-        category = getattr(self.plot, "category_labels", {}).get(sample)
+        category = (hit_curve.point_labels[hit_index] if hasattr(hit_curve, "point_labels") else
+                    getattr(self.plot, "category_labels", {}).get(sample))
         if category:
             lines.append(escape(category))
         for curve in curves:
-            xs = curve.xData
+            xs = getattr(curve, "sample_x", curve.xData)
             if xs is None or not len(xs):
                 continue
-            i = bisect_left(xs, sample)
-            index = min((j for j in (i - 1, i) if 0 <= j < len(xs)), key=lambda j: abs(xs[j] - sample))
-            if not isclose(xs[index], sample, rel_tol=1e-9, abs_tol=1e-12):
-                continue
+            if point_id is not None and hasattr(curve, "point_index"):
+                index = curve.point_index.get(point_id)
+                if index is None:
+                    continue
+            else:
+                i = bisect_left(xs, sample)
+                index = min((j for j in (i - 1, i) if 0 <= j < len(xs)), key=lambda j: abs(xs[j] - sample))
+                if not isclose(xs[index], sample, rel_tol=1e-9, abs_tol=1e-12):
+                    continue
             value = curve.yData[index]
             if not isfinite(value):
                 continue

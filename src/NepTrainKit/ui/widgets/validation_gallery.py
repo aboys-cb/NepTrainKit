@@ -117,7 +117,7 @@ class ValidationGallery(QListWidget):
                 title = item.data(Qt.ItemDataRole.UserRole)
                 x_label = {"volume_ratio": "V/V₀", "moment_ratio": "M/M₀"}.get(x_label, x_label)
                 axes = " → ".join(filter(None, (x_label, y_label)))
-                item.setText(f"{title}   ·   {axes}" if axes else title)
+                item.setText(f"{title}   ·   {y_label}" if y_label else title)
                 item.setToolTip("\n".join(filter(None, (self.records[i]["name"], axes))))
                 item.setIcon(QIcon(image))
                 self.loaded.add(i)

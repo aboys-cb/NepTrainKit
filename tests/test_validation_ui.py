@@ -378,7 +378,9 @@ def test_import_preview_invalidates_on_file_edit_and_type_change(make_service, t
     assert not dialog.validate() and dialog.reference_summary is None
     assert not dialog.preview_plot.listDataItems()
     _load_single_eos(dialog, path)
-    dialog.protocol_combo.setCurrentIndex(dialog.protocol_combo.findData("efv"))
+    assert dialog.protocol_combo.findData("efv") == -1
+    dialog.protocol_combo.setCurrentIndex(dialog.protocol_combo.findData("response"))
+    dialog.analysis_editor.set_settings({"mode": "slices"})
     assert dialog.validate() and dialog.preview_plot.isHidden()
     assert "frames" in dialog.reference_summary
     dialog.protocol_combo.setCurrentIndex(dialog.protocol_combo.findData("eos"))
@@ -468,7 +470,7 @@ def test_import_dialog_asks_before_copying_large_files(make_service, tmp_path):
     assert suite["name"] == "PbTe" and [s["id"] for s in service.suite_sets(suite["id"])] == [record["id"]]
 
 
-@pytest.mark.parametrize("protocol", ["eos", "efv"])
+@pytest.mark.parametrize("protocol", ["eos", "response"])
 @pytest.mark.parametrize("notes", ["", "PBE, 520 eV; same magnetic branch"])
 def test_import_optional_notes_round_trip(make_service, tmp_path, protocol, notes):
     service = make_service()
@@ -481,6 +483,7 @@ def test_import_optional_notes_round_trip(make_service, tmp_path, protocol, note
         _load_single_eos(dialog, path)
     else:
         dialog.load_file(path)
+        dialog.analysis_editor.set_settings({"mode": "slices"})
     assert dialog.validate() and dialog.yesButton.isEnabled()
     assert dialog.supplementary_panel.isHidden()
     if notes:
@@ -501,9 +504,9 @@ def test_import_optional_notes_round_trip(make_service, tmp_path, protocol, note
     widget.property_combo.setCurrentIndex(widget.property_combo.findData(protocol))
     info = widget.detail.info_label.text()
     assert "Reference: ?" not in info and "DFT" not in info
-    if notes:
+    if notes and protocol == "eos":
         assert f"Notes: {notes}" in info
-    else:
+    elif not notes:
         assert "Notes:" not in info
     if protocol == "eos":
         assert widget.detail.eos_plots[0].listDataItems()[0].name() == "Reference"

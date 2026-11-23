@@ -1,9 +1,10 @@
 """Regression comparisons preserve frame identity, masks and baseline ordering."""
 import pytest
+import numpy as np
 from ase.io import write
 from PySide6.QtWidgets import QApplication, QDialog
 from PySide6.QtGui import QColor
-from qfluentwidgets import PushButton, TableWidget
+from qfluentwidgets import CaptionLabel, PushButton, TableWidget
 
 from NepTrainKit.core.validation.accuracy import (accuracy_labels, compare_frame_errors,
                                                  frame_error_statistics, frame_group_labels, prediction_values)
@@ -125,5 +126,44 @@ def test_regression_cards_use_frame_error_changes_and_filter_without_prediction(
     assert panel._pg.mkPen(panel._curves[scored.new["id"]][0].opts["symbolPen"]).color().name() == "#123456"
     panel.set_series_visible(scored.fresh["id"], False)
     assert len(panel.eos_plots) == 1
+    assert FakePredictor.calls == calls
+    w.close(); w.deleteLater()
+
+
+def test_error_comparison_preserves_duplicate_baseline_values_and_frame_identity(scored, tmp_path, curve_mode):
+    from PySide6.QtCore import QPoint
+
+    item = _import(scored.service, tmp_path, efv_frames(), "regression", protocol="response",
+                   analysis=ResponseSpec(mode="slices").to_dict())
+    suite = scored.service.create_suite("comparison", [item["id"]])
+    for model in (scored.old, scored.new):
+        scored.service.run_suite(model["id"], suite["id"])
+    scored.service.set_baseline(suite["id"], scored.old["id"])
+    w = ValidationWorkspace(service=scored.service)
+    w.open_scorecard(suite["id"], scored.new["id"])
+    w.show(); w.open_item(item["id"]); QApplication.processEvents()
+    panel = w.detail
+    for key, _, _, details in panel._args[1]:
+        details['frame_errors']['force'] = [8., 2., 2., None] if key == scored.old['id'] else [7., 3., 1., 9.]
+    calls = FakePredictor.calls
+    panel.accuracy_compare.click()
+    plot, = panel.eos_plots
+    curve, = plot.listDataItems()
+    np.testing.assert_allclose(curve.xData, [2, 2, 8])
+    np.testing.assert_allclose(curve.yData, [3, 1, 7])
+    assert curve.point_ids == [1, 2, 0]
+    assert 'Baseline frame error' in plot.axis_titles[0]
+    plot.cursor_coordinates = lambda _: (2., 1., .001, .001)
+    plot.point_hover._follow(QPoint(80, 80))
+    assert 'Frame 2 (zero based)' in plot.point_hover.text()
+    curve.read_point(curve, 1)
+    assert 'Frame 2 (zero based)' in panel.eos_cards[0].findChild(CaptionLabel, 'eosPointReadout').text()
+    assert plot.comparison_y_range == (0., 8.)
+    for key, _, _, details in panel._args[1]:
+        if key == scored.old['id']:
+            details['frame_errors']['force'] = [None] * 4
+    panel._redraw()
+    assert not panel.accuracy_compare.isEnabled() and not panel.accuracy_compare.isChecked()
+    assert 'Rank' in panel.eos_plots[0].axis_titles[0]
     assert FakePredictor.calls == calls
     w.close(); w.deleteLater()

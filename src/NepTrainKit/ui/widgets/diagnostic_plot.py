@@ -1,10 +1,13 @@
 """Diagnostic response cards, sharing the workbench legend and view controls."""
 from html import escape
 from PySide6.QtCore import Qt
-from PySide6.QtGui import QColor, QFont
+from PySide6.QtGui import QColor, QPen
 from PySide6.QtWidgets import QFrame, QVBoxLayout, QHBoxLayout, QTextBrowser
 from qfluentwidgets import BodyLabel, CaptionLabel, TransparentToolButton, TransparentPushButton, FluentIcon
 from NepTrainKit import palette
+from NepTrainKit.core.validation.protocols.diagnostic import scan_numeric_derivative
+from NepTrainKit.ui.widgets.eos_plot import energy_curve_canvas
+from NepTrainKit.ui.widgets.validation_plot_hover import PlotPointHover
 
 STATUS = {"pass": "通过", "fail": "异常", "undetermined": "待确认", "not_applicable": "不适用"}
 STATUS_COLOR = {"pass": QColor(palette.PLOT_SHOW).darker(125).name(), "fail": QColor(palette.PLOT_REJECT).darker(115).name(),
@@ -41,11 +44,46 @@ def _check_report(entries):
 def set_response_metric(panel):
     metric = panel.diagnostic_mode.currentData()
     for plot, curves in panel._diagnostic_charts:
+        residual = metric == "derivative_residual"
+        energy = metric == "relative_energy"
+        unit = "meV/atom" if energy else "eV" + ("/" + plot.coordinate_unit if plot.coordinate_unit else "")
+        ylabel = "ΔE (meV/atom)" if energy else panel.tr("Derivative residual") if residual else "dE/dq"
+        if not energy:
+            ylabel += " (" + unit + ")"
+        plot.axis_titles = (plot.coordinate_label, ylabel)
+        plot.configure(*plot.axis_titles, False)
+        plot.point_hover.unit = unit
+        plot.method_hint.setVisible(not energy)
+        plot.method_hint.setText(panel.tr("● Analytic   ▲ Scan difference (approximate)   ■ Origin difference (h/4)") if not residual else
+                                 panel.tr("● Analytic − scan difference   ■ Analytic − origin difference"))
         for curve, details in curves:
-            values = details.get(metric)
-            curve.setData(details['x'] if values is not None else [], values if values is not None else [])
-        plot.setLabel('left', 'ΔE (meV/atom)' if metric == 'relative_energy' else 'dE/dq (eV / 横轴单位)')
-        panel._reset_plot_view(plot)
+            xs = details["x"]
+            numeric = details.get("scan_numeric_derivative")
+            if numeric is None:
+                numeric = scan_numeric_derivative(xs, details["energy"])
+                details["scan_numeric_derivative"] = numeric
+            analytic = details.get("derivative")
+            values = details["relative_energy"] if energy else analytic
+            if residual:
+                values = [a - n for a, n in zip(analytic, numeric)] if analytic is not None and numeric is not None else None
+            coarse, exact = curve.derivative_parts
+            check = next((c for c in details.get("checks", ()) if "numeric" in c and "analytic" in c), {})
+            origin_value = check.get("numeric", [])
+            origin_value = origin_value[-1] if origin_value else None
+            if residual:
+                origin_value = (check["analytic"] - origin_value
+                                if check.get("analytic") is not None and origin_value is not None else None)
+            blocks = ((curve, xs, values), (coarse, xs, numeric if not energy and not residual else None),
+                      (exact, [xs[details["origin_index"]]], [origin_value] if not energy and origin_value is not None else None))
+            for part, x, y in blocks:
+                part.setData(x if y is not None else [], y if y is not None else [])
+                part.setProperty("viewVisible", y is not None)
+                part.setVisible(y is not None and part.property("modelId") not in panel._hidden_series)
+        visible = [v for c in plot.listDataItems() if c.isVisible() for v in c.yData]
+        lo, hi = (min(visible), max(visible)) if visible else (0., 1.)
+        plot.origin_line.setData([plot.origin, plot.origin], [lo, hi])
+        plot.origin_line.setVisible(bool(visible))
+        plot.finish()
 
 
 def redraw_diagnostics(panel):
@@ -58,7 +96,7 @@ def redraw_diagnostics(panel):
     panel.relative_checkbox.hide()
     panel.offset_checkbox.hide()
     panel.title_label.setText(panel.tr("Model response  ·  {count} experiments").format(count=len(panel._groups)))
-    panel.info_label.setText(panel.tr("Reference-free diagnostic  ·  Relative to the initial state per atom  ·  Accuracy not verified"))
+    panel.info_label.setText(panel.tr("Reference-free diagnostic · Internal consistency only · External accuracy not verified"))
     panel.info_label.setToolTip(panel.tr("Curves are model predictions. Passing an internal consistency check does not imply external accuracy, and a negative curvature is not automatically an error."))
     for tag, benchmark, entries in panel._groups:
         summary = benchmark['summary']
@@ -108,23 +146,21 @@ def redraw_diagnostics(panel):
         focus.setVisible(panel._total_groups > 1)
         heading.addWidget(focus)
         layout.addLayout(heading)
-        plot = panel._pg.PlotWidget(card)
-        panel._configure_subplot(plot)
-        plot.setMinimumHeight(280 if focused else 175)
-        plot.setBackground(palette.SURFACE)
-        plot.showGrid(x=False, y=True, alpha=.09)
-        for side in ('left', 'bottom'):
-            axis = plot.getAxis(side)
-            axis.setPen(panel._pg.mkPen(palette.BORDER))
-            axis.setTextPen(panel._pg.mkPen(palette.PLOT_AXIS))
-            axis.setStyle(maxTickLevel=0, tickLength=-3)
-            axis.setTickDensity(.7)
-            tick_font = QFont(card.font())
-            tick_font.setPointSize(10)
-            axis.setTickFont(tick_font)
-        plot.setLabel('bottom', summary['x_label'])
-        reset.clicked.connect(lambda _=False, target=plot: panel._reset_plot_view(target))
-        layout.addWidget(plot, 1)
+        plot, _ = energy_curve_canvas(panel, card, layout, reset, summary['x_label'], "ΔE (meV/atom)",
+                                       "q = {:.6g}", "meV/atom", False)
+        if not hasattr(plot, "point_hover"):
+            plot.point_hover = PlotPointHover(plot, "q = {:.6g}", "meV/atom")
+        plot.add_zero_line(panel._series_pen(None))
+        plot.coordinate_label = summary['x_label']
+        plot.coordinate_unit = {"volume": "%", "displacement": "Å", "spin_angle": "°", "spin_magnitude": ""}[summary['kind']]
+        plot.origin = 1. if summary['kind'] == 'spin_magnitude' else 0.
+        pen = QPen(panel._series_pen(None))
+        pen.setWidthF(1.2)
+        plot.origin_line = plot.plot([plot.origin, plot.origin], [0., 1.], pen=pen, auxiliary=True)
+        plot.method_hint = CaptionLabel(card)
+        plot.method_hint.setWordWrap(True)
+        plot.method_hint.setStyleSheet(f"color:{palette.TEXT_SECONDARY};")
+        layout.insertWidget(layout.indexOf(plot), plot.method_hint)
         curves = []
         counts = dict.fromkeys(STATUS, 0)
         missing, failed = 0, 0
@@ -135,15 +171,28 @@ def redraw_diagnostics(panel):
             if run['status'] != 'succeeded':
                 failed += 1
                 continue
-            curve = plot.plot(details['x'], details['relative_energy'], pen=panel._series_pen(key), antialias=True,
-                              symbol='o', symbolSize=3, symbolBrush=panel._series_pen(key).color(), symbolPen=None)
+            curve = plot.plot(details['x'], details['relative_energy'], pen=panel._series_pen(key),
+                              symbol='o', symbolSize=8, symbolBrush=panel._series_pen(key).color(),
+                              symbolPen=panel._series_pen(key).color(), name=escape(_name))
+            curve.setProperty("diagnosticRole", "analytic")
             panel._register_curve(key, curve)
+            pen = QPen(panel._series_pen(key))
+            pen.setStyle(Qt.PenStyle.DashLine)
+            pen.setWidthF(1.8)
+            coarse = plot.plot([], [], pen=pen, symbol='t1', symbolSize=7,
+                               symbolBrush=pen.color(), symbolPen=pen.color(), name=panel.tr("Scan difference"))
+            exact = plot.plot([], [], pen=None, symbol='s', symbolSize=11,
+                              symbolBrush=pen.color(), symbolPen=pen.color(), name=panel.tr("Origin difference"))
+            coarse.setProperty("fixedStyle", True)
+            for part in (coarse, exact):
+                part.setProperty("viewVisible", False)
+                part.setProperty("diagnosticRole", "numeric")
+                panel._register_curve(key, part)
+            curve.derivative_parts = (coarse, exact)
             curves.append((curve, details))
             for check in details.get('checks', []):
                 counts[check['status']] += 1
         panel._diagnostic_charts.append((plot, curves))
-        if not curves:
-            plot.setXRange(min(summary['coordinates']), max(summary['coordinates']))
         footer = QHBoxLayout()
         footer.setSpacing(8)
         label = CaptionLabel('一致性检查', card)

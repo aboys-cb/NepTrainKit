@@ -20607,6 +20607,82 @@ Dataset SHA-256: {data}</source>
         <source>Set baseline model</source>
         <translation>设为基准势</translation>
     </message>
+    <message>
+        <source>Error comparison</source>
+        <translation>误差对照</translation>
+    </message>
+    <message>
+        <source>Compare baseline and model frame errors. Points below the diagonal improve.</source>
+        <translation>对照基准势与当前模型的逐帧误差；对角线下方表示改善。</translation>
+    </message>
+    <message>
+        <source>Baseline frame error</source>
+        <translation>基准势逐帧误差</translation>
+    </message>
+    <message>
+        <source>Model frame error</source>
+        <translation>模型逐帧误差</translation>
+    </message>
+    <message>
+        <source>Baseline error {:.6g}</source>
+        <translation>基准误差 {:.6g}</translation>
+    </message>
+    <message>
+        <source>Energy response</source>
+        <translation>能量响应</translation>
+    </message>
+    <message>
+        <source>Energy derivatives</source>
+        <translation>能量导数</translation>
+    </message>
+    <message>
+        <source>Derivative residual</source>
+        <translation>导数残差</translation>
+    </message>
+    <message>
+        <source>Bilinear projection</source>
+        <translation>双线性投影</translation>
+    </message>
+    <message>
+        <source>Symmetric projection</source>
+        <translation>对称投影</translation>
+    </message>
+    <message>
+        <source>Chiral D projection</source>
+        <translation>D 投影</translation>
+    </message>
+    <message>
+        <source>● Analytic   ▲ Scan difference (approximate)   ■ Origin difference (h/4)</source>
+        <translation>● 解析值　▲ 扫描差分（近似）　■ 原点差分（h/4）</translation>
+    </message>
+    <message>
+        <source>● Analytic − scan difference   ■ Analytic − origin difference</source>
+        <translation>● 解析值 − 扫描差分　■ 解析值 − 原点差分</translation>
+    </message>
+    <message>
+        <source>Scan difference</source>
+        <translation>扫描差分</translation>
+    </message>
+    <message>
+        <source>Origin difference</source>
+        <translation>原点差分</translation>
+    </message>
+    <message>
+        <source>Projection unavailable: </source>
+        <translation>投影结果不可用：</translation>
+    </message>
+    <message>
+        <source>Model response  ·  {count} experiments</source>
+        <translation>模型响应  ·  {count} 项实验</translation>
+    </message>
+    <message>
+        <source>Reference-free diagnostic · Internal consistency only · External accuracy not verified</source>
+        <translation>无参考诊断 · 仅检查内部自洽性 · 未验证外部精度</translation>
+    </message>
+    <message>
+        <source>Curves are model predictions. Passing an internal consistency check does not imply external accuracy, and a negative curvature is not automatically an error.</source>
+        <translation>曲线为模型预测；内部自洽不代表外部精度，负曲率也不自动判错。</translation>
+    </message>
 </context>
 <context>
     <name>RuntimeMessage</name>

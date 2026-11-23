@@ -144,3 +144,47 @@ def response_plot_series(frames, summary):
                                reference=spec["reference"]))
         return result
     return []
+
+
+def exchange_plot_view(summary, component):
+    """Project saved four-state results for plotting; preserve raw row links for inspection."""
+    exchange = summary.get("exchange") or {}
+    if component == "response" or not exchange.get("projections"):
+        return summary
+    view = dict(summary, unit=summary["analysis"]["energy_unit"],
+                analysis=dict(summary["analysis"], quantity=component))
+    if component == "projections":
+        items = exchange["projections"]
+        view["source_rows"] = [[p["row"]] for p in items]
+    else:
+        items = exchange.get("symmetric_chiral", [])
+        if not items:
+            return summary
+        rows, branches, links = [], {}, []
+        for i, item in enumerate(items):
+            parent = dict(item["parent"])
+            structure = next((str(parent[k]) for k in ("geometry", "geometry_id", "phase") if k in parent), str(i + 1))
+            excluded = ("geometry", "geometry_id", "phase", *summary["analysis"].get("pair_fields", ()))
+            conditions = [(k, v) for k, v in item["parent"] if k not in excluded]
+            direction = ",".join(f"{v:.4g}" for v in item["direction"])
+            pair = item["ordered_pair"]
+            name = f"i={pair[0]}, j={pair[1]} · n=({direction})"
+            if conditions:
+                name += " · " + ", ".join(f"{k}={v}" for k, v in conditions)
+            branches.setdefault(name, []).append((structure, i))
+            rows.append(dict(label=structure, x=i + 1, second_axis=None, terms=[]))
+            links.append([p["row"] for p in exchange["projections"]
+                          if p["parent"] == item["parent"] and p["ordered_pair"] == pair])
+        view["rows"], view["source_rows"], view["plot_series"] = rows, links, []
+        for name, points in branches.items():
+            points.sort(key=lambda p: [int(s) if s.isdigit() else s for s in re.split(r"(\d+)", p[0])])
+            view["plot_series"].append(dict(name=name, axis="structure", connected=False,
+                                            x=list(range(1, len(points) + 1)),
+                                            labels=[p[0] for p in points], indices=[p[1] for p in points]))
+    field = "reference" if component == "projections" else "reference_" + component
+    view["reference"] = [item[field] for item in items]
+    predicted = "predicted" if component == "projections" else "predicted_" + component
+    if items and predicted in items[0]:
+        view["predicted"] = [item[predicted] for item in items]
+        view["errors"] = [p - r for p, r in zip(view["predicted"], view["reference"])]
+    return view

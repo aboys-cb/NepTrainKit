@@ -106,7 +106,7 @@ def test_catalog_failure_rolls_back_project_models_and_tags_then_retries(make_se
     assert projects.get_project_by_id(previous.id).model_num == 1
 
 
-@pytest.mark.parametrize("protocol,frames", [("efv", efv_frames), ("eos", eos_frames)])
+@pytest.mark.parametrize("protocol,frames", [("response", efv_frames), ("eos", eos_frames)])
 @pytest.mark.parametrize("change", [False, True])
 def test_large_copy_confirmation_keeps_the_reviewed_bytes(make_service, tmp_path, monkeypatch, protocol, frames, change):
     service = make_service()
@@ -115,6 +115,8 @@ def test_large_copy_confirmation_keeps_the_reviewed_bytes(make_service, tmp_path
     dialog = BenchmarkImportDialog(suite_name="plan")
     dialog.protocol_combo.setCurrentIndex(dialog.protocol_combo.findData(protocol))
     dialog.load_file(path)
+    if protocol == "response":
+        dialog.analysis_editor.set_settings({"mode": "slices"})
     if protocol == "eos":
         dialog.group_field_combo.setCurrentIndex(dialog.group_field_combo.findData(""))
     assert dialog.yesButton.isEnabled()

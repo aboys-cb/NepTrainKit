@@ -435,3 +435,24 @@ msgstr "Fixed-order EOS supports ordinary NEP and spin models, checking that inp
 
 msgid "命令行可用 `nepkit-validate import data.xyz --name response --source DFT --analysis recipe.json` 导入同样的 JSON 分析设置。"
 msgstr "The CLI accepts the same JSON settings: `nepkit-validate import data.xyz --name response --source DFT --analysis recipe.json`."
+
+msgid "切换到模型验证，导入参考数据，选择“参考响应 · 扫描 / 能差 / 组合”，将分析方式设为“分组精度统计”，独立选择带标签的 EXTXYZ，并加入一个验证方案。"
+msgstr "Open Model Validation, import reference data, choose “Reference response · scans / differences / combinations”, set Analysis to “Accuracy by group”, select a labelled EXTXYZ independently, and add it to a validation suite."
+
+msgid "新版不再提供独立 EFV 新建或导入入口。E/F/V/MF 精度统一使用参考响应中的分组精度统计和逐帧回归视图。已有 EFV 数据快照及评估记录仍可读取；编辑分析并保存时创建回归分析的新版本，原记录和其他套件的引用保留。"
+msgstr "New validation items no longer offer a separate EFV import type. E/F/V/MF accuracy uses Accuracy by group and per-frame regression views within reference response analysis. Existing EFV data snapshots and evaluations remain readable. Editing and saving an analysis creates a new regression-analysis version while preserving the original record and references from other suites."
+
+msgid "旧版 EFV 记录仍可在运行菜单选择“为精度数据导入 .out 缓存”，选取包含 `prediction.meta.json` 和对应输出的文件夹。新建的分组精度统计复用软件保存的预测缓存；该菜单不用于 EOS 拟合或无参考诊断。"
+msgstr "Legacy EFV records can still use “Import .out cache for accuracy data” in the run menu with a folder containing `prediction.meta.json` and its outputs. New accuracy-by-group items reuse predictions saved by the software. This menu does not apply to EOS fitting or reference-free diagnostics."
+
+msgid "EOS 能量图叠加 Birch–Murnaghan 拟合线、平衡体积 V₀ 的菱形点和竖线；仅在采样范围内显示，无法拟合时保留原始采样曲线。拟合来自参考或模型的 E–V 采样值，不要求势函数采用特定架构。“去除常数偏移”按组对齐，不能据此判断不同相之间的能量高低。连续响应扫描用菱形标出已采样最低点，不表示已找到连续空间的真实极小值。"
+msgstr "EOS energy charts overlay Birch–Murnaghan fits, diamond equilibrium markers and vertical V0 guides within the sampled volume range. If fitting is unavailable, the original samples remain. Fits describe reference or model E–V samples without requiring a particular potential architecture. Constant-offset removal aligns each group independently and cannot establish phase stability. Diamonds on continuous response scans mark sampled minima, not minima over a continuous configuration space."
+
+msgid "逐帧回归默认按基准误差降序排列，并显示模型误差的变化。“误差对照”切换为横轴基准误差、纵轴模型误差；对角线下方表示改善。每个模型仍独立成卡，使用相同坐标范围。没有基准结果时禁用该切换，缺失标签不补零。"
+msgstr "Per-frame regression defaults to descending baseline error and plots changes in model error. Error comparison uses baseline error on X and model error on Y; points below the diagonal improve. Models remain on separate cards with shared coordinate ranges. The toggle is disabled without baseline results; missing labels are never replaced by zero."
+
+msgid "四态、交叉和组合等离散响应在同一状态内错开各模型的点位，避免重叠；错开的横坐标不代表新的物理变量。颜色表示模型，标记表示组，悬浮读数仍按同一状态对照。启用交换提取且数据完整时，可直接切换双线性投影、对称投影和 D 投影；未提供投影的旧评估记录会注明不可用，可重新评估补齐。数值窗口保留对应的原始帧组合及投影方向。"
+msgstr "Discrete four-state, cross and combination responses offset model points within each state to reduce overlap. These offsets do not represent physical coordinates. Colors identify models and markers identify groups; hover readouts still compare the same state. With exchange extraction enabled and complete data, switch directly to bilinear, symmetric or directional D projections. Legacy evaluations without projections are marked unavailable and can be recalculated. The values dialog retains original frame combinations and projection directions."
+
+msgid "无参考诊断可统一切换能量响应、能量导数和导数残差，竖线标出初始坐标。导数图同时显示解析值、全扫描点的近似差分及原点 h/4 差分，残差取解析值减差分；导数使用总能量 eV 和实际扫描坐标，能量响应仍按 meV/atom 归一化。全扫描差分依赖采样密度，不能替代原点 h、h/2、h/4 的收敛检查；通过自洽检查也不代表训练精度已验证。浏览这些视图复用已保存结果，不触发新的模型预测。"
+msgstr "Reference-free diagnostics switch all cards between energy response, energy derivatives and derivative residuals, with a vertical initial-coordinate guide. Derivative charts show analytic values, approximate differences across scan samples and the origin h/4 difference. Residuals are analytic minus numeric. Derivatives use total energy in eV per actual coordinate unit; energy responses remain normalized in meV/atom. Scan differences depend on sampling density and do not replace the origin h, h/2 and h/4 convergence check. Internal consistency does not verify training accuracy. Browsing these views reuses saved results without new model predictions."

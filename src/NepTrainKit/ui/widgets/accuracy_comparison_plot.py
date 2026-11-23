@@ -4,7 +4,7 @@ from html import escape
 
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QFrame, QHBoxLayout, QTableWidgetItem, QVBoxLayout, QWidget
-from qfluentwidgets import BodyLabel, CaptionLabel, ComboBox, FluentIcon, PushButton, SegmentedWidget, TransparentToolButton
+from qfluentwidgets import BodyLabel, CaptionLabel, ComboBox, FlowLayout, FluentIcon, PushButton, SegmentedWidget, TogglePushButton, TransparentToolButton
 
 from NepTrainKit import palette
 from NepTrainKit.core.validation.accuracy import compare_frame_errors
@@ -18,9 +18,10 @@ QUANTITIES = (("force", "Force", "meV/Å"), ("energy", "Energy", "meV/atom"),
 
 def accuracy_controls(panel):
     tools = QWidget(panel)
-    layout = QHBoxLayout(tools)
+    layout = FlowLayout(tools, needAni=False)
     layout.setContentsMargins(0, 0, 0, 0)
-    layout.setSpacing(8)
+    layout.setHorizontalSpacing(8)
+    layout.setVerticalSpacing(3)
     panel.accuracy_quantity = "force"
     panel.accuracy_picker = SegmentedWidget(tools)
 
@@ -31,11 +32,14 @@ def accuracy_controls(panel):
     for key, title, _ in QUANTITIES:
         panel.accuracy_picker.addItem(key, panel.tr(title), lambda checked=False, q=key: choose(q))
     layout.addWidget(panel.accuracy_picker)
-    layout.addStretch(1)
+    panel.accuracy_compare = TogglePushButton(panel.tr("Error comparison"), tools)
+    panel.accuracy_compare.setToolTip(panel.tr("Compare baseline and model frame errors. Points below the diagonal improve."))
+    panel.accuracy_compare.toggled.connect(lambda *_: panel._redraw())
+    layout.addWidget(panel.accuracy_compare)
     panel.accuracy_filter = ComboBox(tools)
     panel.accuracy_filter.setAccessibleName(panel.tr("Configuration group"))
     panel.accuracy_filter.setMinimumWidth(130)
-    panel.accuracy_filter.setMaximumWidth(240)
+    panel.accuracy_filter.setMaximumWidth(180)
     panel.accuracy_filter.currentIndexChanged.connect(lambda *_: panel._redraw())
     layout.addWidget(panel.accuracy_filter)
     tools.hide()
@@ -51,7 +55,7 @@ def _frame_text(panel, point, unit):
 
 
 def _pin_frame(panel, readout, points, unit, curve, index):
-    point = next(p for p in points if p["rank"] == curve.xData[index])
+    point = points[index]
     readout.setText(_frame_text(panel, point, unit) + (f" · Δ {point['delta']:+.4g} {unit}" if point["baseline"] is not None else ""))
     readout.show()
 
@@ -131,6 +135,13 @@ def draw_accuracy_cards(panel, benchmark, entries):
     targets = [e for e in entries if e[0] not in panel._hidden_series and e[0] != panel.baseline_id]
     if not targets:
         targets = [e for e in entries if e[0] not in panel._hidden_series]
+    can_compare = baseline is not None and any(key != panel.baseline_id for key, *_ in targets)
+    panel.accuracy_compare.setEnabled(can_compare)
+    if not can_compare:
+        panel.accuracy_compare.blockSignals(True)
+        panel.accuracy_compare.setChecked(False)
+        panel.accuracy_compare.blockSignals(False)
+    compare = panel.accuracy_compare.isChecked()
     all_values = []
     for key, name, run, details in targets:
         card = QFrame(panel.grid_container)
@@ -180,21 +191,30 @@ def draw_accuracy_cards(panel, benchmark, entries):
         xlabel = panel.tr("Rank · baseline error descending") if paired else panel.tr("Rank · model error descending")
         metric = panel.tr("Absolute energy error") if quantity == "energy" else panel.tr("Frame RMS")
         ylabel = (panel.tr("{metric} change").format(metric=metric) if paired else metric) + f" ({unit})"
+        if compare:
+            xlabel = panel.tr("Baseline frame error") + f" ({unit})"
+            ylabel = panel.tr("Model frame error") + f" ({unit})"
         plot, readout = energy_curve_canvas(panel, card, layout, reset, xlabel, ylabel,
-                                            panel.tr("Rank {}"), unit, paired)
+                                            panel.tr("Baseline error {:.6g}") if compare else panel.tr("Rank {}"), unit, paired and not compare)
         plot.comparison_points = points
         if points:
-            curve = plot.plot([p["rank"] for p in points], [p["delta"] for p in points], pen=None,
+            drawn = sorted(points, key=lambda p: (p["baseline"], p["frame"])) if compare else points
+            x = [p["baseline"] if compare else p["rank"] for p in drawn]
+            y = [p["error"] if compare else p["delta"] for p in drawn]
+            curve = plot.plot(x, y, pen=None,
                               symbol="o", symbolSize=7, symbolBrush=color, symbolPen=color, name=escape(name))
+            curve.point_ids = [p["frame"] for p in drawn]
+            curve.point_index = {key: i for i, key in enumerate(curve.point_ids)}
+            curve.point_labels = [_frame_text(panel, p, unit) for p in drawn]
             panel._register_curve(key, curve)
             plot.category_labels = {p["rank"]: _frame_text(panel, p, unit) for p in points}
             if readout is not None:
-                curve.read_point = partial(_pin_frame, panel, readout, points, unit)
-            all_values.extend(p["delta"] for p in points)
+                curve.read_point = partial(_pin_frame, panel, readout, drawn, unit)
+            all_values.extend(x + y if compare else y)
             plot.finish()
         else:
             plot.hide()
-            if paired:
+            if hasattr(plot, "residual_placeholder"):
                 plot.residual_placeholder.hide()
             empty = BodyLabel(panel.tr("No valid frame errors. Double-click the item to evaluate it."), card)
             empty.setWordWrap(True)
@@ -209,9 +229,11 @@ def draw_accuracy_cards(panel, benchmark, entries):
         panel.eos_plots.append(plot)
     # Same limits across cards are essential for comparing the size of a regression.
     if all_values:
-        lo, hi = min(0., min(all_values)), max(0., max(all_values))
+        lo, hi = (0., max(all_values)) if compare else (min(0., min(all_values)), max(0., max(all_values)))
         if lo == hi:
-            lo, hi = lo - 1, hi + 1
+            lo, hi = (0., 1.) if compare else (lo - 1, hi + 1)
         for plot in panel.eos_plots:
+            if compare:
+                plot.plot([0., hi], [0., hi], pen=panel._series_pen(None), auxiliary=True)
             plot.comparison_y_range = (lo, hi)
             plot.fit()

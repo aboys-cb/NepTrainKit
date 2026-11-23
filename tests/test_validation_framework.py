@@ -411,10 +411,21 @@ def test_schema_upgrade_preserves_validation_runs_and_baselines(make_service, mo
 # -- protocols --------------------------------------------------------------------
 
 def test_eos_fit_and_curve_metrics():
+    from NepTrainKit.core.validation.protocols.eos import eos_fit_curve
+    from ase.eos import birchmurnaghan
+
     frames = eos_frames()
     volumes = np.asarray([a.get_volume() / len(a) for a in frames])
     energies = np.asarray([a.info["_ref_energy"] / len(a) for a in frames])
-    assert "v0" in fit_eos(volumes, energies)
+    fit = fit_eos(volumes, energies)
+    assert "v0" in fit
+    x, y = eos_fit_curve(volumes, energies, fit)
+    assert (x[0], x[-1]) == pytest.approx((min(volumes), max(volumes)))
+    np.testing.assert_allclose(y, birchmurnaghan(x, *fit['parameters']))
+    legacy = {key: value for key, value in fit.items() if key != 'parameters'}
+    np.testing.assert_allclose(eos_fit_curve(volumes, energies, legacy), [x, y])
+    assert 'parameters' in legacy
+    assert eos_fit_curve(volumes, volumes, fit_eos(volumes, volumes)) is None
     assert "reason" in fit_eos(volumes, volumes)  # monotonic: minimum on the boundary
     summary = summarize_curve(volumes, energies, energies + 0.01)
     assert summary["offset_ev_atom"] == pytest.approx(0.01)

@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 
-from PySide6.QtCore import QAbstractTableModel, QEvent, QModelIndex, QSize, Qt, Signal
+from PySide6.QtCore import QAbstractTableModel, QEvent, QModelIndex, QSize, Qt, QTimer, Signal
 from PySide6.QtGui import QColor, QFont, QIcon, QPainter, QPen, QPixmap
 from PySide6.QtWidgets import (
     QAbstractItemView,
@@ -31,6 +31,7 @@ from qfluentwidgets import (
     MessageBox,
     PrimarySplitPushButton,
     PushButton,
+    SegmentedWidget,
     TableView,
     TableWidget,
     TransparentPushButton,
@@ -367,8 +368,12 @@ class RunDetailPanel(QWidget):
         self._series_styles = {}
         self.model_colors = {}
         self.baseline_id = None
+        self.response_kind = "response"
+        self.response_view_changed = self._redraw
         self._hidden_series = set()
         self._curves = {}
+        self._redrawing = False
+        self._redraw_pending = False
         self._eos_overlay = False
         self._eos_residual = False
         self.load_scan_energies = None
@@ -390,6 +395,16 @@ class RunDetailPanel(QWidget):
 
         self.accuracy_tools = accuracy_controls(self)
         header.addWidget(self.accuracy_tools)
+        self.exchange_picker = SegmentedWidget(self)
+        def choose_response(kind):
+            self.response_kind = kind
+            self.response_view_changed()
+        for key, label in (("response", "Energy response"), ("projections", "Bilinear projection"),
+                           ("symmetric", "Symmetric projection"), ("d_projection", "Chiral D projection")):
+            self.exchange_picker.addItem(key, self.tr(label), lambda checked=False, k=key: choose_response(k))
+        self.exchange_picker.setCurrentItem("response")
+        self.exchange_picker.hide()
+        header.addWidget(self.exchange_picker)
         header.setSpacing(16)
         self.title_label = BodyLabel(self)
         self.offset_checkbox = CheckBox(self.tr("Remove constant offset"), self)
@@ -404,8 +419,9 @@ class RunDetailPanel(QWidget):
         self.relative_checkbox.stateChanged.connect(lambda _state: self._redraw())
         header.addWidget(self.title_label, 1)
         self.diagnostic_mode = ComboBox(self)
-        self.diagnostic_mode.addItem("能量响应", userData="relative_energy")
-        self.diagnostic_mode.addItem("能量导数", userData="derivative")
+        self.diagnostic_mode.addItem(self.tr("Energy response"), userData="relative_energy")
+        self.diagnostic_mode.addItem(self.tr("Energy derivatives"), userData="derivative")
+        self.diagnostic_mode.addItem(self.tr("Derivative residual"), userData="derivative_residual")
         self.diagnostic_mode.setToolTip(
             self.tr("Switches every diagnostic chart at once; the derivative view uses total energy.")
         )
@@ -579,10 +595,32 @@ class RunDetailPanel(QWidget):
         self._redraw()
 
     def _redraw(self) -> None:
+        # Native GL creation can process selection events while cards are still being built.
+        if self._redrawing:
+            self._redraw_pending = True
+            return
+        self._redrawing = True
+        try:
+            self._redraw_contents()
+        finally:
+            self._redrawing = False
+        if self._redraw_pending:
+            self._redraw_pending = False
+            QTimer.singleShot(0, self, self._redraw)
+
+    def _redraw_contents(self) -> None:
         groups = self._groups if self._groups is not None else [("", *self._args)] if self._args[0] else []
         self._diagnostic_charts = []
         diagnostic = bool(groups and groups[0][1]["protocol"] == "diagnostic")
         self.accuracy_tools.setVisible(bool(groups and uses_accuracy_cards(groups[0][1])))
+        exchange = groups[0][1].get("summary", {}).get("exchange", {}) if groups else {}
+        self.exchange_picker.setVisible(bool(exchange.get("projections")))
+        for key in ("symmetric", "d_projection"):
+            self.exchange_picker.items[key].setEnabled(bool(exchange.get("symmetric_chiral")))
+        if self.response_kind != "response" and not (
+                exchange.get("projections") if self.response_kind == "projections" else exchange.get("symmetric_chiral")):
+            self.response_kind = "response"
+        self.exchange_picker.setCurrentItem(self.response_kind)
         self.diagnostic_mode.setVisible(diagnostic)
         self.wheel_zoom_checkbox.setVisible(bool(self._groups))
         self._rebuild_legend(groups)
@@ -918,7 +956,7 @@ class RunDetailPanel(QWidget):
     def _register_curve(self, key, curve):
         curve.setProperty("modelId", key)
         self._curves.setdefault(key, []).append(curve)
-        curve.setVisible(key not in self._hidden_series)
+        curve.setVisible(key not in self._hidden_series and curve.property("viewVisible") is not False)
 
     def series_visible(self, key):
         return key not in self._hidden_series
@@ -930,7 +968,9 @@ class RunDetailPanel(QWidget):
             return
         for curve in self._curves.get(key, ()):
             if curve.opts["pen"] is not None:
-                curve.setPen(self._series_pen(key))
+                pen = QPen(curve.opts["pen"]) if curve.property("auxiliary") or curve.property("fixedStyle") else self._series_pen(key)
+                pen.setColor(color)
+                curve.setPen(pen)
             if curve.opts["symbol"] is not None and hasattr(curve, "setSymbolBrush"):
                 curve.setSymbolBrush(color)
                 if curve.opts["symbolPen"] is not None:
@@ -944,7 +984,7 @@ class RunDetailPanel(QWidget):
         for model in (previous, key):
             if model is not None:
                 for curve in self._curves.get(model, ()):
-                    if curve.opts["pen"] is not None:
+                    if curve.opts["pen"] is not None and not (curve.property("auxiliary") or curve.property("fixedStyle")):
                         curve.setPen(self._series_pen(model))
         if self._args[0]:
             self._update_inspector(self._groups or [("", *self._args)])
@@ -967,7 +1007,10 @@ class RunDetailPanel(QWidget):
             self.seriesVisibilityChanged.emit(key, visible)
             return
         for curve in self._curves.get(key, []):
-            curve.setVisible(visible)
+            curve.setVisible(visible and curve.property("viewVisible") is not False)
+        if self._diagnostic_charts:
+            from NepTrainKit.ui.widgets.diagnostic_plot import set_response_metric
+            set_response_metric(self)
         for plot in self.eos_plots:
             update_residual_placeholder(plot)
             self._reset_plot_view(plot)
@@ -1006,7 +1049,7 @@ class RunDetailPanel(QWidget):
     def _layout_cards(self):
         protocol = self._groups[0][1]["protocol"] if self._groups else None
         adaptive_eos = self._adaptive_layout and self._groups and (
-            uses_curve_chart(self._groups[0][1]) or uses_accuracy_cards(self._groups[0][1]))
+            uses_curve_chart(self._groups[0][1]) or uses_accuracy_cards(self._groups[0][1]) or protocol == "diagnostic")
         single_eos = adaptive_eos and len(self.eos_cards) == 1
         limit = 2 if adaptive_eos or protocol == "diagnostic" else 3
         available_width = self.plot_pane.width() if self._adaptive_layout and self.plot_pane.width() > 200 else self.width()

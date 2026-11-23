@@ -126,11 +126,12 @@ class _Curve(QObject):
         pen = self.opts["pen"] or self.opts["symbolPen"]
         color = pen.color().name()
         symbol = self.opts["symbol"]
-        self.line.visible = self.visible and self.opts["pen"] is not None
+        has_data = self.visible and bool(len(self.positions))
+        self.line.visible = has_data and self.opts["pen"] is not None
         polygon = symbol in ("h", "p")
-        self.points.visible = self.visible and bool(symbol) and not polygon
-        self.polygon.visible = self.visible and polygon
-        if not self.visible or not len(self.positions):
+        self.points.visible = has_data and bool(symbol) and not polygon
+        self.polygon.visible = has_data and polygon
+        if not has_data:
             return
         positions = self.positions
         # VisPy's public line API has no dash pattern. Split in screen space
@@ -153,6 +154,14 @@ class _Curve(QObject):
         elif symbol:
             name = {"t1": "triangle_up", "t": "triangle_down", "d": "diamond"}.get(symbol, symbol)
             self.points.set_data(self.positions, symbol=name, size=self.size, edge_width=0, face_color=color)
+
+    def setData(self, xs, ys):
+        self.xData, self.yData = np.asarray(xs), np.asarray(ys)
+        self.positions = np.column_stack((xs, ys)).astype(np.float32)
+        self.refresh()
+
+    def getData(self):
+        return self.xData, self.yData
 
     def setPen(self, pen):
         self.opts["pen"] = pen
@@ -245,12 +254,13 @@ class VispyCurvePlot(QWidget):
         self.x_ticks.categories = ticks
         self.x_ticks.update()
 
-    def plot(self, xs, ys, *, pen, symbol, symbolSize, name, symbolPen=None, **_):
+    def plot(self, xs, ys, *, pen, symbol=None, symbolSize=0, name="", symbolPen=None, auxiliary=False, **_):
         marker_pen = pen or QPen(QColor(symbolPen or palette.PLOT_AXIS))
         curve = _Curve(self, xs, ys, marker_pen, symbol, symbolSize, name)
         if pen is None:
             curve.opts["pen"] = None
             curve.refresh()
+        curve.setProperty("auxiliary", auxiliary)
         self.curves.append(curve)
         return curve
 
@@ -259,7 +269,7 @@ class VispyCurvePlot(QWidget):
                                      for c in self.curves if c.visible and c.label))
 
     def listDataItems(self):
-        return self.curves
+        return [curve for curve in self.curves if not curve.property("auxiliary")]
 
     def clear(self):
         self.x_ticks.categories = None
@@ -291,6 +301,8 @@ class VispyCurvePlot(QWidget):
         if data:
             x = (min(c.xData.min() for c in data), max(c.xData.max() for c in data))
             y = (min(c.yData.min() for c in data), max(c.yData.max() for c in data))
+            if self.zero is not None:
+                y = (min(0., y[0]), max(0., y[1]))
             y = getattr(self, "comparison_y_range", y)
             self.view.camera.set_range(x=x, y=y, z=(-1, 1), margin=.08)
             self._view_changed()

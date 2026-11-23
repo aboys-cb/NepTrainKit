@@ -306,6 +306,7 @@ class ValidationWorkspace(ModelLibraryWidget):
         # Enable adaptive plot sizing and the right-hand multi-model quantitative inspector in the workspace
         self.metrics_footer.hide()
         self.detail.set_adaptive_layout(True)
+        self.detail.response_view_changed = self._update_detail
         self.detail.set_inspector_expanded(False)
         self.groups = ValidationGroupComparison(self)
         self.groups.currentRequested.connect(self._set_current_group)
@@ -1004,6 +1005,10 @@ class ValidationWorkspace(ModelLibraryWidget):
                 axis.showLabel(False)
             chart.getPlotItem().layout.setContentsMargins(2, 7, 4, 2)
         chart.setFixedSize(size)
+        if getattr(chart, "category_labels", None):
+            # Thumbnails use state indices; full labels remain on the interactive curve.
+            chart.set_category_ticks([(x, str(x)) for x in chart.category_labels])
+            x_label = renderer.tr("Combination index")
         if hasattr(chart, "fit"):
             chart.fit()
         else:
@@ -1537,7 +1542,10 @@ class ValidationWorkspace(ModelLibraryWidget):
         current = self._focused_reference
         if magnetic:
             self.service().response_plot_series(benchmark)
-            branches = response_branches(benchmark)
+            from NepTrainKit.core.validation.response_plot import exchange_plot_view
+
+            display_summary = exchange_plot_view(benchmark["summary"], self.detail.response_kind)
+            branches = response_branches(dict(benchmark, summary=display_summary))
             candidates = [(key, label, self.tr("{count} frames").format(count=len(indices)))
                           for key, label, indices in branches]
             keys = [key for key, _, _ in candidates]
@@ -1545,7 +1553,7 @@ class ValidationWorkspace(ModelLibraryWidget):
                 current = self.groups.current
             else:
                 current = keys[0]
-                series = benchmark["summary"].get("plot_series") or []
+                series = display_summary.get("plot_series") or []
                 if presentation_for("response").item_badge(benchmark) == "MAE" and series:
                     self.groups.comparisons = {key for key, branch in zip(keys[1:], series[1:])
                                               if branch.get("plane") == series[0].get("plane")}
@@ -1931,13 +1939,16 @@ class ValidationWorkspace(ModelLibraryWidget):
         dialog = BenchmarkImportDialog(
             self.window(), self.service().suites(), self.suite_combo.currentText()
         )
-        dialog.protocol_combo.setCurrentIndex(dialog.protocol_combo.findData(record["protocol"]))
+        kind = "response" if record["protocol"] == "efv" else record["protocol"]
+        dialog.protocol_combo.setCurrentIndex(dialog.protocol_combo.findData(kind))
         dialog.load_file(self.service().library.open_object(record["object_hash"]))
         dialog.suite_combo.setEnabled(False)
         dialog.name_edit.setText(record["name"])
         dialog.notes_edit.setText(record.get("provenance", {}).get("notes", ""))
         if record["protocol"] == "response":
             dialog.analysis_editor.set_settings(record["source_ref"]["analysis"])
+        elif record["protocol"] == "efv":
+            dialog.analysis_editor.set_settings({"mode": "slices"})
         if record["protocol"] == "eos":
             group = record["source_ref"].get("eos_group")
             if group:

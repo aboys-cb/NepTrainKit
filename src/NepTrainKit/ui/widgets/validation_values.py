@@ -55,7 +55,7 @@ def show_curve_values(panel, plot, group_names=None, response_details=None):
         models[key] = (label, pen.color())
         # Preserve separate measurements even when their X coordinates coincide.
         occurrence = Counter()
-        for x, y in zip(curve.xData, curve.yData):
+        for x, y in zip(getattr(curve, "sample_x", curve.xData), curve.yData):
             point = (curve.property("groupId"), x, occurrence[x])
             points.setdefault(point, {})[key] = y
             occurrence[x] += 1

@@ -119,6 +119,8 @@ def _plot_group(panel, plot, readout, benchmark, entries, residual, relative, *,
         if panel._adaptive_layout:
             curve.read_point = partial(_read_eos_point, panel, readout, prefix + panel.tr("Reference"),
                                                    summary["energies"], None, 0)
+        _draw_eos_fit(panel, plot, None, summary["volumes"], summary["energies"],
+                      summary.get("fit", {}), zero, 0., scale)
     for key, name, run, details in entries:
         if not run or run["status"] != "succeeded" or not details:
             continue
@@ -144,6 +146,31 @@ def _plot_group(panel, plot, readout, benchmark, entries, residual, relative, *,
         panel._register_curve(key, curve)
         if panel._adaptive_layout:
             curve.read_point = partial(_read_eos_point, panel, readout, prefix + name, ref, predicted, offset)
+        if not residual:
+            _draw_eos_fit(panel, plot, key, volumes, predicted, details.get("model_fit", {}), zero, offset, scale)
+
+
+def _draw_eos_fit(panel, plot, key, volumes, energies, fit, zero, offset, scale):
+    from NepTrainKit.core.validation.protocols.eos import eos_fit_curve
+
+    sampled = eos_fit_curve(volumes, energies, fit)
+    if sampled is None:
+        return
+    x, y = sampled
+    y = (y - zero - offset) * scale
+    pen = QPen(panel._series_pen(key))
+    pen.setWidthF(1.4)
+    pen.setStyle(Qt.PenStyle.DotLine)
+    line = plot.plot(x, y, pen=pen, auxiliary=True)
+    line.setProperty("annotation", "eos_fit")
+    panel._register_curve(key, line)
+    marker = plot.plot([fit["v0"]], [(fit["e0"] - zero - offset) * scale], pen=None,
+                       symbol="d", symbolSize=12, symbolPen=pen.color(), symbolBrush=pen.color(), auxiliary=True)
+    marker.setProperty("annotation", "equilibrium")
+    panel._register_curve(key, marker)
+    guide = plot.plot([fit["v0"], fit["v0"]], [min(y), max(y)], pen=pen, auxiliary=True)
+    guide.setProperty("annotation", "equilibrium_volume")
+    panel._register_curve(key, guide)
 
 
 def _missing_status(panel, name, run, details):

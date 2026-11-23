@@ -11,6 +11,7 @@ from NepTrainKit.core.validation import Library, ValidationService
 from NepTrainKit.core.dataset.database import Database, SCHEMA_VERSION
 from test_validation_framework import _import, eos_frames, efv_frames, make_service as make_service
 from test_validation_ui import scored as scored
+from test_accuracy_comparison_plot import curve_mode as curve_mode
 
 
 def test_topics_and_aliases_are_suite_local_and_do_not_change_results(scored):
@@ -232,6 +233,43 @@ def test_workspace_edit_saves_new_version_and_preserves_other_suite(scored, monk
     assert replacement["object_hash"] == scored.eos["object_hash"]
     assert service.suite_sets(other["id"])[0]["id"] == scored.eos["id"]
     assert service.latest_run(scored.new["id"], scored.eos["id"])["id"] == old_run["id"]
+    assert service.latest_run(scored.new["id"], replacement["id"]) is None
+    w.close()
+    w.deleteLater()
+
+
+def test_legacy_accuracy_edit_creates_regression_version_without_changing_history(scored, monkeypatch):
+    from NepTrainKit.ui.views.validation_workspace import ValidationWorkspace, BenchmarkImportDialog
+    from NepTrainKit.ui.widgets.validation_presentation import file_import_choices
+
+    assert {kind for kind, _ in file_import_choices()} == {"eos", "response"}
+    service = scored.service
+    old = scored.efv
+    other = service.create_suite("legacy accuracy", [old["id"]])
+    old_run = service.latest_run(scored.new["id"], old["id"])
+    w = ValidationWorkspace(service=service)
+    w.open_scorecard(scored.suite["id"], scored.new["id"])
+    w.open_item(old["id"])
+    assert w.detail._args[0]["id"] == old["id"]
+    w.item_table.selectRow(next(i for i, item in enumerate(w._items) if item["id"] == old["id"]))
+
+    def accept(dialog):
+        assert dialog.protocol_combo.findData("efv") == -1
+        assert dialog.current_protocol().kind == "response"
+        assert dialog.current_protocol().spec.mode == "slices"
+        assert dialog.preview_plot.isHidden()
+        assert dialog.validate()
+        return True
+
+    monkeypatch.setattr(BenchmarkImportDialog, "exec", accept)
+    w.edit_item()
+    replacement = next(item for item in service.suite_items(scored.suite["id"])
+                       if item["provenance"].get("derived_from_set") == old["id"])
+    assert replacement["protocol"] == "response" and replacement["source_ref"]["analysis"]["mode"] == "slices"
+    assert replacement["object_hash"] == old["object_hash"]
+    assert service.suite_sets(other["id"])[0]["id"] == old["id"]
+    assert service.get_set(old["id"]) == old
+    assert service.latest_run(scored.new["id"], old["id"])["id"] == old_run["id"]
     assert service.latest_run(scored.new["id"], replacement["id"]) is None
     w.close()
     w.deleteLater()
@@ -984,6 +1022,12 @@ def test_magnetic_scan_draws_measured_slices_and_saved_residuals(scored, tmp_pat
     ref, model = w.detail.eos_plots[0].listDataItems()
     assert list(model.yData) == [details["absolute_predicted"][i] for i in indices]
     assert list(ref.yData) == [details["absolute_reference"][i] for i in indices]
+    for key in (None, scored.new["id"]):
+        samples, minimum = w.detail._curves[key][:2]
+        assert minimum.property("annotation") == "sampled_minimum"
+        index = min(range(len(samples.yData)), key=lambda i: samples.yData[i])
+        assert list(minimum.xData) == [samples.xData[index]]
+        assert list(minimum.yData) == [samples.yData[index]]
     w.plot_switches[1].defaultAction().trigger()
     assert not w.eos_layout.isHidden() and len(w.detail.eos_plots) == 2
     w.eos_layout.click()
@@ -994,6 +1038,7 @@ def test_magnetic_scan_draws_measured_slices_and_saved_residuals(scored, tmp_pat
     details = w.detail._groups[0][2][0][3]
     curves = plot.listDataItems()
     assert len(curves) == 2
+    assert not any(c.property("auxiliary") for items in w.detail._curves.values() for c in items)
     for curve, moment in zip(curves, (0.8, 1.2)):
         indices = [i for i, row in enumerate(details["rows"]) if row["second_axis"] == moment]
         assert list(curve.xData) == [0.9, 1.1]
@@ -1114,3 +1159,36 @@ def test_validation_tab_navigation_reuses_plots_and_invalidates_changed_data(sco
         assert w.gallery.item(0).icon().cacheKey() != old_icon
     w.close()
     w.deleteLater()
+
+
+def test_gallery_discrete_ticks_use_indices_without_changing_curve_labels(scored, tmp_path, curve_mode):
+    from ase.io import write
+    from NepTrainKit.ui.views.validation_workspace import ValidationWorkspace
+    from test_reference_response import four_spec, four_states
+    from test_validation_ui import _wait_until
+
+    frames = four_states('polar_oxygen_new_with_long_name') + four_states('polar_oxygen_other_with_long_name')
+    source = tmp_path / 'coupled.xyz'
+    write(source, frames, format='extxyz')
+    record = scored.service.import_set(source, name='JD / coupled modes', protocol='response', provenance={},
+                                       analysis=four_spec().to_dict())
+    suite = scored.service.create_suite('discrete gallery', [record['id']])
+    w = ValidationWorkspace(service=scored.service)
+    w.resize(1100, 760)
+    w.open_scorecard(suite['id'], scored.new['id'])
+    w.show(); w.open_item(record['id'])
+    original = w.detail.eos_plots[0]
+    categories = original.category_labels.copy()
+    assert all('geometry=' in name for name in categories.values())
+    w.show_page('gallery')
+    assert _wait_until(lambda: w.gallery.loaded == {0})
+    chart = w._thumbnail_renderer.eos_plots[0]
+    ticks = chart.x_ticks.categories if hasattr(chart, 'x_ticks') else chart.getAxis('bottom').categories
+    assert ticks == [(x, str(x)) for x in categories]
+    assert chart.category_labels == categories and original.category_labels == categories
+    item = w.gallery.item(0)
+    assert 'State / combination' not in item.text() and '→' not in item.text()
+    assert 'ΔE' in item.text() and 'Combination index' in item.toolTip()
+    w.gallery._open(item)
+    assert w.detail.eos_plots[0].category_labels == categories
+    w.close(); w.deleteLater()

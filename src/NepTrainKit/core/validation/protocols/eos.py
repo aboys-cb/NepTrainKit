@@ -10,7 +10,7 @@ from __future__ import annotations
 import warnings
 
 import numpy as np
-from ase.eos import EquationOfState
+from ase.eos import EquationOfState, birchmurnaghan
 from ase.units import GPa
 
 from .base import Evaluation, Issue, Metric, ValidationProtocol, reference_labels, unlabelled_copies
@@ -27,12 +27,26 @@ def fit_eos(volumes, energies) -> dict:
     try:
         with warnings.catch_warnings():
             warnings.simplefilter("error")
-            v0, e0, modulus = EquationOfState(volumes, energies, eos="birchmurnaghan").fit()
+            eos = EquationOfState(volumes, energies, eos="birchmurnaghan")
+            v0, e0, modulus = eos.fit()
         if not np.isfinite([v0, e0, modulus]).all() or modulus <= 0 or not volumes[0] < v0 < volumes[-1]:
             raise ValueError("Unphysical or unbracketed fit")
-        return {"v0": float(v0), "e0": float(e0), "b0_gpa": float(modulus / GPa)}
+        return {"v0": float(v0), "e0": float(e0), "b0_gpa": float(modulus / GPa),
+                "parameters": eos.eos_parameters.tolist()}
     except Exception as error:
         return {"reason": str(error)}
+
+
+def eos_fit_curve(volumes, energies, fit):
+    """Restore old fits from saved samples and evaluate only inside their volume range."""
+    if "v0" not in fit:
+        return None
+    if "parameters" not in fit:
+        fit.update(fit_eos(volumes, energies))
+    if "parameters" not in fit:
+        return None
+    x = np.linspace(min(volumes), max(volumes), 180)
+    return x, birchmurnaghan(x, *fit["parameters"])
 
 
 def summarize_curve(volumes, reference, predicted) -> dict:

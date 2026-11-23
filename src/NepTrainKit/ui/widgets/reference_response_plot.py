@@ -51,7 +51,8 @@ def _show_values(panel, summary, selected, entries):
             values += [details["predicted"][index], details["errors"][index]]
         if summary.get("exchange"):
             values += [summary["exchange"]["projections"][index]["reference"]]
-            values += [details.get("exchange", {}).get("projections", [])[index]["predicted"] for _, details in ready]
+            values += [details["exchange"]["projections"][index]["predicted"] if details.get("exchange") else None
+                       for _, details in ready]
         for column, value in enumerate(values):
             table.setItem(row, column, QTableWidgetItem("—" if value is None else str(value)))
     pages = [(panel.tr("Frame values"), table)]
@@ -75,10 +76,10 @@ def _show_values(panel, summary, selected, entries):
                 item["reference_d_projection"],
             ]
             for _, details in ready:
-                other = details["exchange"]["symmetric_chiral"][row]
-                values += [other["predicted_symmetric"], other["predicted_d_projection"]]
+                other = details["exchange"]["symmetric_chiral"][row] if details.get("exchange") else {}
+                values += [other.get("predicted_symmetric"), other.get("predicted_d_projection")]
             for col, value in enumerate(values):
-                extra.setItem(row, col, QTableWidgetItem(str(value)))
+                extra.setItem(row, col, QTableWidgetItem("—" if value is None else str(value)))
         pages.append((panel.tr("Exchange components"), extra))
     if summary["analysis"]["mode"] == "scan" and not summary["analysis"]["second_axis"]:
         headers = [panel.tr("Group"), panel.tr("Reference sampled minimum"), panel.tr("Reference local curvature")]
@@ -187,7 +188,8 @@ def is_magnetic_eos(item):
 
 
 def _pin_response(readout, name, axis, unit, curve, index):
-    readout.setText(f"{name}  ·  {axis} = {curve.xData[index]:.4g}  ·  {curve.yData[index]:.6g} {unit}")
+    x = getattr(curve, "sample_x", curve.xData)[index]
+    readout.setText(f"{name}  ·  {axis} = {x:.4g}  ·  {curve.yData[index]:.6g} {unit}")
     readout.show()
 
 
@@ -223,7 +225,17 @@ def magnetic_branches(benchmark):
 
 
 def _draw_response_curves(panel, benchmark, entries):
-    summary = benchmark["summary"]
+    from NepTrainKit.core.validation.response_plot import exchange_plot_view
+
+    source_summary, source_entries = benchmark["summary"], entries
+    summary = exchange_plot_view(source_summary, panel.response_kind)
+    if summary is not source_summary:
+        projected = []
+        for key, name, run, details in entries:
+            view = exchange_plot_view(details, panel.response_kind) if details else details
+            projected.append((key, name, run, view if view is not details else {}))
+        entries = projected
+        benchmark = dict(benchmark, summary=summary)
     spec, rows, unit = summary["analysis"], summary["rows"], summary["unit"]
     branches = response_branches(benchmark)
     metadata = {key: branch for (key, _, _), branch in zip(branches, summary.get("plot_series", []))}
@@ -256,6 +268,8 @@ def _draw_response_curves(panel, benchmark, entries):
     if reference is None:
         unavailable.append(panel.tr("Reference"))
     for key, name, run, details in entries:
+        if run and run["status"] == "succeeded" and not details and summary is not source_summary:
+            unavailable.append(name)
         if run and run["status"] == "succeeded" and details:
             values = details["errors"] if residual else energies(details, "predicted", run)
             if values is None:
@@ -317,6 +331,11 @@ def _draw_response_curves(panel, benchmark, entries):
                 sample.hide()
         selected = list(dict.fromkeys(i for _, _, indices in batch for i in indices if i is not None))
         quantity = ordinate if spec["quantity"] == "energy" else spec["quantity"]
+        if summary is not source_summary:
+            quantity = panel.tr({"projections": "Bilinear projection", "symmetric": "Symmetric projection",
+                                 "d_projection": "Chiral D projection"}[panel.response_kind])
+            if residual:
+                quantity = ordinate + " · " + quantity
         reference_state = branch_meta.get("reference", spec.get("reference", ""))
         if "reference_frame" in branch_meta:
             reference_state = panel.tr("frame {index}").format(index=branch_meta["reference_frame"])
@@ -328,11 +347,14 @@ def _draw_response_curves(panel, benchmark, entries):
             plot.add_zero_line(panel._series_pen(None))
 
         names = {key: label for key, label, _ in batch}
-        details = partial(_show_values, panel, summary, selected, entries)
+        source_indices = sorted({i for row in selected for i in summary["source_rows"][row]}) if "source_rows" in summary else selected
+        details = partial(_show_values, panel, source_summary, source_indices, source_entries)
         data.clicked.connect(lambda _=False, chart=plot, groups=names, more=details:
                              show_curve_values(panel, chart, groups, more))
         if unavailable:
-            note = CaptionLabel(panel.tr("Absolute energy unavailable: ") + ", ".join(unavailable), card)
+            note = CaptionLabel(panel.tr("Projection unavailable: ") if summary is not source_summary else
+                                panel.tr("Absolute energy unavailable: "), card)
+            note.setText(note.text() + ", ".join(unavailable))
             note.setWordWrap(True)
             layout.insertWidget(1, note)
         for branch_key, label, indices in batch:
@@ -348,17 +370,30 @@ def _draw_response_curves(panel, benchmark, entries):
                 return 0. if index is None else values[index]
 
             zero = min(value_at(reference, i) for i in indices) if relative and not residual and not spec["relative"] else 0.
-            for key, name, values in series_values:
+            for series_index, (key, name, values) in enumerate(series_values):
                 offset = 0.
                 if scan and spec["quantity"] == "energy" and key is not None and panel.offset_checkbox.isChecked() and (residual or reference is not None):
                     offset = sum(values[i] if residual else values[i] - reference[i] for i in indices) / len(indices)
                 pen = panel._series_pen(key)
-                curve = plot.plot(x, [value_at(values, i) - zero - offset for i in indices],
+                shifted = [v + .52 * (series_index - (len(series_values) - 1) / 2) / max(1, len(series_values)) for v in x] if is_category else x
+                y = [value_at(values, i) - zero - offset for i in indices]
+                curve = plot.plot(shifted, y,
                                   pen=None if is_category else pen, symbol=symbol,
                                   symbolSize=EOS_POINT_SIZE if panel._adaptive_layout else 5,
                                   symbolPen=pen.color(), symbolBrush=pen.color(), name=escape(name))
                 curve.setProperty("groupId", branch_key)
+                if is_category:
+                    curve.sample_x = x
+                    curve.point_labels = labels
+                    curve.point_ids = [(branch_key, value) for value in x]
+                    curve.point_index = {value: i for i, value in enumerate(curve.point_ids)}
                 panel._register_curve(key, curve)
+                if scan and spec["quantity"] == "energy" and not residual and y:
+                    minimum = min(range(len(y)), key=y.__getitem__)
+                    marker = plot.plot([x[minimum]], [y[minimum]], pen=None, symbol="d", symbolSize=13,
+                                       symbolPen=pen.color(), symbolBrush=pen.color(), auxiliary=True)
+                    marker.setProperty("annotation", "sampled_minimum")
+                    panel._register_curve(key, marker)
                 if readout is not None:
                     curve.read_point = partial(_pin_response, readout, " · ".join(filter(None, (name, label))), xlabel, unit)
         plot.finish()

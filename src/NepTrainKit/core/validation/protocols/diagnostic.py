@@ -230,6 +230,14 @@ def _energies(prediction, count):
     return values
 
 
+def scan_numeric_derivative(x, energy):
+    """Differentiate the saved total energies on their actual, possibly nonuniform grid."""
+    x, energy = np.asarray(x, dtype=float), np.asarray(energy, dtype=float)
+    if len(x) < 3 or x.shape != energy.shape or not np.isfinite(x).all() or not np.isfinite(energy).all() or np.any(np.diff(x) <= 0):
+        return None
+    return np.gradient(energy, x, edge_order=2).tolist()
+
+
 def _derivatives(prediction, frames, spec):
     n = len(frames[0])
     axis = np.asarray(spec.axis, dtype=float) / np.linalg.norm(spec.axis)
@@ -341,6 +349,7 @@ class DiagnosticProtocol(ValidationProtocol):
             {"energy_span": float(np.ptp(response)), "check_failures": sum(c["status"] == "fail" for c in checks)},
             {"kind": spec.kind, "x": xs.tolist(), "energy": energies.tolist(), "relative_energy": response.tolist(),
              "derivative": None if derivatives is None else derivatives.tolist(), "checks": checks,
+             "scan_numeric_derivative": scan_numeric_derivative(xs, energies),
              "spec": asdict(spec), "reference": None, "origin_index": origin,
              "note": "仅为模型响应和内部一致性检查；未验证外部准确性。负曲率可能是初始状态不稳定，不自动判错。"},
         )

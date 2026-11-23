@@ -675,11 +675,6 @@ class BenchmarkImportDialog(QDialog):
                 'Comparison: E/N (eV/atom) and V/N (Å³/atom), normalized automatically.\n'
                 'Fixed periodic reference structures; keep input magnetic order and moment magnitudes fixed.'
             )
-        elif kind == "efv":
-            text = self.tr(
-                "Choose a dataset independently of the model. Energy, force, virial and magnetic-force labels "
-                "are counted separately; at least one labelled quantity is required."
-            )
         elif kind == "response":
             text = self.tr("Compare fixed reference structures using metadata groups, scan coordinates and signed state combinations. Review matching and exclusions before saving.")
         else:
@@ -786,6 +781,7 @@ class BenchmarkImportDialog(QDialog):
         protocol = self.current_protocol()
         is_eos = protocol is not None and protocol.kind == "eos"
         is_response = protocol is not None and protocol.kind == "response"
+        is_accuracy = is_response and protocol.spec.mode == "slices"
         if self.preview_plot is None or self._response_canvas != is_response:
             if self.preview_plot is not None:
                 self.preview_layout.removeWidget(self.preview_plot)
@@ -816,13 +812,13 @@ class BenchmarkImportDialog(QDialog):
             self.preview_marker.set_marker(group["marker"])
         self._show_issues()
         summary = self.reference_summary
-        self.preview_plot.setVisible(summary is not None and (is_eos or is_response))
+        self.preview_plot.setVisible(summary is not None and (is_eos or is_response) and not is_accuracy)
         if summary is None:
             return
         preview = presentation_for(protocol.kind).draw_import_preview
         if preview:
             text = preview(self, summary, group)
-        elif protocol.kind == "response":
+        elif is_response and not is_accuracy:
             from NepTrainKit.ui.widgets.reference_response_plot import SCAN_AXES
 
             self.preview_title.setText(self.tr("Reference response preview"))
@@ -879,7 +875,7 @@ class BenchmarkImportDialog(QDialog):
                 "{count} structures · {atoms} atoms\nValid labels: E {energy} structures; F {forces} atoms; "
                 "V {virials} structures; MF {mforces} atoms."
             ).format(
-                count=summary["frames"], atoms=summary["atoms"],
+                count=summary["frames"], atoms=sum(map(len, self.frames)),
                 energy=counts["energy"]["structures"], forces=counts["force"]["atoms"],
                 virials=counts["virial"]["structures"], mforces=counts["mforce"]["atoms"])
         self.preview_summary.setText(text)

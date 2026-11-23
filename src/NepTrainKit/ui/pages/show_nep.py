@@ -13,7 +13,7 @@ from loguru import logger
 import numpy as np
 from PySide6.QtCore import QEvent, QObject, QUrl, QTimer, Qt, QThread, Slot, Signal
 from PySide6.QtGui import QIcon, QKeySequence, QShortcut
-from PySide6.QtWidgets import QWidget, QGridLayout, QHBoxLayout, QVBoxLayout, QSplitter, QFrame, QSizePolicy
+from PySide6.QtWidgets import QWidget, QGridLayout, QHBoxLayout, QVBoxLayout, QSplitter, QFrame, QSizePolicy, QInputDialog
 from qfluentwidgets import FluentIcon, HyperlinkLabel, MessageBox, SpinBox, \
     ToolButton, ToolTipFilter, ToolTipPosition, TransparentToolButton, BodyLabel, \
     Action, StateToolTip, ComboBox, CaptionLabel, SimpleCardWidget, \
@@ -42,6 +42,7 @@ from NepTrainKit.core.io import (
 )
 
 from NepTrainKit.core.io.lammps_dump import DumpImportCancelled
+from NepTrainKit.core.io.nep import WardReferenceResultData
 from NepTrainKit.core.precision import get_export_significant_digits
 from NepTrainKit.core.structure import write_structures_extxyz_atomic
 from NepTrainKit.core.structure_inspection import inspect_structure
@@ -272,7 +273,7 @@ class ShowNepWidget(QWidget):
                 self._parent.save_menu.addAction(act)  # pyright:ignore
 
         if hasattr(self._parent, "load_menu"):
-            for act in (self.open_file_action, self.open_folder_action):
+            for act in (self.open_file_action, self.open_ward_labels_action, self.open_folder_action):
                 try:
                     self._parent.load_menu.removeAction(act)  # pyright: ignore[attr-defined]
                 except Exception:
@@ -325,7 +326,7 @@ class ShowNepWidget(QWidget):
                     pass
 
         if hasattr(self._parent, "load_menu"):
-            for act in (self.open_file_action, self.open_folder_action):
+            for act in (self.open_file_action, self.open_ward_labels_action, self.open_folder_action):
                 try:
                     self._parent.load_menu.removeAction(act)  # pyright:ignore
                 except Exception:
@@ -341,6 +342,10 @@ class ShowNepWidget(QWidget):
         """
         self.open_file_action = Action(QIcon(':/images/src/images/open.svg'), self.tr("Open File…"))
         self.open_file_action.triggered.connect(self.open_file)
+        self.open_ward_labels_action = Action(
+            QIcon(":/images/src/images/open.svg"), self.tr("Open XYZ labels for Ward…")
+        )
+        self.open_ward_labels_action.triggered.connect(self.open_ward_labels)
 
         self.open_folder_action = Action(QIcon(':/images/src/images/open.svg'), self.tr("Open Folder…"))
         self.open_folder_action.triggered.connect(self.open_folder)
@@ -477,6 +482,7 @@ class ShowNepWidget(QWidget):
 
         # Keep open actions usable but avoid re-entrant loads while busy.
         self.open_file_action.setEnabled(not busy)
+        self.open_ward_labels_action.setEnabled(not busy)
         self.open_folder_action.setEnabled(not busy)
 
         for name in ("previous_structure_button", "next_structure_button", "auto_switch_button", "struct_index_spinbox"):
@@ -1181,6 +1187,23 @@ class ShowNepWidget(QWidget):
         if path:
             self.set_work_path(path)
 
+    def open_ward_labels(self):
+        path = call_path_dialog(self, self.tr("Open XYZ labels for Ward…"), "select",
+                                file_filter="XYZ (*.xyz *.extxyz)")
+        if not path:
+            return
+        orders = {
+            self.tr("GPUMD row-major"): "row_major",
+            self.tr("ASE column-major"): "column_major",
+            self.tr("Use only file declarations"): "",
+        }
+        order, accepted = QInputDialog.getItem(
+            self, self.tr("Ward residual"), self.tr("Virial order for frames without an order declaration"),
+            list(orders), 0, False,
+        )
+        if accepted:
+            self.set_work_path(path, ward_virial_order=orders[order])
+
     def open_folder(self):
         """Prompt the user to select a dataset folder (e.g., DeepMD/NPY directory)."""
         path = call_path_dialog(self, "Please choose the dataset folder", "directory")
@@ -1341,7 +1364,7 @@ class ShowNepWidget(QWidget):
             thread = BackgroundTask(self, show_tip=True, title="Exporting data")
             thread.start_work(data.prepare_export("removed"), path)
 
-    def set_work_path(self, path:str):
+    def set_work_path(self, path: str, *, ward_virial_order: str | None = None):
         """Validate and load a NEP dataset from the specified path.
 
         Parameters
@@ -1354,7 +1377,9 @@ class ShowNepWidget(QWidget):
         None
             Starts loading after confirming overwrites.
         """
-        if not matches_result_loader(path):
+        supported = (matches_result_loader(path) if ward_virial_order is None
+                     else Path(path).suffix.lower() in {".xyz", ".extxyz"})
+        if not supported:
             MessageManager.send_info_message(self.tr("unsupported file format"))
             return
 
@@ -1375,7 +1400,10 @@ class ShowNepWidget(QWidget):
             if box.result()==0:
                 return
 
-        self.check_nep_result(path)
+        if ward_virial_order is None:
+            self.check_nep_result(path)
+        else:
+            self.check_nep_result(path, ward_virial_order=ward_virial_order)
 
     def set_dataset(self,*args):
         """Bind the loaded NEP dataset to visual components.
@@ -1411,6 +1439,7 @@ class ShowNepWidget(QWidget):
         self._structure_analysis_cache.clear()
         self._phase_evidence_dataset_id = None
         self._phase_evidence_lookup.clear()
+        self.graph_toolbar.set_reference_only(isinstance(self.nep_result_data, WardReferenceResultData))
         self.graph_widget.set_dataset(self.nep_result_data)
         self.structure_filter_controller.set_dataset(self.nep_result_data)
         self._update_structure_filter_suggestions()
@@ -1684,6 +1713,7 @@ class ShowNepWidget(QWidget):
         structures=None,
         cache_outputs: bool | None = None,
         source_name: str | None = None,
+        ward_virial_order: str | None = None,
     ):
         """Load NEP metadata and start the background loading thread.
 
@@ -1698,6 +1728,8 @@ class ShowNepWidget(QWidget):
             Per-load cache policy. ``None`` follows the global setting.
         source_name : str, optional
             User-facing label for an in-memory dataset.
+        ward_virial_order : str, optional
+            Open only XYZ labels, using this order for undeclared virials.
 
         Returns
         -------
@@ -1707,7 +1739,8 @@ class ShowNepWidget(QWidget):
         
         if getattr(self, "_load_relay", None) is not None:
             self._queue_after_load(lambda: self.check_nep_result(
-                path, structures=structures, cache_outputs=cache_outputs, source_name=source_name
+                path, structures=structures, cache_outputs=cache_outputs, source_name=source_name,
+                ward_virial_order=ward_virial_order,
             ))
             return
         self._stop_playback()
@@ -1735,7 +1768,9 @@ class ShowNepWidget(QWidget):
         load_error = None
         result_data = None
         try:
-            if structures is None:
+            if ward_virial_order is not None:
+                result_data = WardReferenceResultData(Path(logical_path), ward_virial_order)
+            elif structures is None:
                 result_data = load_result_data(logical_path)  # type: ignore
             else:
                 result_data = NepTrainResultData.from_path(
@@ -1788,7 +1823,10 @@ class ShowNepWidget(QWidget):
                     model_dir = str(nep_txt_path.parent)
             except Exception:
                 model_dir = show_path
-            self._update_nep_model_combo(model_dir)
+            if isinstance(result_data, WardReferenceResultData):
+                self.nep_model_combo.hide()
+            else:
+                self._update_nep_model_combo(model_dir)
         
             self._select_loaded_model()
         

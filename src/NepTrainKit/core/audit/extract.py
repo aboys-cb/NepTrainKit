@@ -8,6 +8,7 @@ from typing import Any, Sequence
 import numpy as np
 
 from NepTrainKit.core.structure import Structure
+from NepTrainKit.core.ward import WardLabels, ward_labels
 
 
 @dataclass(frozen=True)
@@ -20,6 +21,7 @@ class StructureAuditRecord:
     energy_per_atom: float | None
     max_force: float | None
     virial_norm: float | None
+    ward: WardLabels | None = None
 
 
 def _composition(elements: Sequence[str]) -> dict[str, float]:
@@ -77,6 +79,7 @@ def _record_from_structure(index: int, structure: Structure) -> StructureAuditRe
         energy_per_atom=_safe_energy_per_atom(structure),
         max_force=_safe_max_force(structure),
         virial_norm=_safe_virial_norm(structure),
+        ward=ward_labels(structure),
     )
 
 

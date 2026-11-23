@@ -15,7 +15,7 @@ from time import perf_counter
 from typing import Any
 
 from loguru import logger
-from PySide6.QtCore import Qt, QTimer, Signal
+from PySide6.QtCore import QCoreApplication, Qt, QTimer, Signal
 from PySide6.QtGui import QColor
 from PySide6.QtWidgets import (
     QAbstractItemView,
@@ -54,6 +54,7 @@ from NepTrainKit.ui.messages import translate_runtime_error
 from NepTrainKit.core import MessageManager
 from NepTrainKit.core.audit.report import write_audit_report_html
 from NepTrainKit.core.audit.findings import canonical_findings
+from NepTrainKit.core.audit.label_ranges import WARD_PLOT_ID
 from NepTrainKit.core.audit.inventory import compare_composition_target
 from NepTrainKit.core.audit.magnetic_inventory import (
     MAGNETIC_PARTITION_LABELS,
@@ -916,6 +917,24 @@ class TrainingSetAuditWidget(QWidget):
         self.chart_widget.selectedGroupSignal.connect(self._on_chart_group_selected)
         self._connect_chart_export(self.chart_widget)
         chart_layout.addWidget(self.chart_widget, stretch=1)
+        self.ward_summary_label = QLabel(self.analysis_tabs)
+        self.ward_summary_label.setWordWrap(True)
+        chart_layout.addWidget(self.ward_summary_label)
+        self.ward_table = TableWidget(self.analysis_tabs)
+        self.ward_table.setColumnCount(6)
+        self.ward_table.setHorizontalHeaderLabels([
+            self.tr("Original index"), "Config_type", "|r|", "r (x, y, z)", "A (x, y, z)", "P (x, y, z)",
+        ])
+        self.ward_table.verticalHeader().hide()
+        self.ward_table.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
+        self.ward_table.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
+        self.ward_table.setSelectionMode(QAbstractItemView.SelectionMode.SingleSelection)
+        self.ward_table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.ResizeToContents)
+        self.ward_table.itemSelectionChanged.connect(self._on_ward_row_selected)
+        self.ward_table.cellDoubleClicked.connect(lambda *_: self._emit_chart_structures())
+        chart_layout.addWidget(self.ward_table, stretch=1)
+        self.ward_summary_label.hide()
+        self.ward_table.hide()
         chart_action_layout = QHBoxLayout()
         self.chart_selection_label = QLabel("", self.analysis_tabs)
         self.chart_selection_label.setObjectName("auditChartSelection")
@@ -4281,6 +4300,8 @@ class TrainingSetAuditWidget(QWidget):
             ),
             "Maximum force distribution": self.tr("Maximum force distribution"),
             "Virial norm distribution": self.tr("Virial norm distribution"),
+            "Ward residual distribution": self.tr("Ward residual distribution"),
+            "Ward residual (μeV/atom)": self.tr("Ward residual (μeV/atom)"),
             "Atomic fraction": self.tr("Atomic fraction"),
             "Structures": self.tr("Structures"),
             "Energy per atom": self.tr("Energy per atom"),
@@ -4340,13 +4361,51 @@ class TrainingSetAuditWidget(QWidget):
     def _show_selected_plot(self, index: int = -1) -> None:
         if index < 0:
             index = self.plot_selector.currentIndex()
-        if 0 <= index < len(self._active_plots):
-            self.chart_widget.set_plot(self._active_plots[index])
+        plot = self._active_plots[index] if 0 <= index < len(self._active_plots) else {}
+        if plot.get("kind"):
+            self.chart_widget.set_plot(plot)
         else:
             self.chart_widget.clear()
+        self.chart_widget.setVisible(bool(plot.get("kind")))
         self._selected_chart_indices = []
         self.chart_selection_label.clear()
         self.chart_send_button.setEnabled(False)
+        show_ward = plot.get("id") == WARD_PLOT_ID and self._result is not None
+        self.ward_summary_label.setVisible(show_ward)
+        self.ward_table.setVisible(show_ward)
+        if show_ward:
+            self._populate_ward_table(plot)
+
+    def _populate_ward_table(self, plot) -> None:
+        rows = [(index, config, ward, ward.norm) for index, config, ward in plot["rows"]]
+        rows.sort(key=lambda row: (row[3] is None, -(row[3] or 0), row[0]))
+        valid = sum(norm is not None for _, _, _, norm in rows)
+        self.ward_summary_label.setText(self.tr(
+            "Ward (μeV/atom): {valid}/{total} calculable. Small residuals at weak A and P give limited evidence about SOC response."
+        ).format(valid=valid, total=plot["total_count"]))
+        self.ward_table.blockSignals(True)
+        self.ward_table.clearContents()
+        self.ward_table.setRowCount(len(rows))
+        for row, (index, config, ward, norm) in enumerate(rows):
+            issue_text = "\n".join(QCoreApplication.translate("WardLabels", issue) for issue in ward.issues)
+            values = [str(index), config, f"{norm:.4g}" if norm is not None else "—"]
+            values.extend(
+                ", ".join(f"{value:+.4g}" if value else "0" for value in vector) if vector is not None else "—"
+                for vector in (ward.residual, ward.virial, ward.magnetic)
+            )
+            for column, value in enumerate(values):
+                item = QTableWidgetItem(value)
+                if column == 0:
+                    item.setData(Qt.ItemDataRole.UserRole, index)
+                if issue_text:
+                    item.setToolTip(issue_text)
+                self.ward_table.setItem(row, column, item)
+        self.ward_table.blockSignals(False)
+
+    def _on_ward_row_selected(self) -> None:
+        item = self.ward_table.item(self.ward_table.currentRow(), 0)
+        if item is not None:
+            self._on_chart_group_selected([item.data(Qt.ItemDataRole.UserRole)])
 
     def _on_chart_group_selected(self, structure_indices: list[int]) -> None:
         self._selected_chart_indices = [int(index) for index in structure_indices]

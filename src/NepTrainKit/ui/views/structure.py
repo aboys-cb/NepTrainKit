@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 import numpy as np
-from PySide6.QtCore import Qt
+from PySide6.QtCore import QCoreApplication, Qt
 from PySide6.QtGui import QFont
 from PySide6.QtWidgets import QGridLayout, QHBoxLayout, QSizePolicy, QVBoxLayout, QWidget
 
@@ -166,6 +166,9 @@ class StructureInfoWidget(QWidget):
         self.net_force_text = self._add_metric(
             signal_grid, 2, 1, self.tr("Net force |ΣF|"), "net_force"
         )
+        self.ward_text = self._add_wide_metric(signal_grid, 3, self.tr("Ward residual"), "ward")
+        self.ward_caption = signal_grid.itemAtPosition(3, 0).widget()
+        self._show_ward(None)
         signal_grid.setColumnStretch(1, 1)
         signal_grid.setColumnStretch(3, 1)
         card_layout.addLayout(signal_grid)
@@ -210,6 +213,22 @@ class StructureInfoWidget(QWidget):
         if not visible:
             self.magnetic_moment_text.setText("—")
             self.magnetic_moment_text.setToolTip("")
+
+    def _show_ward(self, ward) -> None:
+        self.ward_caption.setVisible(ward is not None)
+        self.ward_text.setVisible(ward is not None)
+        if ward is None:
+            self.ward_text.setText("—")
+            self.ward_text.setToolTip("")
+            return
+        norm = ward.norm
+        self.ward_text.setText(f"{norm:.4g} μeV/atom" if norm is not None else self.tr("Unavailable"))
+        details = [self.tr("Ward residual, antisymmetric virial A, and magnetic torque P (μeV/atom)")]
+        for symbol, vector in (("r", ward.residual), ("A", ward.virial), ("P", ward.magnetic)):
+            if vector is not None:
+                details.append(f"{symbol} = ({', '.join(f'{value:+.5g}' if value else '0' for value in vector)})")
+        details.extend(QCoreApplication.translate("WardLabels", issue) for issue in ward.issues)
+        self.ward_text.setToolTip("\n".join(details))
 
     @staticmethod
     def _number(value: float | None, unit: str, *, digits: int = 3) -> str:
@@ -257,6 +276,7 @@ class StructureInfoWidget(QWidget):
             self._metric_values[key].setText("—")
         # Hidden, not "—", so non-magnetic datasets show no dangling field.
         self._set_magnetic_moment_visible(False)
+        self._show_ward(None)
 
     def show_analysis(
         self,
@@ -278,6 +298,7 @@ class StructureInfoWidget(QWidget):
         )
         self.rms_force_text.setText(self._number(inspection.rms_force, "eV/Å"))
         self.net_force_text.setText(self._number(inspection.net_force, "eV/Å"))
+        self._show_ward(inspection.ward)
         self._set_magnetic_moment_visible(inspection.mean_magnetic_moment is not None)
         if inspection.mean_magnetic_moment is not None:
             self.magnetic_moment_text.setText(

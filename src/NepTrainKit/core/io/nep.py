@@ -40,6 +40,49 @@ from NepTrainKit.core.utils import (
     read_nep_out_file,
 )
 from NepTrainKit.core.types import ForcesMode, parse_forces_mode
+from NepTrainKit.core.ward import VIRIAL_ORDER_KEY, WARD_UNIT, ward_labels
+
+
+class WardReferenceResultData(ResultData):
+    """Show raw XYZ labels in Dataset Display without opening a potential."""
+
+    def __init__(self, path: Path, virial_order: str):
+        if virial_order not in ("", "row_major", "column_major"):
+            raise ValueError(f"Unsupported XYZ virial order: {virial_order!r}")
+        super().__init__(None, path, path.with_name("descriptor.out"))
+        self.virial_order = virial_order
+
+    def load_structures(self):
+        super().load_structures()
+        for frame in self.structure.all_data:
+            fields = frame.additional_fields
+            virial = fields.get("virial")
+            if self.virial_order and virial is not None and virial.size == 9 and VIRIAL_ORDER_KEY not in fields:
+                if self.virial_order == "column_major":
+                    fields["virial"] = virial.reshape(3, 3).T.reshape(9)
+                fields[VIRIAL_ORDER_KEY] = "row_major"
+
+    def _load_descriptors(self):
+        self._descriptor_dataset = NepPlotData([], title="descriptor", parity_mode=False)
+
+    def _load_dataset(self):
+        indices = []
+        points = []
+        for index, frame in enumerate(self.structure.all_data):
+            ward = ward_labels(frame)
+            norm = ward.norm if ward is not None else None
+            if norm is not None:
+                indices.append(index)
+                points.append((norm, index))
+        self._ward_plot = NepPlotData(
+            np.asarray(points, dtype=float).reshape(-1, 2), index_list=indices,
+            title=self.tr("Ward residual"), parity_mode=False,
+            x_label=self.tr("Original index"), y_label=f"|r| ({WARD_UNIT})",
+        )
+
+    @property
+    def datasets(self):
+        return [self._ward_plot]
 
 
 class NepTrainResultData(ResultData):

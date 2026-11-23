@@ -81,6 +81,7 @@ class NepDisplayGraphicsToolBar(KitToolBarBase):
     dftd3Signal = Signal()
     trainingSetCheckSignal = Signal()
     forceBalanceSignal = Signal()
+    wardSelectionSignal = Signal()
 
     def __init__(self, parent=None):
         """Initialise toolbar actions and keep a reference to the action group."""
@@ -146,6 +147,12 @@ class NepDisplayGraphicsToolBar(KitToolBarBase):
             action_key="find_non_physical",
         )
         self.addButton(
+            self.tr("Select by Ward residual"),
+            QIcon(":/images/src/images/ward_residual.svg"),
+            self.wardSelectionSignal,
+            action_key="select_by_ward_residual",
+        )
+        self.addButton(
             self.tr("Check net force"),
             QIcon(":/images/src/images/inspect.svg"),
             self.forceBalanceSignal,
@@ -193,6 +200,7 @@ class NepDisplayGraphicsToolBar(KitToolBarBase):
             self.tr("Export structure descriptor"),
             QIcon(":/images/src/images/export.svg"),
             self.exportSignal,
+            action_key="export_descriptor",
         )
 
         # Energy corrections.
@@ -215,6 +223,12 @@ class NepDisplayGraphicsToolBar(KitToolBarBase):
         action = self._actions.get("training_set_check")
         if action is not None:
             action.setEnabled(bool(enabled))
+
+    def set_reference_only(self, reference_only: bool) -> None:
+        for key in (
+            "find_max_error", "sparse_samples", "export_descriptor", "energy_baseline_shift", "dft_d3", "edit_info",
+        ):
+            self._actions[key].setEnabled(not reference_only)
 
     def reset(self) -> None:
         """Clear any mutually exclusive toggle that is still checked."""

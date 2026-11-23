@@ -10,7 +10,7 @@ from PySide6.QtWidgets import QHBoxLayout, QWidget, QProgressDialog
 from loguru import logger
 from qfluentwidgets import MessageBox
 
-from NepTrainKit.ui.threads import BackgroundTask
+from NepTrainKit.ui.threads import BackgroundTask, run_in_thread
 from NepTrainKit.ui.messages import format_sampling_coverage
 from NepTrainKit.ui.dialogs import call_path_dialog
 from NepTrainKit.core import MessageManager
@@ -31,6 +31,7 @@ from NepTrainKit.ui.widgets import (
     TrainingOverlayDialog,
 )
 from NepTrainKit.core.types import SearchType, CanvasMode
+from NepTrainKit.core.ward import select_ward_residuals
 from NepTrainKit.ui.views import NepDisplayGraphicsToolBar
 from NepTrainKit.core.energy_shift import (
     EnergyBaselinePreset,
@@ -340,6 +341,7 @@ class NepResultPlotWidget(QWidget):
         self.tool_bar.dftd3Signal.connect(self.calc_dft_d3)
         self.tool_bar.editInfoSignal.connect(self.edit_structure_info)
         self.tool_bar.forceBalanceSignal.connect(self.check_force_balance)
+        self.tool_bar.wardSelectionSignal.connect(self.select_by_ward_residual)
 
     def closeEvent(self, event):
         """Ensure auxiliary non-modal inspectors are closed with this widget."""
@@ -1069,6 +1071,44 @@ class NepResultPlotWidget(QWidget):
         )
         if indices:
             self.canvas.select_index(indices, False)
+
+    def select_by_ward_residual(self):
+        canvas = self.canvas
+        data = canvas.nep_result_data
+        if data is None or not data.structure.num:
+            MessageManager.send_info_message(self.tr("No active structures to scan."))
+            return
+        box = GetFloatMessageBox(self._parent or self, self.tr("Ward residual threshold (μeV/atom)"))
+        box.doubleSpinBox.setValue(getattr(self, "_ward_threshold", 0.25))
+        box.yesButton.setText(self.tr("Select"))
+        if not box.exec():
+            return
+        threshold = self._ward_threshold = box.doubleSpinBox.value()
+        indices = data.structure.now_indices.copy()
+        structures = data.structure.all_data[indices]
+        revision = data._content_revision
+        mask_version = data.structure.data.version
+
+        def apply_result(result):
+            if (self.canvas is not canvas or canvas.nep_result_data is not data
+                    or self._ward_threshold != threshold
+                    or data._content_revision != revision or data.structure.data.version != mask_version):
+                return
+            matches, evaluable = result
+            if evaluable:
+                canvas.apply_selection_result(matches, "replace")
+            else:
+                MessageManager.send_warning_message(self.tr(
+                    "Ward needs full virial labels with a declared order, Cartesian spins, and magnetic forces."
+                ))
+            MessageManager.send_info_message(self.tr(
+                "Ward residual: {matched} matched, {valid} calculable, {skipped} skipped."
+            ).format(matched=len(matches), valid=evaluable, skipped=len(indices) - evaluable))
+
+        run_in_thread(
+            self, select_ward_residuals, zip(indices, structures), threshold,
+            on_finished=apply_result, on_error=MessageManager.send_error_message,
+        )
 
     def check_force_balance(self):
         """Scan for structures whose net force exceeds a configurable threshold.

@@ -17094,6 +17094,10 @@ Done {done}    Pending {pending}    Failed {failed}    Unsupported {unsupported}
         <source>Explore distributions</source>
         <translation type="vanished">查看数据分布</translation>
     </message>
+    <message>
+        <source>Select by Ward residual</source>
+        <translation>按 Ward 残差选中</translation>
+    </message>
 </context>
 <context>
     <name>NepPolarizabilityResultData</name>
@@ -17258,6 +17262,22 @@ Done {done}    Pending {pending}    Failed {failed}    Unsupported {unsupported}
         <location filename="../ui/views/nep.py" line="1102" />
         <source>Checking net forces</source>
         <translation>正在检查净力</translation>
+    </message>
+    <message>
+        <source>Ward residual threshold (μeV/atom)</source>
+        <translation>Ward 残差阈值（μeV/atom）</translation>
+    </message>
+    <message>
+        <source>Select</source>
+        <translation>选中</translation>
+    </message>
+    <message>
+        <source>Ward needs full virial labels with a declared order, Cartesian spins, and magnetic forces.</source>
+        <translation>Ward 检查需要顺序已确认的完整位力、笛卡尔磁矩和磁力标签。</translation>
+    </message>
+    <message>
+        <source>Ward residual: {matched} matched, {valid} calculable, {skipped} skipped.</source>
+        <translation>Ward 残差：命中 {matched} 帧，可计算 {valid} 帧，跳过 {skipped} 帧。</translation>
     </message>
 </context>
 <context>
@@ -24538,6 +24558,30 @@ Do you want to continue?</source>
         <source>Validation: {suite} · baseline model comparison incomplete</source>
         <translation>验证：{suite} · 与基准势版本的比较未完成</translation>
     </message>
+    <message>
+        <source>Open XYZ labels for Ward…</source>
+        <translation>打开 XYZ 标签做 Ward 检查…</translation>
+    </message>
+    <message>
+        <source>GPUMD row-major</source>
+        <translation>GPUMD 行序</translation>
+    </message>
+    <message>
+        <source>ASE column-major</source>
+        <translation>ASE 列序</translation>
+    </message>
+    <message>
+        <source>Use only file declarations</source>
+        <translation>只使用文件声明</translation>
+    </message>
+    <message>
+        <source>Ward residual</source>
+        <translation>Ward 残差</translation>
+    </message>
+    <message>
+        <source>Virial order for frames without an order declaration</source>
+        <translation>为未声明的帧选择文件中的位力分量顺序</translation>
+    </message>
 </context>
 <context>
     <name>SmallAngleSpinTiltCard</name>
@@ -27391,6 +27435,14 @@ Elapsed: {elapsed:.1f} ms</source>
         <location filename="../ui/views/structure.py" line="439" />
         <source>C1ᵦ (half-Heusler)</source>
         <translation>C1ᵦ（半赫斯勒）</translation>
+    </message>
+    <message>
+        <source>Ward residual</source>
+        <translation>Ward 残差</translation>
+    </message>
+    <message>
+        <source>Ward residual, antisymmetric virial A, and magnetic torque P (μeV/atom)</source>
+        <translation>Ward 残差、反对称位力 A 与磁力矩 P（μeV/atom）</translation>
     </message>
 </context>
 <context>
@@ -30767,6 +30819,22 @@ Magnetic: {magnetic}</source>
         <source>Plotting data exported to: {path}</source>
         <translation>绘图数据已导出至：{path}</translation>
     </message>
+    <message>
+        <source>Original index</source>
+        <translation>原始索引</translation>
+    </message>
+    <message>
+        <source>Ward residual distribution</source>
+        <translation>Ward 残差分布</translation>
+    </message>
+    <message>
+        <source>Ward residual (μeV/atom)</source>
+        <translation>Ward 残差（μeV/atom）</translation>
+    </message>
+    <message>
+        <source>Ward (μeV/atom): {valid}/{total} calculable. Small residuals at weak A and P give limited evidence about SOC response.</source>
+        <translation>Ward（μeV/atom）：{total} 帧中 {valid} 帧可计算。A 和 P 都很小时，小残差对 SOC 响应的判别力有限。</translation>
+    </message>
 </context>
 <context>
     <name>TrainingSetAuditWindow</name>
@@ -33870,6 +33938,48 @@ Type: {kind} · Elements: {elements}</source>
     <message>
         <source>The baseline can be changed after evaluation finishes.</source>
         <translation>验证结束后可更换基准势。</translation>
+    </message>
+</context>
+<context>
+    <name>WardReferenceResultData</name>
+    <message>
+        <source>Ward residual</source>
+        <translation>Ward 残差</translation>
+    </message>
+    <message>
+        <source>Original index</source>
+        <translation>原始索引</translation>
+    </message>
+</context>
+<context>
+    <name>WardLabels</name>
+    <message>
+        <source>No atoms</source>
+        <translation>没有原子</translation>
+    </message>
+    <message>
+        <source>Full nine-component virial required</source>
+        <translation>需要完整的九分量位力</translation>
+    </message>
+    <message>
+        <source>Virial order is unconfirmed</source>
+        <translation>位力分量顺序未确认</translation>
+    </message>
+    <message>
+        <source>Valid Cartesian spin vectors required</source>
+        <translation>需要有效的笛卡尔磁矩</translation>
+    </message>
+    <message>
+        <source>Valid magnetic forces required</source>
+        <translation>需要有效的磁力</translation>
+    </message>
+    <message>
+        <source>mforce and force_mag disagree</source>
+        <translation>mforce 和 force_mag 标签不一致</translation>
+    </message>
+    <message>
+        <source>Non-finite Ward residual</source>
+        <translation>Ward 残差含非有限数值</translation>
     </message>
 </context>
 </TS>

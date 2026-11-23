@@ -912,7 +912,7 @@ class ResultData(DistributionAnalysisMixin, QObject):
     _abcs: npt.NDArray[np.float32]
     _angles: npt.NDArray[np.float32]
     def __init__(self,
-                 nep_txt_path: Path,
+                 nep_txt_path: Path | None,
                  data_xyz_path: Path,
                  descriptor_path: Path,
                  calculator_factory: Optional[Callable[[str], Any]] = None,
@@ -939,7 +939,7 @@ class ResultData(DistributionAnalysisMixin, QObject):
         self.cancel_event = threading.Event()
         self.descriptor_path=Path(descriptor_path)
         self.data_xyz_path=Path(data_xyz_path)
-        self.nep_txt_path=Path(nep_txt_path)
+        self.nep_txt_path=Path(nep_txt_path) if nep_txt_path is not None else None
         self._cache_outputs_override: bool | None = None
         self._force_recalculate_outputs = False
         self.select_index=set()
@@ -2028,8 +2028,9 @@ class ResultData(DistributionAnalysisMixin, QObject):
         dataset-specific properties.
         """
         try:
-            load_from_outputs = self._can_load_without_calculator()
-            if load_from_outputs:
+            if self.nep_txt_path is None:
+                self.nep_calc = None
+            elif self._can_load_without_calculator():
                 self.nep_calc = None
                 if self.descriptor_path.exists():
                     status = (

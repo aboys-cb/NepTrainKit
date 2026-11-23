@@ -7,6 +7,7 @@ import numpy as np
 from ase.data import atomic_masses, atomic_numbers
 
 from NepTrainKit.core.structure import table_info
+from NepTrainKit.core.ward import WardLabels, ward_labels
 
 
 AMU_PER_A3_TO_G_PER_CM3 = 1.66053906660
@@ -30,6 +31,7 @@ class StructureInspection:
     # in Bohr magnetons; ``None`` when the frame carries no ``spin`` vectors.
     mean_magnetic_moment: float | None = None
     net_magnetic_moment: float | None = None
+    ward: WardLabels | None = None
 
 
 def _mass_density(structure, volume: float | None) -> float | None:
@@ -147,6 +149,7 @@ def inspect_structure(
         short_contacts=tuple(short_contacts),
         mean_magnetic_moment=mean_magnetic_moment,
         net_magnetic_moment=net_magnetic_moment,
+        ward=ward_labels(structure),
     )
 
 

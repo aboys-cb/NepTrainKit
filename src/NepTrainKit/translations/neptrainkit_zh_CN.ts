@@ -20707,6 +20707,10 @@ Dataset SHA-256: {data}</source>
 <context>
     <name>RuntimeMessage</name>
     <message>
+        <source>Unsupported XYZ virial order: {order}</source>
+        <translation>不支持的 XYZ 位力分量顺序：{order}</translation>
+    </message>
+    <message>
         <source>No complete, unambiguous uniform-volume scans were found.</source>
         <translation>未找到分组明确且完整的均匀体积扫描。</translation>
     </message>

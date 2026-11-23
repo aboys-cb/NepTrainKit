@@ -322,6 +322,7 @@ RUNTIME_ERROR_TEMPLATES = (
     ('RuntimeMessage', 'Truncated LAMMPS dump: missing timestep value'),
     ('RuntimeMessage', 'Unsupported DeepMD NPY format: {format}'),
     ('RuntimeMessage', 'Unsupported EXTXYZ property type {dtype}.'),
+    ('RuntimeMessage', 'Unsupported XYZ virial order: {order}'),
     ('RuntimeMessage', 'Unsupported expression syntax.'),
     ('RuntimeMessage', 'Unsupported k-vector {value}; use 100, 010, 001, 110, or 111.'),
     ('RuntimeMessage', "Unsupported suffix for atomic field 'atomic.{alias}'."),

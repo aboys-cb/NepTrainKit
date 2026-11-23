@@ -555,6 +555,8 @@ class BenchmarkImportDialog(QDialog):
         self.overlay_groups.stateChanged.connect(self._update_preview)
         self._populate_group_fields()
         self._protocol_changed()
+        body.installEventFilter(self)
+        self.body_scroll.viewport().installEventFilter(self)
         screen = self.screen().availableGeometry()
         width = min(1100, (parent.width() if parent and parent.isVisible() else screen.width()) - 32, screen.width() - 32)
         self.resize(max(320, width), min(720, screen.height() - 72))
@@ -563,18 +565,29 @@ class BenchmarkImportDialog(QDialog):
         self.supplementary_panel.setVisible(expanded)
         self.supplementary_button.setIcon(FluentIcon.CARE_DOWN_SOLID if expanded else FluentIcon.CARE_RIGHT_SOLID)
 
-    def resizeEvent(self, event):
-        super().resizeEvent(event)
-        narrow = self.width() < 880
-        self._columns.setDirection(QBoxLayout.Direction.TopToBottom if narrow else QBoxLayout.Direction.LeftToRight)
-        self._source_row.setDirection(QBoxLayout.Direction.TopToBottom if narrow else QBoxLayout.Direction.LeftToRight)
-        self.group_table.setMaximumHeight(190 if narrow else 16777215)
+    def _fit_body_rows(self, viewport_width):
+        body_margins = self.body_scroll.widget().layout().contentsMargins()
+        body_width = viewport_width - body_margins.left() - body_margins.right()
+        source_panel = self._source_row.parentWidget()
+        source_margins = source_panel.contentsMargins() + source_panel.layout().contentsMargins()
+        source_width = body_width - source_margins.left() - source_margins.right()
+        for row, width in ((self._columns, body_width), (self._source_row, source_width)):
+            minimum_width = sum(row.itemAt(i).minimumSize().width() for i in range(row.count()))
+            minimum_width += row.spacing() * (row.count() - 1)
+            stacked = viewport_width < 880 or minimum_width > width
+            row.setDirection(QBoxLayout.Direction.TopToBottom if stacked else QBoxLayout.Direction.LeftToRight)
+        columns_stacked = self._columns.direction() == QBoxLayout.Direction.TopToBottom
+        self.group_table.setMaximumHeight(190 if columns_stacked else 16777215)
 
     def accept(self):
         if self.validate():
             super().accept()
 
     def eventFilter(self, obj, event):
+        if event.type() == QEvent.Type.Resize and obj is self.body_scroll.viewport():
+            self._fit_body_rows(event.size().width())
+        elif event.type() == QEvent.Type.LayoutRequest and obj is self.body_scroll.widget():
+            self._fit_body_rows(self.body_scroll.viewport().width())
         if event.type() == QEvent.Type.Wheel and self.preview_plot is not None and obj is self.preview_plot.viewport():
             pixels = event.pixelDelta()
             if pixels.isNull():

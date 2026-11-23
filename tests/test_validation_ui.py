@@ -636,8 +636,8 @@ def test_import_dialog_resizes_without_squeezing_controls(tmp_path, language):
             app.removeTranslator(translator)
 
 
-@pytest.mark.parametrize("help_width", [0, 460])
-def test_import_source_row_fits_wide_native_controls(tmp_path, help_width):
+@pytest.mark.parametrize(("help_width", "browse_width"), [(0, 0), (460, 0), (0, 160)])
+def test_import_source_row_fits_wide_native_controls(tmp_path, help_width, browse_width):
     app = QApplication.instance()
     dialog = BenchmarkImportDialog(None, [], "EOS")
     try:
@@ -646,6 +646,7 @@ def test_import_source_row_fits_wide_native_controls(tmp_path, help_width):
         # Exercise combined minimum widths independently of the platform's fonts.
         dialog.file_picker.setMinimumWidth(560)
         dialog.help_button.setMinimumWidth(help_width)
+        dialog.browse_button.setMinimumWidth(browse_width)
         dialog.show()
         for width in (1120, 760, 1120):
             dialog.resize(width, 700)

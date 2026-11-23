@@ -401,8 +401,9 @@ class BenchmarkImportDialog(QDialog):
         self.requirements_label.setWordWrap(True)
 
         file_row = QWidget(self)
-        file_layout = QHBoxLayout(file_row)
-        file_layout.setContentsMargins(0, 0, 0, 0)
+        self._file_row = QBoxLayout(QBoxLayout.Direction.LeftToRight, file_row)
+        self._file_row.setContentsMargins(0, 0, 0, 0)
+        self._file_row.setSpacing(6)
         self.path_edit = LineEdit(file_row)
         self.path_edit.setPlaceholderText(self.tr("Labelled EXTXYZ file"))
         self.file_picker = QStackedWidget(file_row)
@@ -416,8 +417,8 @@ class BenchmarkImportDialog(QDialog):
         self.path_edit.editingFinished.connect(self._finish_path_edit)
         self.browse_button = PushButton(self.tr("Browse..."), file_row)
         self.browse_button.clicked.connect(self._browse)
-        file_layout.addWidget(self.file_picker, 1)
-        file_layout.addWidget(self.browse_button)
+        self._file_row.addWidget(self.file_picker, 1)
+        self._file_row.addWidget(self.browse_button)
 
         self.name_edit = LineEdit(self)
         self.suite_combo = EditableComboBox(self)
@@ -571,10 +572,15 @@ class BenchmarkImportDialog(QDialog):
         source_panel = self._source_row.parentWidget()
         source_margins = source_panel.contentsMargins() + source_panel.layout().contentsMargins()
         source_width = body_width - source_margins.left() - source_margins.right()
-        for row, width in ((self._columns, body_width), (self._source_row, source_width)):
+        narrow = viewport_width < 880
+        for row, width, prefer_stacked in (
+            (self._file_row, source_width, False),
+            (self._source_row, source_width, narrow),
+            (self._columns, body_width, narrow),
+        ):
             minimum_width = sum(row.itemAt(i).minimumSize().width() for i in range(row.count()))
             minimum_width += row.spacing() * (row.count() - 1)
-            stacked = viewport_width < 880 or minimum_width > width
+            stacked = prefer_stacked or minimum_width > width
             row.setDirection(QBoxLayout.Direction.TopToBottom if stacked else QBoxLayout.Direction.LeftToRight)
         columns_stacked = self._columns.direction() == QBoxLayout.Direction.TopToBottom
         self.group_table.setMaximumHeight(190 if columns_stacked else 16777215)

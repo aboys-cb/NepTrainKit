@@ -5,6 +5,8 @@ from types import SimpleNamespace
 from unittest.mock import MagicMock, Mock, patch
 
 import pytest
+from PySide6.QtCore import Qt
+from PySide6.QtTest import QTest
 from PySide6.QtWidgets import QWidget
 from qfluentwidgets import ComboBox
 from sqlalchemy import event, select
@@ -12,9 +14,10 @@ from test_validation_framework import MODEL_HEADER, _import, efv_frames
 from test_validation_framework import make_service as make_service
 from test_validation_framework import model_file as model_file
 
+from NepTrainKit.config import Config
 from NepTrainKit.core.dataset.models import BenchmarkRun, ModelVersion
 from NepTrainKit.core.dataset.services import ModelService, ProjectService
-from NepTrainKit.core.validation.library import sha256_file
+from NepTrainKit.core.validation.library import VIEWER_MODEL_SECTION, sha256_file
 from NepTrainKit.core.validation.service import ModelDraft
 from NepTrainKit.ui.pages import show_nep
 from NepTrainKit.ui.views import dataset_widget
@@ -27,10 +30,11 @@ def test_viewer_cache_requires_current_dataset_and_weights(tmp_path, reason):
     path.write_text(MODEL_HEADER + "old")
     data_path = tmp_path / "train.xyz"
     data_path.touch()
-    cached = SimpleNamespace(nep_txt_path=path, data_xyz_path=data_path,
-                             _loaded_model_hash=sha256_file(path), select_index=[])
+    structure = SimpleNamespace(now_indices=[0, 1])
+    cached = SimpleNamespace(nep_txt_path=path, data_xyz_path=data_path, structure=structure,
+                             _loaded_model_hash=sha256_file(path), apply_selection=Mock())
     current = SimpleNamespace(nep_txt_path=tmp_path / "nep_other.txt", data_xyz_path=data_path,
-                              _loaded_model_hash="other", select_index=[1])
+                              structure=structure, _loaded_model_hash="other", select_index=[1], reject_index={0})
     if reason in {"weights", "same_model"}:
         path.write_text(MODEL_HEADER + "updated")
     if reason == "same_model":
@@ -40,14 +44,16 @@ def test_viewer_cache_requires_current_dataset_and_weights(tmp_path, reason):
         current.data_xyz_path.touch()
     if reason == "missing":
         path.unlink()
-    viewer = SimpleNamespace(nep_result_data=current, _available_nep_files=[path],
-        _nep_result_cache={path.resolve(): cached}, stop_loading=Mock(), set_dataset=Mock(),
-        _restore_selection=Mock(), _reload_with_nep_file=Mock())
+    viewer = SimpleNamespace(nep_result_data=current, _available_nep_files=[path], _load_relay=None,
+        _updating_nep_combo=False, _update_default_model_button=Mock(), _select_loaded_model=Mock(),
+        _nep_result_cache={path.resolve(): cached}, _checked_potential=lambda path: path,
+        struct_index_spinbox=SimpleNamespace(value=lambda: 1), set_dataset=Mock(), _reload_with_nep_file=Mock())
     show_nep.ShowNepWidget._on_nep_model_changed(viewer, 0)
     if reason == "unchanged":
         assert viewer.nep_result_data is cached
-        viewer.set_dataset.assert_called_once()
-        viewer._restore_selection.assert_called_once_with([1])
+        viewer.set_dataset.assert_called_once_with(frame_index=1)
+        cached.apply_selection.assert_called_once_with([1], "replace")
+        assert cached.reject_index == {0}
         viewer._reload_with_nep_file.assert_not_called()
     else:
         viewer._reload_with_nep_file.assert_called_once_with(str(current.data_xyz_path), path)
@@ -60,13 +66,65 @@ def test_explicit_dataset_load_clears_model_cache_even_in_same_folder(tmp_path, 
     path.touch()
     viewer = SimpleNamespace(_nep_result_cache={tmp_path / "nep.txt": object()},
         _invalidate_background_jobs=Mock(), _refresh_export_actions=Mock(), _stop_playback=Mock(),
-        tr=lambda text: text)
-    def cancel(_path):
+        _nep_options_for_open=Mock(), tr=lambda text: text)
+    def cancel(_path, **kwargs):
         raise show_nep.DumpImportCancelled()
     monkeypatch.setattr(show_nep, "load_result_data", cancel)
     with patch.object(show_nep.MessageManager, "send_info_message"):
         show_nep.ShowNepWidget.check_nep_result(viewer, str(path))
     assert viewer._nep_result_cache == {}
+
+
+def test_viewer_chooses_saved_potentials_and_persists_only_explicit_default(
+    make_service, model_file, monkeypatch, tmp_path,
+):
+    service = make_service()
+    saved = service.capture_model(model_file, name="Baseline")
+    snapshot = service.library.object_path(saved["content_hash"])
+    model_file.write_text(MODEL_HEADER + "next model")
+    service.capture_model(model_file, name="Next")
+    monkeypatch.setenv("NEPTRAINKIT_LIBRARY", str(service.library.root))
+    viewer = show_nep.ShowNepWidget()
+    manager = dataset_widget.ModelItemWidget()
+    digest = saved["content_hash"]
+    key = show_nep._DEFAULT_NEP_MODEL
+    manager.model_item_dict[saved["id"]] = SimpleNamespace(model_kind="nep4", content_hash=digest)
+    monkeypatch.setattr(manager, "_selected_model_id", lambda: saved["id"])
+    try:
+        raw = tmp_path / "raw.xyz"
+        assert viewer.nep_model_combo.isEnabled()
+        assert snapshot not in viewer._available_nep_files
+        assert viewer._nep_options_for_open(raw) == {"default_nep_path": show_nep.get_bundled_nep89_path()}
+        manager.viewer_visibility_action.trigger()
+        viewer._update_nep_model_combo()
+        assert snapshot in viewer._available_nep_files
+        assert len(viewer._library_nep_models) == 1
+
+        viewer.nep_model_combo.setCurrentIndex(viewer._available_nep_files.index(snapshot))
+        assert viewer._nep_options_for_open(raw) == {"nep_txt_path": snapshot}
+        assert Config.get("nep", key) is None
+        QTest.mouseClick(viewer.default_model_button, Qt.MouseButton.LeftButton)
+        assert Config.get("nep", key) == digest
+
+        viewer.nep_model_combo.setCurrentIndex(0)
+        assert viewer._nep_options_for_open(None) == {"default_nep_path": snapshot}
+        assert "Baseline" in viewer.nep_model_combo.currentText()
+        local = tmp_path / "nep.txt"
+        local.touch()
+        assert viewer._nep_options_for_open(raw) == {"nep_txt_path": local}
+        QTest.mouseClick(viewer.default_model_button, Qt.MouseButton.LeftButton)
+        assert Config.get("nep", key) is None
+        manager.viewer_visibility_action.trigger()
+        viewer._update_nep_model_combo()
+        assert snapshot not in viewer._available_nep_files
+
+        viewer.nep_model_combo.setCurrentIndex(viewer._available_nep_files.index(show_nep._OUTPUTS_ONLY))
+        assert viewer._nep_options_for_open(raw) == {"outputs_only": True}
+    finally:
+        Config.delete("nep", key)
+        Config.delete(VIEWER_MODEL_SECTION, digest)
+        manager.deleteLater()
+        viewer.deleteLater()
 
 
 @pytest.mark.parametrize("source", ["changed", "deleted"])

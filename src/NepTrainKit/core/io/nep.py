@@ -43,6 +43,36 @@ from NepTrainKit.core.types import ForcesMode, parse_forces_mode
 from NepTrainKit.core.ward import VIRIAL_ORDER_KEY, WARD_UNIT, ward_labels
 
 
+def associated_nep_model(path: Path) -> Path | None:
+    """Find the model path for a dataset with its own model or official outputs."""
+    standard = path.with_name("nep.txt")
+    if standard.is_file():
+        return standard
+
+    def has_output(name):
+        return path.with_name(f"{name}_{path.stem}.out").is_file()
+
+    if all(has_output(name) for name in ("energy", "force", "virial")) and (
+        has_output("stress") or has_output("mforce")
+    ):
+        return standard
+    candidates = [file for file in path.parent.glob("*.txt") if "nep" in file.stem.lower() and file.is_file()]
+    return min(
+        candidates,
+        key=lambda file: (not file.stem.lower().startswith("nep"), len(file.stem), file.name),
+        default=None,
+    )
+
+
+def compatible_default_nep_model(path: Path, structures) -> Path:
+    """Use preferred weights only when they cover the elements of every frame."""
+    bundled = get_bundled_nep89_path()
+    if path == bundled:
+        return path
+    elements = set(inspect_model(path).elements)
+    return path if all(elements.issuperset(frame.elements) for frame in structures) else bundled
+
+
 class WardReferenceResultData(ResultData):
     """Show raw XYZ labels in Dataset Display without opening a potential."""
 
@@ -141,7 +171,7 @@ class NepTrainResultData(ResultData):
     }
 
     def __init__(self,
-                 nep_txt_path: Path|str,
+                 nep_txt_path: Path | str | None,
                  data_xyz_path: Path|str,
                  energy_out_path: Path|str,
                  force_out_path: Path|str,
@@ -198,6 +228,8 @@ class NepTrainResultData(ResultData):
         self._spin_force_dataset = None
         self._force_vector_dataset = None
         self._spin_force_vector_dataset = None
+        self.outputs_only = False
+        self._check_default_elements = False
         self._pending_prediction: Prediction | None = None
         self._force_recalculate_outputs = False
         self._validated_energy_array: npt.NDArray[Any] | None = None
@@ -206,7 +238,7 @@ class NepTrainResultData(ResultData):
     def datasets(self):
         """Return datasets exposed to the UI in display order."""
         items = [self.energy, self.force]
-        if not getattr(self, "is_spin_model", False):
+        if self.outputs_only or not self.is_spin_model:
             items.append(self.stress)
         items.append(self.virial)
         if getattr(self, "_spin_force_dataset", None) is not None:
@@ -248,6 +280,8 @@ class NepTrainResultData(ResultData):
         structures: list[Structure] | None = None,
         nep_txt_path: Path | str | None = None,
         cache_outputs: bool | None = None,
+        default_nep_path: Path | None = None,
+        outputs_only: bool = False,
     ) -> "NepTrainResultData":
         """Create an instance from a NEP result directory.
         
@@ -261,6 +295,10 @@ class NepTrainResultData(ResultData):
             Pre-loaded structures to attach instead of reading from disk.
         cache_outputs : bool, optional
             Per-result cache policy. ``False`` keeps predictions in memory.
+        default_nep_path : Path, optional
+            Prefer these weights when no model accompanies the dataset and all elements match.
+        outputs_only : bool, optional
+            Read existing outputs beside the dataset without loading a calculator.
         
         Returns
         -------
@@ -268,109 +306,76 @@ class NepTrainResultData(ResultData):
             Configured loader bound to the resolved directory.
         """
         dataset_path = as_path(path)
-        file_name=dataset_path.stem
+        standard = dataset_path.with_name("nep.txt")
+        selected = None
+        if not outputs_only:
+            if nep_txt_path is not None:
+                selected = Path(nep_txt_path)
+            elif structures is None or dataset_path.is_file():
+                selected = associated_nep_model(dataset_path)
+        check_default = selected is None and not outputs_only and default_nep_path is not None
+        if check_default:
+            selected = Path(default_nep_path)
+            check_default = selected != get_bundled_nep89_path()
+        if selected is None and not outputs_only:
+            selected = get_bundled_nep89_path()
+            MessageManager.send_warning_message("No NEP model file found; the program will use nep89 instead.")
 
-        # Normalise optional nep_txt_path
-        explicit_nep = Path(nep_txt_path) if nep_txt_path is not None else None
-
-        # Try to find nep.txt first when no explicit NEP file is provided
-        if explicit_nep is not None:
-            nep_txt_path = explicit_nep
-        else:
-            nep_txt_path = dataset_path.with_name("nep.txt")
-
-            # If nep.txt not found, search for any txt file containing "nep" in filename
-            if not nep_txt_path.exists():
-                dir_path = dataset_path.parent
-                nep_files: list[Path] = []
-                for txt_file in dir_path.glob("*.txt"):
-                    if "nep" in txt_file.stem.lower():
-                        nep_files.append(txt_file)
-
-                # Sort: prefer files starting with "nep" and shorter names
-                if nep_files:
-                    nep_files.sort(key=lambda p: (not p.stem.lower().startswith("nep"), len(p.stem), p.stem))
-                    nep_txt_path = nep_files[0]
-                    logger.info(f"Using detected NEP file: {Path(nep_txt_path).name}")
-                else:
-                    # No NEP file found, use fallback
-                    nep_txt_path = get_bundled_nep89_path()
-                    MessageManager.send_warning_message("No NEP model file found; the program will use nep89 instead.")
-
-        # Coerce to Path for downstream logic
-        nep_txt_path = Path(nep_txt_path)
-
-        # Determine output directory based on NEP model filename
-        nep_stem = nep_txt_path.stem
-        if nep_stem == "nep":
-            # Standard nep.txt, output to current directory
-            output_dir = dataset_path.parent
-            output_suffix = file_name
-        else:
-            # Other NEP files (nep1.txt, nep2.txt, etc.), create file_name_XXX directory
-            output_dir = dataset_path.parent / f"{file_name}_{nep_stem}"
-            if cache_outputs is not False:
-                output_dir.mkdir(exist_ok=True)
-            output_suffix = file_name
-            if cache_outputs is not False:
-                logger.info(f"Output files will be saved to: {output_dir.name}/")
-        
-        # Build output paths in the appropriate directory
-        energy_out_path = output_dir / f"energy_{output_suffix}.out"
-        force_out_path = output_dir / f"force_{output_suffix}.out"
-        stress_out_path = output_dir / f"stress_{output_suffix}.out"
-        virial_out_path = output_dir / f"virial_{output_suffix}.out"
-        
-        # Optional spin-force output (magnetic).  Its presence also identifies
-        # cached spin results without requiring the model parser.
-        spin_force_out_path_candidate = output_dir / f"mforce_{output_suffix}.out"
-        
-        if file_name=="train":
-            descriptor_path = output_dir / f"descriptor.out"
-        else:
-            descriptor_path = output_dir / f"descriptor_{output_suffix}.out"
-        
-        charge_out_path = output_dir / f"charge_{output_suffix}.out"
-        bec_out_path = output_dir / f"bec_{output_suffix}.out"
-
-        # Official training outputs are self-describing enough to display.  Do
-        # not make an older/unsupported model format a prerequisite for opening
-        # results that GPUMD has already written.
-        base_outputs = (energy_out_path, force_out_path, virial_out_path)
-        has_base_outputs = all(output.exists() for output in base_outputs)
-        has_spin_output = has_base_outputs and spin_force_out_path_candidate.exists()
-        has_charge_outputs = (
-            has_base_outputs and charge_out_path.exists() and bec_out_path.exists()
-        )
-        has_standard_outputs = has_base_outputs and stress_out_path.exists()
-        if has_spin_output or has_charge_outputs or has_standard_outputs:
-            has_spin = has_spin_output
-            has_charge = has_charge_outputs and not has_spin
-        else:
-            model_info = inspect_model(nep_txt_path)
-            has_spin = model_info.model_type == "spin"
-            has_charge = model_info.model_type == "charge"
-
-        spin_force_out_path = spin_force_out_path_candidate if has_spin else None
-        
-        inst = cls(
-            nep_txt_path,
-            dataset_path,
-            energy_out_path,
-            force_out_path,
-            stress_out_path,
-            virial_out_path,
-            descriptor_path,
-            charge_out_path,
-            bec_out_path,
-            has_charge,
-            spin_force_out_path,
-            has_spin,
-        )
+        paths, has_charge, has_spin = cls._output_paths(dataset_path, selected or standard, outputs_only)
+        if not check_default and not outputs_only and cache_outputs is not False:
+            paths["energy_out_path"].parent.mkdir(exist_ok=True)
+        inst = cls(selected, dataset_path, **paths, charge_model=has_charge, spin_model=has_spin)
+        inst.outputs_only = outputs_only
+        inst._check_default_elements = check_default
         inst.set_cache_outputs_override(cache_outputs)
         if structures is not None:
             inst.set_structures(structures)
         return inst
+
+    @staticmethod
+    def _output_paths(dataset_path: Path, nep_file: Path, outputs_only: bool = False):
+        stem = dataset_path.stem
+        directory = dataset_path.parent
+        if nep_file.stem != "nep":
+            directory = directory / f"{stem}_{nep_file.stem}"
+        paths = {
+            f"{kind}_out_path": directory / f"{kind}_{stem}.out"
+            for kind in ("energy", "force", "stress", "virial", "charge", "bec")
+        }
+        paths["spin_force_out_path"] = directory / f"mforce_{stem}.out"
+        paths["descriptor_path"] = directory / ("descriptor.out" if stem == "train" else f"descriptor_{stem}.out")
+        base_outputs = all(paths[f"{kind}_out_path"].is_file() for kind in ("energy", "force", "virial"))
+        spin = paths["spin_force_out_path"].is_file()
+        charge = paths["charge_out_path"].is_file() and paths["bec_out_path"].is_file()
+        if outputs_only:
+            charge = paths["bec_out_path"].is_file()
+        elif not (base_outputs and (spin or charge or paths["stress_out_path"].is_file())):
+            model_type = inspect_model(nep_file).model_type
+            spin, charge = model_type == "spin", model_type == "charge"
+        if not spin:
+            paths["spin_force_out_path"] = None
+        return paths, charge and (outputs_only or not spin), spin
+
+    def _prepare_load(self) -> bool:
+        if not self._check_default_elements:
+            return False
+        self.load_structures()
+        if self.cancel_event.is_set():
+            return True
+        selected = compatible_default_nep_model(self.nep_txt_path, self.structure.all_data)
+        if selected != self.nep_txt_path:
+            paths, self.is_charge_model, self.is_spin_model = self._output_paths(self.data_xyz_path, selected)
+            for name, path in paths.items():
+                setattr(self, name, path)
+            self.nep_txt_path = selected
+            self.prediction_meta_path = self.energy_out_path.parent / "prediction.meta.json"
+            self._loaded_model_hash = self._sha256(selected)
+        if self.cache_outputs_enabled():
+            self.energy_out_path.parent.mkdir(exist_ok=True)
+        return True
+
+    def cache_outputs_enabled(self) -> bool:
+        return not self.outputs_only and super().cache_outputs_enabled()
 
     def _can_load_without_calculator(self) -> bool:
         """Return whether complete official outputs can be displayed directly."""
@@ -483,16 +488,40 @@ class NepTrainResultData(ResultData):
 
     def _load_descriptors(self) -> None:
         """Validate cached output alignment before loading paired descriptors."""
-        self._prepare_cached_output_alignment()
+        if not self.outputs_only:
+            self._prepare_cached_output_alignment()
         super()._load_descriptors()
+
+    def _read_existing_output(self, path: Path | None, shape: tuple[int, int]) -> np.ndarray:
+        if path is None or not path.is_file():
+            return np.array([])
+        try:
+            values = read_nep_out_file(path, dtype=get_storage_float_dtype(), ndmin=2)
+        except (OSError, ValueError):
+            values = np.array([])
+        if values.shape == shape:
+            return values
+        MessageManager.send_warning_message(
+            self.tr("Skipped invalid NEP output {file}.").format(file=path.name)
+        )
+        return np.array([])
 
     def _load_dataset(self) -> None:
         """Populate plot datasets from cached outputs or by recalculating with NEP."""
-        nep_in = read_nep_in(self.data_xyz_path.with_name("nep.in"))
+        nep_in = {} if self.outputs_only else read_nep_in(self.data_xyz_path.with_name("nep.in"))
         bec_array = np.array([])
         charge_array = np.array([])
         spin_force_array = np.array([])
-        if self._should_recalculate(nep_in):
+        if self.outputs_only:
+            frames = len(self.atoms_num_list)
+            atoms = int(np.sum(self.atoms_num_list))
+            energy_array = self._read_existing_output(self.energy_out_path, (frames, 2))
+            force_array = self._read_existing_output(self.force_out_path, (atoms, 6))
+            virial_array = self._read_existing_output(self.virial_out_path, (frames, 12))
+            stress_array = self._read_existing_output(self.stress_out_path, (frames, 12))
+            spin_force_array = self._read_existing_output(self.spin_force_out_path, (atoms, 6))
+            bec_array = self._read_existing_output(self.bec_out_path, (atoms, 18))
+        elif self._should_recalculate(nep_in):
             results = self._recalculate_and_save()
             if getattr(self, "is_charge_model", False):
                 energy_array, force_array, virial_array, stress_array, charge_array, bec_array = results
@@ -537,7 +566,8 @@ class NepTrainResultData(ResultData):
             force_array = aggregate_per_atom_to_structure(force_array, self.atoms_num_list, map_func=np.linalg.norm, axis=0)
             self._force_dataset = NepPlotData(force_array, title="force")
         else:
-            self._force_dataset = NepPlotData(force_array, group_list=self.atoms_num_list, title="force")
+            groups = self.atoms_num_list if force_array.size else 1
+            self._force_dataset = NepPlotData(force_array, group_list=groups, title="force")
         # Spin force (magnetic force) dataset, display only
         if spin_force_array.size != 0:
             self._spin_force_vector_dataset = NepPlotData(spin_force_array, group_list=self.atoms_num_list, title="mforce")
@@ -557,6 +587,12 @@ class NepTrainResultData(ResultData):
                 self._bec_dataset = NepPlotData(bec_array, group_list=self.atoms_num_list, title="bec")
             else:
                 self._bec_dataset = None
+        if self.outputs_only:
+            for dataset in self.datasets:
+                if dataset.num == 0:
+                    dataset.parity_mode = False
+                    dataset.show_rmse = False
+
     def _should_recalculate(self, nep_in: dict | None = None) -> bool:
         """Return ``True`` when cached outputs are missing or inconsistent.
         

@@ -35,18 +35,24 @@ from NepTrainKit.ui.widgets import (
 from NepTrainKit.ui.messages import translate_runtime_message, translate_runtime_error
 from NepTrainKit.ui.controllers import StructureFilterController
 from NepTrainKit.core.io import (
+    DeepmdResultData,
     NepTrainResultData,
     ResultData,
+    TaceResultData,
     load_result_data,
     matches_result_loader,
 )
 
 from NepTrainKit.core.io.lammps_dump import DumpImportCancelled
-from NepTrainKit.core.io.nep import WardReferenceResultData
+from NepTrainKit.core.io.nep import WardReferenceResultData, associated_nep_model, compatible_default_nep_model
 from NepTrainKit.core.precision import get_export_significant_digits
 from NepTrainKit.core.structure import write_structures_extxyz_atomic
 from NepTrainKit.core.structure_inspection import inspect_structure
-from NepTrainKit.core.validation.library import sha256_file
+from NepTrainKit.core.validation.library import (
+    VIEWER_DEFAULT_MODEL_OPTION as _DEFAULT_NEP_MODEL,
+    VIEWER_MODEL_SECTION,
+    sha256_file,
+)
 from NepTrainKit.core.types import Brushes, CanvasMode, SearchType
 from NepTrainKit.paths import get_bundled_nep89_path
 from NepTrainKit.ui.canvas.canvas_factory import (
@@ -69,6 +75,9 @@ _ARROW_FORCE_ERROR = "__ntk_force_error"
 _ARROW_DFT_MFORCE = "__ntk_dft_mforce"
 _ARROW_ML_MFORCE = "__ntk_ml_mforce"
 _ARROW_MFORCE_ERROR = "__ntk_mforce_error"
+
+
+_OUTPUTS_ONLY = object()
 
 
 def _model_file_digest(path):
@@ -221,6 +230,8 @@ class ShowNepWidget(QWidget):
         self._pending_load = None
         self._load_cancel_requested = False
         self._updating_nep_combo = False
+        self._next_nep_file = None
+        self._library_nep_models: dict[Path, str] = {}
         self._search_job_id = 0
         self._completer_job_id = 0
         self._search_running = 0
@@ -240,6 +251,7 @@ class ShowNepWidget(QWidget):
         self._pending_structure_filter_apply: str | None = None
         self.init_action()
         self.init_ui()
+        self._update_nep_model_combo()
         self.load_thread:QThread
         self.first_show=True
 
@@ -290,6 +302,8 @@ class ShowNepWidget(QWidget):
         if getattr(self, "_validation_model_id", None) is not None or getattr(self, "_validation_draft", None) is not None:
             # Evaluations may have run on the model library page meanwhile.
             self.refresh_validation_chip()
+        if hasattr(self, "nep_model_combo"):
+            self._update_nep_model_combo()
         auto_load_config = Config.getboolean("widget","auto_load",False)
         if not auto_load_config:
             return
@@ -484,6 +498,9 @@ class ShowNepWidget(QWidget):
         self.open_file_action.setEnabled(not busy)
         self.open_ward_labels_action.setEnabled(not busy)
         self.open_folder_action.setEnabled(not busy)
+        if hasattr(self, "default_model_button") and getattr(self, "_available_nep_files", None):
+            self.nep_model_combo.setEnabled(not busy)
+            self._update_default_model_button()
 
         for name in ("previous_structure_button", "next_structure_button", "auto_switch_button", "struct_index_spinbox"):
             widget = getattr(self, name, None)
@@ -493,126 +510,81 @@ class ShowNepWidget(QWidget):
             self._stop_playback()
 
     def _on_nep_model_changed(self, index):
-        """Handle NEP model file switch in the combo box."""
-        # Ignore during initial setup or programmatic updates
-        if getattr(self, '_updating_nep_combo', False):
+        """Apply an explicit model to the open dataset, or save it for the next open."""
+        if self._updating_nep_combo or not 0 <= index < len(self._available_nep_files):
+            return
+        nep_file = self._available_nep_files[index]
+        self._update_default_model_button()
+        data = self.nep_result_data
+        if data is None:
+            self._next_nep_file = nep_file
+            return
+        if self._load_relay is not None:
+            self._select_loaded_model()
             return
 
-        if getattr(self, "_load_relay", None) is not None:
-            self._queue_after_load(lambda: self._on_nep_model_changed(index))
+        if nep_file is _OUTPUTS_ONLY:
+            if not data.outputs_only:
+                self._reload_with_nep_file(str(data.data_xyz_path), nep_file)
             return
 
-        # Preserve current selection for both cached and reloaded paths.
-        selected_indices: list[int] = []
-        if getattr(self, "nep_result_data", None) is not None and hasattr(self.nep_result_data, "select_index"):
-            try:
-                selected_indices = list(self.nep_result_data.select_index)
-            except Exception:
-                selected_indices = []
-
-        # Try use cached dataset first
-        if hasattr(self, '_nep_result_cache') and hasattr(self, '_available_nep_files') and 0 <= index < len(self._available_nep_files):
-            nep_file = self._available_nep_files[index]
-            key = nep_file.resolve()
-            cached = self._nep_result_cache.get(key)
-            digest = _model_file_digest(nep_file)
-            if (cached is not None and digest
-                    and getattr(cached, "_loaded_model_hash", None) == digest
-                    and getattr(cached, "data_xyz_path", None) == getattr(self.nep_result_data, "data_xyz_path", None)):
-                # Reuse cached result without reloading
-                self.stop_loading()
-                self.nep_result_data = cached
-                self.set_dataset()
-                self._restore_selection(selected_indices)
-                return
-            self._nep_result_cache.pop(key, None)
-
-        if not hasattr(self, 'nep_result_data') or self.nep_result_data is None:
-            return
-        if not hasattr(self, '_available_nep_files') or not self._available_nep_files:
-            return
-        if index < 0 or index >= len(self._available_nep_files):
-            return
-
-        selected_nep_file = self._available_nep_files[index]
-
-        # Check if the selected file is already loaded
-        if hasattr(self.nep_result_data, 'nep_txt_path'):
-            try:
-                if (selected_nep_file.samefile(self.nep_result_data.nep_txt_path)
-                        and getattr(self.nep_result_data, "_loaded_model_hash", None)
-                        == _model_file_digest(selected_nep_file)):
-                    return  # Already using this model
-            except Exception:
-                pass
-
-        # Prefer the actual xyz path over the displayed directory link.
-        xyz_path = getattr(self.nep_result_data, "data_xyz_path", None)
-        if isinstance(xyz_path, Path):
-            current_path = str(xyz_path)
-        else:
-            current_path = self.path_label.getUrl().toLocalFile()
-        if not current_path or not os.path.exists(current_path):
-            return
-
-        # Reload data with the selected NEP file
-        self._reload_with_nep_file(current_path, selected_nep_file)
-
-    def _detect_nep_files(self, directory):
-        """Detect all txt files containing 'nep' in the directory.
-        
-        Parameters
-        ----------
-        directory : str or Path
-            Directory to search for NEP model files.
-            
-        Returns
-        -------
-        list[Path]
-            List of Path objects for detected NEP files, sorted with 'nep.txt' first.
-        """
-        dir_path = Path(directory)
-        if not dir_path.exists() or not dir_path.is_dir():
-            return []
-        
-        # Find all txt files containing 'nep' in filename under the current folder
-        nep_files: list[Path] = []
-        for txt_file in dir_path.glob("*.txt"):
-            if "nep" in txt_file.stem.lower():
-                nep_files.append(txt_file)
-        
-        # Sort: nep.txt first, then others alphabetically
-        def sort_key(path):
-            name = path.name.lower()
-            if name == "nep.txt":
-                return (0, name)
-            return (1, name)
-        
-        nep_files.sort(key=sort_key)
-
-        # Append bundled nep89 as an optional fallback choice (always last).
         try:
-            nep89_path = get_bundled_nep89_path()
-            if nep89_path.exists():
-                already = False
-                for existing in nep_files:
-                    try:
-                        if existing.samefile(nep89_path):
-                            already = True
-                            break
-                    except Exception:
-                        try:
-                            if existing.resolve() == nep89_path.resolve():
-                                already = True
-                                break
-                        except Exception:
-                            continue
-                if not already:
-                    nep_files.append(nep89_path)
-        except Exception:
-            pass
+            if nep_file is None:
+                path = data.data_xyz_path
+                associated = associated_nep_model(path) if path.is_file() else None
+                nep_file = associated or compatible_default_nep_model(
+                    self._preferred_potential(), data.structure.all_data
+                )
+            else:
+                nep_file = self._checked_potential(nep_file)
+        except (OSError, ValueError) as error:
+            MessageManager.send_warning_message(translate_runtime_error(error))
+            self._select_loaded_model()
+            return
 
-        return nep_files
+        key = nep_file.resolve()
+        digest = _model_file_digest(nep_file)
+        if (data.nep_txt_path is not None and Path(data.nep_txt_path).resolve() == key
+                and digest and getattr(data, "_loaded_model_hash", None) == digest):
+            self._select_loaded_model()
+            return
+        cached = self._nep_result_cache.get(key)
+        if (cached is not None and digest and cached._loaded_model_hash == digest
+                and cached.data_xyz_path == data.data_xyz_path
+                and np.array_equal(cached.structure.now_indices, data.structure.now_indices)):
+            frame = self.struct_index_spinbox.value()
+            cached.apply_selection(data.select_index, "replace")
+            cached.reject_index = set(data.reject_index)
+            self.nep_result_data = cached
+            self.set_dataset(frame_index=frame)
+            self._select_loaded_model()
+            return
+        self._nep_result_cache.pop(key, None)
+        self._reload_with_nep_file(str(data.data_xyz_path), nep_file)
+
+    def _checked_potential(self, path: Path) -> Path:
+        if path in self._library_nep_models:
+            return self._potential_library.open_object(path.name)
+        return path
+
+    def _preferred_potential(self) -> Path:
+        preferred = Config.get("nep", _DEFAULT_NEP_MODEL)
+        default = next((file for file in self._library_nep_models if file.name == preferred), None)
+        if default is not None:
+            try:
+                return self._checked_potential(default)
+            except (OSError, ValueError) as error:
+                MessageManager.send_warning_message(translate_runtime_error(error))
+        return get_bundled_nep89_path()
+
+    def _nep_options_for_open(self, path: Path | None) -> dict[str, Path | bool]:
+        if self._next_nep_file is _OUTPUTS_ONLY or getattr(self.nep_result_data, "outputs_only", False):
+            return {"outputs_only": True}
+        if self._next_nep_file is not None:
+            return {"nep_txt_path": self._checked_potential(self._next_nep_file)}
+        if path is not None and (associated := associated_nep_model(path)) is not None:
+            return {"nep_txt_path": associated}
+        return {"default_nep_path": self._preferred_potential()}
 
     def _create_empty_hint(self, parent) -> QWidget:
         """Build the placeholder shown over the plot area before any data loads."""
@@ -638,51 +610,148 @@ class ShowNepWidget(QWidget):
         layout.addWidget(open_button, 0, Qt.AlignmentFlag.AlignHCenter)
         return hint
 
-    def _update_nep_model_combo(self, directory):
-        """Update the NEP model combo box with available model files.
-        
-        Parameters
-        ----------
-        directory : str or Path
-            Directory containing NEP model files.
-        """
-        self._updating_nep_combo = True
+    def _update_nep_model_combo(self):
+        """Refresh registered versions and potential files next to the current data."""
+        from NepTrainKit.core.validation import ValidationService
+
+        preferred = Config.get("nep", _DEFAULT_NEP_MODEL)
+        data = self.nep_result_data
+        model_path = getattr(data, "nep_txt_path", None)
+        models = {}
+        shortlist = Config.get_section(VIEWER_MODEL_SECTION)
         try:
-            self.nep_model_combo.blockSignals(True)
-            self.nep_model_combo.clear()
-            self._available_nep_files = self._detect_nep_files(directory)
+            service = ValidationService()
+            self._potential_library = service.library
+            projects = {project["id"]: project["name"] for project in service.projects()}
+            records = sorted(service.models(), key=lambda model: not model["starred"])
+            for record in records:
+                project = projects.get(record["project_id"])
+                if project is None or any(
+                    kind in (record["model_kind"] or "") for kind in ("dipole", "polarizability")
+                ):
+                    continue
+                digest = record["content_hash"]
+                if digest != preferred and digest != getattr(model_path, "name", None) and digest not in shortlist:
+                    continue
+                path = service.library.object_path(digest).resolve()
+                if path.is_file():
+                    name = f'{project} / {record["name"]}'
+                    if name in models.values():
+                        name = f"{name} · {path.name[:8]}"
+                    models.setdefault(path, name)
+        except Exception:
+            logger.debug(traceback.format_exc())
+        models = dict(sorted(models.items(), key=lambda item: item[0].name != preferred))
+        self._library_nep_models = models
 
-            # Always show the combo; disable it when there's nothing to switch.
-            # If no models were detected (e.g., invalid dir), fall back to bundled nep89.
-            if not self._available_nep_files:
-                try:
-                    self._available_nep_files = [get_bundled_nep89_path()]
-                except Exception:
-                    self._available_nep_files = []
+        data_path = getattr(data, "data_xyz_path", None)
+        uses_default = data is None or isinstance(data, NepTrainResultData)
+        choices = models.copy() if uses_default else {}
+        model_dir = (
+            data_path.parent if data_path is not None and data_path.is_file()
+            else model_path.parent if isinstance(data, DeepmdResultData) and model_path is not None
+            else None
+        )
+        if model_dir is not None:
+            local = sorted(
+                (file.resolve() for file in model_dir.glob("*.txt")
+                 if "nep" in file.stem.lower() and file.is_file()),
+                key=lambda file: (file.name != "nep.txt", file.name.lower()),
+            )
+            for file in local:
+                choices.setdefault(file, file.name)
+        if model_path is not None and model_path.is_file():
+            choices.setdefault(model_path.resolve(), model_path.name)
+        choices[get_bundled_nep89_path().resolve()] = self.tr("Built-in nep89")
 
-            # Add detected files to combo box (only text, no userData)
-            for nep_file in self._available_nep_files:
-                self.nep_model_combo.addItem(nep_file.name)
-
-            self.nep_model_combo.show()
-            # Enable combo only if multiple files found
-            self.nep_model_combo.setEnabled(len(self._available_nep_files) > 1)
+        if self._next_nep_file is not _OUTPUTS_ONLY and self._next_nep_file not in choices:
+            self._next_nep_file = None
+        combo = self.nep_model_combo
+        self._updating_nep_combo = True
+        blocked = combo.blockSignals(True)
+        try:
+            combo.clear()
+            self._available_nep_files = []
+            if uses_default:
+                default_name = next((name for path, name in models.items() if path.name == preferred), None)
+                automatic = self.tr("Automatic potential")
+                if data is None and default_name is not None:
+                    automatic = self.tr("Automatic · {name}").format(name=default_name)
+                combo.addItem(automatic, FluentIcon.SYNC)
+                self._available_nep_files.append(None)
+                combo.addItem(self.tr("View data only"), FluentIcon.DOCUMENT)
+                self._available_nep_files.append(_OUTPUTS_ONLY)
+            for path, name in choices.items():
+                self._available_nep_files.append(path)
+                if uses_default and path in models and path.name == preferred:
+                    name = self.tr("Default · {name}").format(name=name)
+                combo.addItem(name)
         finally:
-            self.nep_model_combo.blockSignals(False)
+            combo.blockSignals(blocked)
             self._updating_nep_combo = False
+        combo.setVisible(uses_default or isinstance(data, (DeepmdResultData, TaceResultData)))
+        self.default_model_button.setVisible(uses_default)
+        self._select_loaded_model()
 
     def _select_loaded_model(self):
         combo = getattr(self, "nep_model_combo", None)
-        model_path = getattr(self.nep_result_data, "nep_txt_path", None)
-        if combo is None or model_path is None:
+        if combo is None or not getattr(self, "_available_nep_files", None):
             return
-        index = next((i for i, path in enumerate(self._available_nep_files)
-                      if path.resolve() == Path(model_path).resolve()), 0)
+        data = self.nep_result_data
+        path = getattr(data, "nep_txt_path", None) if data is not None else self._next_nep_file
+        if getattr(data, "outputs_only", False):
+            path = _OUTPUTS_ONLY
+        if isinstance(path, Path):
+            path = path.resolve()
+        index = next((i for i, file in enumerate(self._available_nep_files) if file == path), 0)
         blocked = combo.blockSignals(True)
         try:
             combo.setCurrentIndex(index)
         finally:
             combo.blockSignals(blocked)
+        self._update_default_model_button()
+
+    def _update_default_model_button(self):
+        combo = self.nep_model_combo
+        index = combo.currentIndex()
+        path = self._available_nep_files[index] if index >= 0 else None
+        label = combo.currentText()
+        if path is None:
+            label_hint = self.tr(
+                "Uses the dataset model or existing results first, then a compatible default potential or built-in nep89."
+            )
+            if not self._library_nep_models:
+                label_hint += "\n" + self.tr("Right-click a saved model in Projects to add it to this list.")
+        elif path is _OUTPUTS_ONLY:
+            label_hint = self.tr("Reads existing NEP outputs and leaves missing plots empty.")
+        else:
+            label_hint = label
+        combo.setToolTip(label_hint)
+        combo.setText(combo.fontMetrics().elidedText(label, Qt.TextElideMode.ElideRight, combo.width() - 42))
+        preferred = Config.get("nep", _DEFAULT_NEP_MODEL)
+        is_default = bool(preferred) and (path is None or path in self._library_nep_models and path.name == preferred)
+        title = self.tr("Clear default potential") if is_default else self.tr("Set as default potential")
+        self.default_model_button.setToolTip(title)
+        self.default_model_button.setAccessibleName(title)
+        self.default_model_button.setEnabled((is_default or path in self._library_nep_models) and not self._is_busy())
+
+    def _toggle_default_potential(self):
+        index = self.nep_model_combo.currentIndex()
+        path = self._available_nep_files[index] if index >= 0 else None
+        preferred = Config.get("nep", _DEFAULT_NEP_MODEL)
+        if preferred and (path is None or path in self._library_nep_models and path.name == preferred):
+            Config.delete("nep", _DEFAULT_NEP_MODEL)
+            self._update_nep_model_combo()
+            return
+        if path not in self._library_nep_models:
+            return
+        try:
+            self._checked_potential(path)
+        except (OSError, ValueError) as error:
+            MessageManager.send_warning_message(translate_runtime_error(error))
+            return
+        Config.set("nep", _DEFAULT_NEP_MODEL, path.name)
+        self._update_nep_model_combo()
 
     def _reload_with_nep_file(self, xyz_path, nep_file):
         """Reload the dataset using a specific NEP model file.
@@ -717,6 +786,8 @@ class ShowNepWidget(QWidget):
         selected_indices = list(self.nep_result_data.select_index) if hasattr(self.nep_result_data, 'select_index') else []
         reject_indices = list(getattr(self.nep_result_data, "reject_index", set()))
         modified_fields = tuple(getattr(self.nep_result_data, "_modified_reference_fields", ()))
+        removed = self.nep_result_data.structure.data.remove_indices.tolist()
+        frame_index = self.struct_index_spinbox.value()
         
         tip = StateToolTip(self.tr("Switching NEP model"), self.tr("Please wait..."), self)
         tip.show()
@@ -734,10 +805,11 @@ class ShowNepWidget(QWidget):
 
             # Rebuild result data with the selected model but reuse structures to avoid re-reading.
             model_type = getattr(self.nep_result_data, "model_type", 0)
-            reload_kwargs = {
-                "structures": prefetched_structures,
-                "nep_txt_path": nep_file,
-            }
+            reload_kwargs = {"structures": prefetched_structures}
+            if nep_file is _OUTPUTS_ONLY:
+                reload_kwargs["outputs_only"] = True
+            else:
+                reload_kwargs["nep_txt_path"] = nep_file
             if (
                 cache_outputs_override is not None
                 and issubclass(dataset_cls, NepTrainResultData)
@@ -758,11 +830,12 @@ class ShowNepWidget(QWidget):
             result_data.set_cache_outputs_override(
                 cache_outputs_override
             )
-            result_data._loaded_model_hash = _model_file_digest(nep_file)
+            result_data._loaded_model_hash = _model_file_digest(result_data.nep_txt_path)
 
             self._start_result_load(result_data, tip, (
                 lambda: result_data.sync_structures(modified_fields),
-                self.set_dataset,
+                lambda: result_data.remove(removed) if removed else None,
+                lambda: self.set_dataset(frame_index=frame_index),
                 lambda: self._restore_reject(reject_indices),
                 lambda: self._restore_selection(selected_indices),
             ))
@@ -770,6 +843,7 @@ class ShowNepWidget(QWidget):
         except Exception as error:
             logger.debug(traceback.format_exc())
             tip.close()
+            self._select_loaded_model()
             MessageManager.send_error_message(
                 self.tr("Failed to switch NEP model") + f": {error}"
             )
@@ -784,7 +858,7 @@ class ShowNepWidget(QWidget):
         """
         if indices and self.nep_result_data:
             try:
-                self.nep_result_data.select(indices)
+                self.graph_widget.canvas.apply_selection_result(indices, "replace")
             except Exception:
                 pass
 
@@ -935,24 +1009,27 @@ class ShowNepWidget(QWidget):
 
         self.dataset_info_label = BodyLabel(self.plot_widget)
         self.dataset_info_label.setFixedHeight(30)
+        self.dataset_info_label.setMinimumWidth(1)
         self.dataset_info_label.setTextFormat(Qt.TextFormat.RichText)
         self.dataset_info_label.setStyleSheet(f"color: {palette.TEXT_SECONDARY}; font-size: 12px;")
 
-        # Create a container for path label and NEP model selector
         self.path_container = QWidget(self.plot_widget)
         self.path_container_layout = QHBoxLayout(self.path_container)
-        # Keep a gap before the counts even when the footer is tight.
-        self.path_container_layout.setContentsMargins(2, 2, 8, 2)
+        self.path_container_layout.setContentsMargins(2, 2, 2, 2)
         self.path_container_layout.setSpacing(6)
-        
+
         self.nep_model_combo = ComboBox(self.path_container)
-        self.nep_model_combo.setToolTip(self.tr("Switch NEP model"))
-        self.nep_model_combo.setFixedWidth(120)
+        self.nep_model_combo.setAccessibleName(self.tr("Potential"))
+        self.nep_model_combo.setFixedWidth(176)
         self.nep_model_combo.installEventFilter(ToolTipFilter(self.nep_model_combo, 300, ToolTipPosition.TOP))
         self.nep_model_combo.currentIndexChanged.connect(self._on_nep_model_changed)
-        # Shown again once a dataset reports its available models.
-        self.nep_model_combo.hide()
-        
+        self.default_model_button = TransparentToolButton(FluentIcon.PIN, self.path_container)
+        self.default_model_button.installEventFilter(
+            ToolTipFilter(self.default_model_button, 300, ToolTipPosition.TOP)
+        )
+        self.default_model_button.clicked.connect(self._toggle_default_potential)
+        self.default_model_button.setEnabled(False)
+
         # Always visible but compact: an icon with a status badge beside the model switcher.
         # The full status is the menu's first line and the tooltip.
         self.validation_button = TransparentDropDownToolButton(FluentIcon.CERTIFICATE, self.path_container)
@@ -975,10 +1052,13 @@ class ShowNepWidget(QWidget):
             [self.validation_save_action, self.validation_star_action, self.validation_scorecard_action]
         )
         self.validation_button.setMenu(self.validation_menu)
-        # Inline badges: a corner badge would be clipped by the 30 px footer.
-        self.validation_count_badge = InfoBadge.error("0", parent=self.path_container)
+        status = QWidget(self.plot_widget)
+        status_layout = QHBoxLayout(status)
+        status_layout.setContentsMargins(0, 2, 0, 2)
+        status_layout.setSpacing(6)
+        self.validation_count_badge = InfoBadge.error("0", parent=status)
         self.validation_count_badge.hide()
-        self.validation_dot_badge = DotInfoBadge.info(parent=self.path_container)
+        self.validation_dot_badge = DotInfoBadge.info(parent=status)
         self.validation_dot_badge.hide()
         self._validation_model_id = None
         self._validation_draft = None
@@ -992,11 +1072,23 @@ class ShowNepWidget(QWidget):
         self.path_label.setSizePolicy(QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Fixed)
         self.path_label.installEventFilter(self)
         self.path_container_layout.addWidget(self.path_label, 1)
-        self.path_container_layout.addWidget(self.nep_model_combo)
-        self.path_container_layout.addWidget(self.validation_button)
-        self.path_container_layout.addWidget(self.validation_count_badge)
-        self.path_container_layout.addWidget(self.validation_dot_badge)
         self.path_container_layout.addStretch()
+        self.path_container_layout.addWidget(self.nep_model_combo)
+        self.path_container_layout.addWidget(self.default_model_button)
+        self.path_container_layout.addWidget(self.validation_button)
+
+        status_layout.addWidget(self.validation_count_badge)
+        status_layout.addWidget(self.validation_dot_badge)
+        status_layout.addWidget(self.dataset_info_label, 1)
+        sample_counts = self.tr(
+            "Orig {orig} | Now {now} | Rm {removed} | Sel {selected} | Rej {rejected}"
+        ).format(orig=8888, now=8888, removed=88, selected=888, rejected=88)
+        self.dataset_info_label.setText(sample_counts)
+        status.setFixedWidth(
+            self.dataset_info_label.sizeHint().width()
+            + self.validation_count_badge.fontMetrics().horizontalAdvance("888") + 26
+        )
+        self.dataset_info_label.clear()
 
         self.plot_widget_layout.addWidget(self.graph_toolbar, 0, 0, 1, 2)
         self.plot_widget_layout.addWidget(frame, 1, 0, 1, 2)
@@ -1004,7 +1096,7 @@ class ShowNepWidget(QWidget):
         self.empty_hint = self._create_empty_hint(self.plot_widget)
         self.plot_widget_layout.addWidget(self.empty_hint, 2, 0, 1, 2)
         self.plot_widget_layout.addWidget(self.path_container, 3, 0, 1, 1)
-        self.plot_widget_layout.addWidget(self.dataset_info_label, 3, 1, 1, 1)
+        self.plot_widget_layout.addWidget(status, 3, 1, 1, 1)
         self.plot_widget_layout.setRowStretch(2, 1)
         self.plot_widget_layout.setColumnStretch(0, 1)
         self.plot_widget_layout.setColumnStretch(1, 0)
@@ -1401,7 +1493,7 @@ class ShowNepWidget(QWidget):
         else:
             self.check_nep_result(path, ward_virial_order=ward_virial_order)
 
-    def set_dataset(self,*args):
+    def set_dataset(self, *args, frame_index: int = 0):
         """Bind the loaded NEP dataset to visual components.
 
         Parameters
@@ -1424,10 +1516,13 @@ class ShowNepWidget(QWidget):
         if not hasattr(self.nep_result_data, "reject_index") or self.nep_result_data.reject_index is None:
             self.nep_result_data.reject_index = set()
         structure_count = int(self.nep_result_data.structure.all_data.shape[0])
-        self.struct_index_spinbox.setMaximum(max(0, structure_count - 1))
-        self.struct_index_spinbox.lineEdit().setText(
-            str(self.struct_index_spinbox.value())
-        )
+        blocked = self.struct_index_spinbox.blockSignals(True)
+        try:
+            self.struct_index_spinbox.setMaximum(max(0, structure_count - 1))
+            self.struct_index_spinbox.setValue(frame_index)
+            self.struct_index_spinbox.lineEdit().setText(str(self.struct_index_spinbox.value()))
+        finally:
+            self.struct_index_spinbox.blockSignals(blocked)
         self.struct_count_label.setText(
             self.tr("/ {count:,} frames").format(count=structure_count)
         )
@@ -1464,7 +1559,8 @@ class ShowNepWidget(QWidget):
         reset_camera_fit = getattr(self.show_struct_widget, "reset_camera_fit", None)
         if callable(reset_camera_fit):
             reset_camera_fit()
-        self.struct_index_spinbox.valueChanged.emit(0)
+        if self.nep_result_data.structure.num:
+            self.show_current_structure(self.struct_index_spinbox.value())
         self._associate_model_version()
 
     def _associate_model_version(self) -> None:
@@ -1767,13 +1863,13 @@ class ShowNepWidget(QWidget):
             if ward_virial_order is not None:
                 result_data = WardReferenceResultData(Path(logical_path), ward_virial_order)
             elif structures is None:
-                result_data = load_result_data(logical_path)  # type: ignore
+                result_data = load_result_data(logical_path, nep_model_options=self._nep_options_for_open)
             else:
                 result_data = NepTrainResultData.from_path(
                     logical_path,
                     structures=list(structures),
-                    nep_txt_path=get_bundled_nep89_path(),
                     cache_outputs=cache_outputs,
+                    **self._nep_options_for_open(None),
                 )
         except DumpImportCancelled:
             self._initial_loading = False
@@ -1811,21 +1907,8 @@ class ShowNepWidget(QWidget):
                 self._set_path_label_text(self.tr("Current file: {file_name}"), file_name=file_name)
                 self.path_label.setUrl(QUrl.fromLocalFile(show_path))
         
-            # Detect and populate NEP model files for combo box
-            model_dir = show_path
-            try:
-                nep_txt_path = getattr(result_data, "nep_txt_path", None)
-                if isinstance(nep_txt_path, Path):
-                    model_dir = str(nep_txt_path.parent)
-            except Exception:
-                model_dir = show_path
-            if isinstance(result_data, WardReferenceResultData):
-                self.nep_model_combo.hide()
-            else:
-                self._update_nep_model_combo(model_dir)
-        
-            self._select_loaded_model()
-        
+            self._next_nep_file = None
+            self._update_nep_model_combo()
 
         tip = StateToolTip(self.tr("Loading"), self.tr("Please wait patiently..."), self)
         tip.show()

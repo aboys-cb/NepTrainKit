@@ -21,9 +21,11 @@ from qfluentwidgets import (
 )
 
 from NepTrainKit import palette
+from NepTrainKit.config import Config
 from NepTrainKit.core import MessageManager
 from NepTrainKit.core.dataset import DatasetManager
 from NepTrainKit.core.dataset.services import ModelItem, ProjectItem
+from NepTrainKit.core.validation.library import VIEWER_DEFAULT_MODEL_OPTION, VIEWER_MODEL_SECTION
 from NepTrainKit.ui.widgets.project_registry import RMSE_COLUMNS, RegistryDelegate, RegistryHeader
 from NepTrainKit.ui.widgets.validation_model_picker import model_role
 from NepTrainKit.ui.dialogs import call_path_dialog
@@ -473,6 +475,9 @@ class ModelItemWidget(QWidget, DatasetManager):
         compare_action = Action(FluentIcon.ADD, "加入验证对比槽", self.menu)
         compare_action.triggered.connect(self.add_to_comparison)
         self.menu.addAction(compare_action)
+        self.viewer_visibility_action = Action(FluentIcon.VIEW, self.tr("Show in Show NEP"), self.menu)
+        self.viewer_visibility_action.triggered.connect(self._toggle_viewer_model_visibility)
+        self.menu.addAction(self.viewer_visibility_action)
         self.menu.addSeparator()
 
         create_action = Action(self.tr("New"), self.menu)
@@ -516,7 +521,28 @@ class ModelItemWidget(QWidget, DatasetManager):
             self._view.clearSelection()
             self._view.setCurrentIndex(QModelIndex())
         self._update_action_state()
+        digest = self._viewer_model_digest()
+        is_default = bool(digest and digest == Config.get("nep", VIEWER_DEFAULT_MODEL_OPTION))
+        self.viewer_visibility_action.setEnabled(bool(digest) and not is_default)
+        shown = is_default or bool(digest and Config.getboolean(VIEWER_MODEL_SECTION, digest))
+        label = self.tr("Hide from Show NEP") if shown else self.tr("Show in Show NEP")
+        self.viewer_visibility_action.setText(label)
         self.menu.exec_(self._view.viewport().mapToGlobal(pos))
+
+    def _viewer_model_digest(self) -> str | None:
+        model = self.model_item_dict.get(self._selected_model_id())
+        if model is None or any(kind in (model.model_kind or "") for kind in ("dipole", "polarizability")):
+            return None
+        return model.content_hash
+
+    def _toggle_viewer_model_visibility(self) -> None:
+        digest = self._viewer_model_digest()
+        if digest is None or digest == Config.get("nep", VIEWER_DEFAULT_MODEL_OPTION):
+            return
+        if Config.getboolean(VIEWER_MODEL_SECTION, digest):
+            Config.delete(VIEWER_MODEL_SECTION, digest)
+        else:
+            Config.set(VIEWER_MODEL_SECTION, digest, True)
 
     def _current_index(self):
         """Return the row selected for toolbar or context-menu actions."""

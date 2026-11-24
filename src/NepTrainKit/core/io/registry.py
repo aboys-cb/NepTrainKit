@@ -5,6 +5,8 @@
 from __future__ import annotations
 
 import importlib
+from collections.abc import Callable
+from pathlib import Path
 from typing import Protocol
 
 from loguru import logger
@@ -99,7 +101,11 @@ def matches_result_loader(path: PathLike) -> bool:
     return False
 
 
-def load_result_data(path: PathLike)->"ResultData"|None:
+def load_result_data(
+    path: PathLike,
+    *,
+    nep_model_options: Callable[[Path], dict[str, Path | bool]] | None = None,
+) -> ResultData | None:
     """
         Load result data for *path* via the first matching loader.
 
@@ -107,6 +113,9 @@ def load_result_data(path: PathLike)->"ResultData"|None:
         ----------
         path : PathLike
             File or directory to be loaded.
+        nep_model_options : callable, optional
+            Configure ordinary NEP input after specialized loaders have had a
+            chance to recognize the dataset.
 
         Returns
         -------
@@ -133,6 +142,11 @@ def load_result_data(path: PathLike)->"ResultData"|None:
             continue
         if not matched:
             continue
+        if nep_model_options is not None and (
+            isinstance(loader, OtherLoader)
+            or isinstance(loader, NepModelTypeLoader) and loader._factory is NepTrainResultData
+        ):
+            return loader.load(candidate, **nep_model_options(candidate))
         try:
             return loader.load(candidate)
         except Exception as error:  # pragma: no cover - defensive
@@ -223,12 +237,12 @@ class NepModelTypeLoader(ResultLoader):
         self.model_type = get_nep_type(dir_path / 'nep.txt')
         return self.model_type in self._types and candidate.suffix.lower() == '.xyz'
 
-    def load(self, path: PathLike,*args, **kwargs):
+    def load(self, path: PathLike, **nep_options):
         """Materialise the configured NEP result loader for ``path``."""
 
         candidate = as_path(path)
         if self._factory is  NepTrainResultData :
-            return self._factory.from_path(str(candidate), model_type=self.model_type)
+            return self._factory.from_path(str(candidate), model_type=self.model_type, **nep_options)
         return self._factory.from_path(str(candidate))
 
 
@@ -246,11 +260,11 @@ class OtherLoader(ResultLoader):
         except Exception:
             return False
 
-    def load(self, path: PathLike):
+    def load(self, path: PathLike, **nep_options):
         """Load NEP results for ``path`` and prompt for importer options if needed."""
         candidate = as_path(path)
 
-        inst = NepTrainResultData.from_path(str(candidate))
+        inst = NepTrainResultData.from_path(str(candidate), **nep_options)
 
         imp_mod = importlib.import_module('.importers', __package__)
         lmp_imp = getattr(imp_mod, 'LammpsDumpImporter', None)

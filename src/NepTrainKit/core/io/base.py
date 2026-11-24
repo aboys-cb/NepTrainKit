@@ -2021,6 +2021,10 @@ class ResultData(DistributionAnalysisMixin, QObject):
             return NepBackend.CPU
         return get_configured_nep_backend()
 
+    def _prepare_load(self) -> bool:
+        """Resolve inputs that require reading structures before calculation."""
+        return False
+
     def load(self):
         """Load structures, descriptors, and dataset arrays in sequence.
         The routine instantiates a calculator (optionally via ``calculator_factory``),
@@ -2028,7 +2032,8 @@ class ResultData(DistributionAnalysisMixin, QObject):
         dataset-specific properties.
         """
         try:
-            if self.nep_txt_path is None:
+            structures_loaded = self._prepare_load()
+            if self.cancel_event.is_set() or self.nep_txt_path is None:
                 self.nep_calc = None
             elif self._can_load_without_calculator():
                 self.nep_calc = None
@@ -2088,8 +2093,8 @@ class ResultData(DistributionAnalysisMixin, QObject):
                             "To enable CUDA, install a Linux CPU+CUDA nep-adapters wheel "
                             "with a compatible NVIDIA driver."
                         )
-            # If subclass overrides load_structures, defer to it; otherwise do cancel-aware read
-            self.load_structures()
+            if not structures_loaded:
+                self.load_structures()
             # Pre-build completer caches so UI mode switching remains smooth for large datasets.
             if not self.cancel_event.is_set():
                 try:

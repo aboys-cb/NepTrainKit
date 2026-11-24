@@ -341,3 +341,60 @@ def test_partial_external_outputs_are_not_overwritten(tmp_path: Path, monkeypatc
         assert "will not overwrite" in str(error)
     else:
         raise AssertionError("partial external outputs must be protected")
+
+
+def test_automatic_preference_checks_all_frames_before_opening_calculator(tmp_path, monkeypatch):
+    from NepTrainKit.core.io import base
+    from NepTrainKit.paths import get_bundled_nep89_path
+
+    preferred = tmp_path / "candidate.txt"
+    shutil.copyfile(Path(__file__).parent / "data" / "nep" / "nep.txt", preferred)
+    path = tmp_path / "custom.xyz"
+    opened = []
+
+    def stop_after_model_selection(*, model_file, **kwargs):
+        opened.append(Path(model_file))
+        raise ValueError("probe ends before prediction")
+
+    monkeypatch.setattr(base, "NepCalculator", stop_after_model_selection)
+    for symbols, expected in ((("Te", "Pb"), preferred), (("Te", "Fe"), get_bundled_nep89_path())):
+        path.write_text("".join(
+            f'1\nLattice="10 0 0 0 10 0 0 0 10" Properties=species:S:1:pos:R:3\n{symbol} 0 0 0\n'
+            for symbol in symbols
+        ))
+        result = NepTrainResultData.from_path(path, default_nep_path=preferred, cache_outputs=False)
+        result.load()
+        assert opened.pop() == expected
+        assert result.nep_txt_path == expected
+        assert result.energy_out_path.parent.name == f"custom_{expected.stem}"
+        assert result.structure.num == 2
+    assert not list(tmp_path.glob("custom_*/"))
+
+
+def test_view_data_only_loads_partial_outputs_without_a_calculator(tmp_path, monkeypatch):
+    from NepTrainKit.core.io import base
+
+    def unexpected_calculator(**kwargs):
+        raise AssertionError("View data only must not create a calculator")
+
+    monkeypatch.setattr(base, "NepCalculator", unexpected_calculator)
+    structures = [_labeled_structure(-2, [[0, 0, 0]])]
+    path = tmp_path / "train.xyz"
+    energy = tmp_path / "energy_train.out"
+    energy.write_text("-2 -2\n")
+    bad_forces = tmp_path / "force_train.out"
+    bad_forces.write_text("1 2 3\n")
+    (tmp_path / "nep.txt").write_text("a deliberately unreadable potential\n")
+    result = NepTrainResultData.from_path(path, structures=structures, outputs_only=True)
+    result.load()
+
+    assert result.load_flag
+    assert result.nep_calc is None
+    assert result.structure.num == 1
+    assert result.energy.num == 1
+    assert result.force.num == result.virial.num == result.stress.num == result.descriptor.num == 0
+    assert all(dataset.x.size == dataset.structure_index.size for dataset in result.datasets)
+    assert not result.force.parity_mode and not result.force.show_rmse
+    assert energy.read_text() == "-2 -2\n"
+    assert bad_forces.read_text() == "1 2 3\n"
+    assert not (tmp_path / "descriptor.out").exists()

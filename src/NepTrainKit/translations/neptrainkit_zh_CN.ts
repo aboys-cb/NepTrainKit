@@ -16206,6 +16206,14 @@ Baseline model: {baseline}</source>
 <context>
     <name>ModelItemWidget</name>
     <message>
+        <source>Show in Show NEP</source>
+        <translation>在 Show NEP 中显示</translation>
+    </message>
+    <message>
+        <source>Hide from Show NEP</source>
+        <translation>从 Show NEP 中隐藏</translation>
+    </message>
+    <message>
         <source>Training set</source>
         <translation>训练集</translation>
     </message>
@@ -17422,6 +17430,10 @@ Done {done}    Pending {pending}    Failed {failed}    Unsupported {unsupported}
 </context>
 <context>
     <name>NepTrainResultData</name>
+    <message>
+        <source>Skipped invalid NEP output {file}.</source>
+        <translation>已跳过格式不匹配的 NEP 输出 {file}。</translation>
+    </message>
     <message>
         <location filename="../core/io/nep.py" line="417" /><location filename="../core/io/nep.py" line="418" />
         <source>Existing NEP outputs do not match the loaded structure order ({reason}). NepTrainKit will recalculate them.</source>
@@ -24063,6 +24075,50 @@ Dataset SHA-256: {data}</source>
 </context>
 <context>
     <name>ShowNepWidget</name>
+    <message>
+        <source>View data only</source>
+        <translation>仅查看数据</translation>
+    </message>
+    <message>
+        <source>Right-click a saved model in Projects to add it to this list.</source>
+        <translation>在项目管理中右键已保存的模型，可将其加入此列表。</translation>
+    </message>
+    <message>
+        <source>Reads existing NEP outputs and leaves missing plots empty.</source>
+        <translation>读取已有的 NEP 输出，缺少输出的子图留空。</translation>
+    </message>
+    <message>
+        <source>Uses the dataset model or existing results first, then a compatible default potential or built-in nep89.</source>
+        <translation>优先使用数据目录自带的势函数或已有结果，其次使用元素匹配的默认势，最后使用内置 nep89。</translation>
+    </message>
+    <message>
+        <source>Automatic potential</source>
+        <translation>自动匹配势函数</translation>
+    </message>
+    <message>
+        <source>Automatic · {name}</source>
+        <translation>自动 · {name}</translation>
+    </message>
+    <message>
+        <source>Built-in nep89</source>
+        <translation>内置 nep89</translation>
+    </message>
+    <message>
+        <source>Clear default potential</source>
+        <translation>取消默认势函数</translation>
+    </message>
+    <message>
+        <source>Default · {name}</source>
+        <translation>默认 · {name}</translation>
+    </message>
+    <message>
+        <source>Potential</source>
+        <translation>势函数</translation>
+    </message>
+    <message>
+        <source>Set as default potential</source>
+        <translation>设为默认势函数</translation>
+    </message>
     <message>
         <location filename="../ui/pages/show_nep.py" line="1701" />
         <source>LAMMPS dump import cancelled.</source>

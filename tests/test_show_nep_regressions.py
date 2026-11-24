@@ -199,6 +199,7 @@ def test_cancelled_switch_restores_loaded_model_label(tmp_path):
     from qfluentwidgets import ComboBox
     viewer = LoadHarness()
     viewer.nep_model_combo = ComboBox(viewer)
+    viewer._update_default_model_button = Mock()
     viewer._available_nep_files = [tmp_path / "A.txt", tmp_path / "B.txt"]
     viewer.nep_model_combo.addItems(["A", "B"])
     viewer.nep_model_combo.setCurrentIndex(1)
@@ -339,7 +340,8 @@ def test_model_reload_keeps_edited_references_even_with_existing_official_output
     data.update_structure_metadata([], {"virial": "[100, 0, 0, 0, 200, 0, 0, 0, 300]"})
     expected = data.virial.all_data[0, data.virial.x_cols].copy()
     viewer = SimpleNamespace(nep_result_data=data, _start_result_load=Mock(),
-        set_dataset=Mock(), _restore_reject=Mock(), _restore_selection=Mock(), tr=lambda text: text)
+        struct_index_spinbox=SimpleNamespace(value=lambda: 0), set_dataset=Mock(),
+        _restore_reject=Mock(), _restore_selection=Mock(), tr=lambda text: text)
     with patch.object(show_nep, "StateToolTip"):
         show_nep.ShowNepWidget._reload_with_nep_file(viewer, str(data.data_xyz_path), data.nep_txt_path)
     reloaded, _, callbacks = viewer._start_result_load.call_args.args

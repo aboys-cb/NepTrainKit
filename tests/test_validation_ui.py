@@ -1113,9 +1113,32 @@ def test_viewer_footer_has_compact_validation_entry(viewer):
     # Nothing is open, so the scorecard would show an unrelated plan.
     assert not viewer.validation_scorecard_action.isEnabled()
     assert viewer.validation_count_badge.isHidden() and viewer.validation_dot_badge.isHidden()
-    # Counts keep their natural width; only the left side stretches.
+    # Counts are the right-hand column.
     layout = viewer.plot_widget_layout
     assert (layout.columnStretch(0), layout.columnStretch(1)) == (1, 0)
+
+
+@pytest.mark.parametrize("width", [1100, 1450])
+def test_viewer_footer_controls_stay_put_as_dataset_status_changes(viewer, width):
+    viewer.resize(width, 720)
+    viewer.show()
+    QApplication.processEvents()
+
+    controls = (viewer.nep_model_combo, viewer.default_model_button, viewer.validation_button)
+
+    def positions():
+        return [widget.mapTo(viewer, widget.rect().topLeft()) for widget in controls]
+
+    initial = positions()
+    assert [point.x() for point in initial] == sorted(point.x() for point in initial)
+    assert initial[-1].x() < viewer.dataset_info_label.mapTo(viewer, viewer.dataset_info_label.rect().topLeft()).x()
+    viewer._set_path_label_text("Current file: {file_name}", file_name="long_training_dataset_name.xyz")
+    viewer.dataset_info_label.setText("Orig 2448 | Now 2440 | Rm 8 | Sel 256 | Rej 100")
+    for badge in ("dot", 123, None):
+        viewer._show_validation_badge(badge)
+        QApplication.processEvents()
+        assert positions() == initial
+        assert viewer.dataset_info_label.width() >= viewer.dataset_info_label.sizeHint().width()
 
 
 def test_viewer_elides_only_the_file_name(viewer):

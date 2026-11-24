@@ -92,6 +92,7 @@ class ModelItem:
     children:list[ModelItem]=field( default_factory=list)
     model_kind: str = ""
     accuracy_source: dict | None = None
+    content_hash: str | None = None
 
 
 @dataclass
@@ -395,7 +396,7 @@ class ModelService:
         return ModelItem(
             model_id=node.id, name=node.name, notes=node.notes, parent_id=node.parent_id,
             project_id=node.project_id, model_type=node.model_type, model_kind=node.model_kind,
-            accuracy_source=node.accuracy_source,
+            accuracy_source=node.accuracy_source, content_hash=node.content_hash,
             data_size=node.data_size, energy=node.energy, force=node.force, virial=node.virial,
             model_path=node.model_path, created_at=node.created_at,
             tags=[TagItem(name=t.name, tag_id=t.id, notes=t.notes, color=t.color) for t in node.tags],

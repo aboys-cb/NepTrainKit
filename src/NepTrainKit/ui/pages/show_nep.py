@@ -859,11 +859,7 @@ class ShowNepWidget(QWidget):
         self.struct_index_spinbox.setFixedWidth(110)
         self.struct_index_spinbox.setAlignment(Qt.AlignCenter)
         self.struct_index_spinbox.setAccessibleName(self.tr("Original structure index"))
-        try:
-            self.struct_index_spinbox.upButton.hide()
-            self.struct_index_spinbox.downButton.hide()
-        except AttributeError:
-            pass
+        self.struct_index_spinbox.setSymbolVisible(False)
         self.struct_index_spinbox.setMinimum(0)
         self.struct_index_spinbox.setMaximum(0)
         self.struct_count_label = CaptionLabel(self.tr("/ 0 frames"), self.struct_index_widget)

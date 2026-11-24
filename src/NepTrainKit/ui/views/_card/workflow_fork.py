@@ -414,13 +414,16 @@ class WorkflowBranchWidget(QFrame):
 
     def eventFilter(self, watched, event):
         if event.type() == QEvent.Type.MouseButtonPress:
+            # Card clicks can propagate to the lane after the inspector is updated.
             if watched in (
                 self.enabled_checkbox,
                 self.badge_label,
                 self.name_edit,
                 self.output_label,
                 self.empty_label,
-                self.cards_host,
+            ) or (
+                watched is self.cards_host
+                and self.cards_host.childAt(event.position().toPoint()) is None
             ):
                 self.branchSelected.emit(self)
             card = next(

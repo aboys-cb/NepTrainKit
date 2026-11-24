@@ -11,7 +11,8 @@ import numpy as np
 import pytest
 from ase import Atoms
 from ase.io import read
-from PySide6.QtCore import QObject, QTimer, Signal, Slot
+from PySide6.QtCore import QObject, QTimer, Qt, Signal, Slot
+from PySide6.QtTest import QTest
 from PySide6.QtWidgets import QApplication, QWidget
 
 from NepTrainKit.config import Config
@@ -22,6 +23,33 @@ from NepTrainKit.core.search import StructureFilterEngine
 from NepTrainKit.core.types import FilterField, SearchType, StructureFilterCondition, StructureFilterSpec, TextMatchMode
 from NepTrainKit.ui.controllers.structure_filter_controller import StructureFilterController
 from NepTrainKit.ui.pages import show_nep
+
+
+def test_frame_index_text_fits_and_accepts_keyboard_input(monkeypatch):
+    app = QApplication.instance()
+    monkeypatch.setattr(show_nep.ShowNepWidget, "show_current_structure", lambda *_: None)
+    host = QWidget()
+    widget = show_nep.ShowNepWidget(host)
+    try:
+        host.resize(1200, 720)
+        widget.resize(host.size())
+        host.show()
+        widget.show()
+        spin = widget.struct_index_spinbox
+        spin.setEnabled(True)
+        spin.setMaximum(2447)
+        spin.setValue(2447)
+        app.processEvents()
+        editor = spin.lineEdit()
+        assert editor.width() >= editor.fontMetrics().horizontalAdvance("2447") + 4
+
+        editor.selectAll()
+        QTest.keyClicks(editor, "1097")
+        QTest.keyClick(editor, Qt.Key.Key_Return)
+        assert spin.value() == 1097
+    finally:
+        host.close()
+        host.deleteLater()
 
 
 class LoadHarness(show_nep.ShowNepWidget):

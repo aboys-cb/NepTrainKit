@@ -716,6 +716,10 @@ def test_clicking_empty_fork_lane_selects_it_for_the_next_card():
 
     assert fork.branches[0].cards == []
     assert target.cards == [inserted]
+    QTest.mouseClick(target.name_edit, Qt.MouseButton.LeftButton)
+    QTest.mouseClick(inserted.headerLabel, Qt.MouseButton.LeftButton)
+    app.processEvents()
+    assert area.guidance_panel._editor_widget is inserted.setting_widget
     _dispose(area)
 
 
@@ -817,7 +821,10 @@ def test_structural_headers_and_arrows_toggle_both_directions_manually():
 
 def test_group_nested_in_fork_keeps_group_context_and_manual_toggle():
     app = _app()
-    area = MakeWorkflowArea()
+    page = MakeDataWidget()
+    area = page.workspace_card_widget
+    page.resize(1500, 900)
+    page.show()
     fork = WorkflowFork()
     area.add_card(fork)
     target = fork.branches[0]
@@ -856,10 +863,15 @@ def test_group_nested_in_fork_keeps_group_context_and_manual_toggle():
     assert group.card_list == [first, second]
     assert all(card._group_tile_enabled for card in group.card_list)
 
-    area.select_card(first, expand=True)
-    app.processEvents()
-    assert fork.window_state == "expand"
-    assert group.window_state == "expand"
+    for width, child in ((1151, first), (1500, second), (1151, first)):
+        page.resize(width, 900)
+        app.processEvents()
+        area.scroll_area.ensureWidgetVisible(child)
+        QTest.mouseClick(child.headerLabel, Qt.MouseButton.LeftButton)
+        app.processEvents()
+        assert fork.window_state == "expand"
+        assert group.window_state == "expand"
+        assert area.guidance_panel._editor_widget is child.setting_widget
 
     payload = fork.to_dict()
     restored = WorkflowFork()
@@ -872,7 +884,7 @@ def test_group_nested_in_fork_keeps_group_context_and_manual_toggle():
     ]
     assert all(card._group_tile_enabled for card in restored_group.card_list)
     _dispose(restored)
-    _dispose(area)
+    _dispose(page)
 
 
 def test_group_inside_fork_runs_as_one_branch_pipeline_stage():

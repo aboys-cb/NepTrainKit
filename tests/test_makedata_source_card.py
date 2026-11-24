@@ -13,6 +13,7 @@ if str(SRC_PATH) not in sys.path:
     sys.path.insert(0, str(SRC_PATH))
 
 from PySide6.QtCore import QEventLoop, QTimer
+from PySide6.QtTest import QSignalSpy
 from PySide6.QtWidgets import QApplication
 
 from NepTrainKit.ui.pages.makedata import MakeDataWidget
@@ -25,17 +26,27 @@ class TestMakeDataSourceCard(unittest.TestCase):
 
     def test_run_source_card_without_input_dataset(self):
         widget = MakeDataWidget()
+        self.addCleanup(widget.deleteLater)
+        self.addCleanup(widget.stop_run_card)
         widget.add_card("CrystalPrototypeBuilderCard")
         self.assertEqual(len(widget.workspace_card_widget.cards), 1)
 
         card = widget.workspace_card_widget.cards[0]
+        completion = QSignalSpy(card.runFinishedSignal)
         loop = QEventLoop()
         card.runFinishedSignal.connect(loop.quit)
-        QTimer.singleShot(5000, loop.quit)
+        deadline = QTimer(loop)
+        deadline.setSingleShot(True)
+        deadline.timeout.connect(loop.quit)
 
         widget.run_card()
-        loop.exec()
+        if not completion.count():
+            deadline.start(30_000)
+            loop.exec()
+            deadline.stop()
 
+        self.assertEqual(completion.count(), 1, "Expected one source-card completion within 30 s")
+        self.assertEqual(card.run_outcome, "succeeded")
         self.assertGreater(len(card.result_dataset), 0)
         self.assertTrue(widget.setting_group.view_output_button.isEnabled())
         self.assertEqual(widget._last_completed_card_index, 0)

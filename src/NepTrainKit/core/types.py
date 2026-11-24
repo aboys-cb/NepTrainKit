@@ -550,7 +550,7 @@ class Pens(Base):
         training_overlay = _get_color("plot", "training_overlay_edge_color", palette.PLOT_TRAINING_OVERLAY_EDGE)
         loaded_overlay = _get_color("plot", "loaded_overlay_edge_color", palette.PLOT_LOADED_OVERLAY_EDGE)
 
-        cls.Default = mkPen(color=edge, width=0.8)
+        cls.Default = mkPen(color=edge, width=1.4)
         cls.Energy = cls.Default
         cls.Force = cls.Default
         cls.Virial = cls.Default

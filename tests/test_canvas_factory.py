@@ -721,6 +721,23 @@ class TestCanvasFactory(unittest.TestCase):
         with patch.object(plot._preview_image, "set_data", side_effect=AssertionError("cached preview image should be reused")):
             canvas._render_plot(plot, dataset, False)
 
+    def test_vispy_preview_sparse_points_survive_compact_sampling(self):
+        cache = vispy_canvas.DatasetGpuCache()
+        dataset = NepPlotData([[0, 0], [0.31, 0.7], [1, 1]], title="descriptor")
+        image, _, _, counts = cache.preview(dataset, (0.18, 0.44, 0.66, 1.0), False)
+        height, width = counts.shape
+        sample_x = ((np.arange(64) + 0.5) * width / 64).astype(int)
+        sample_y = ((np.arange(52) + 0.5) * height / 52).astype(int)
+        for y, x in np.argwhere(counts):
+            nearby_x = sample_x[np.abs(sample_x - x) <= 5]
+            nearby_y = sample_y[np.abs(sample_y - y) <= 3]
+            self.assertGreaterEqual(image[..., 3][np.ix_(nearby_y, nearby_x)].max(), 180)
+
+        single = NepPlotData([[1.0, 1.0]], title="descriptor")
+        _, x_range, y_range, _ = cache.preview(single, (0.18, 0.44, 0.66, 1.0), False)
+        self.assertLess(x_range[0], 1.0)
+        self.assertGreater(y_range[1], 1.0)
+
     def test_vispy_preview_does_not_compute_rmse(self):
         canvas = canvas_factory._create_vispy_result_canvas(None)
         canvas.init_axes(1)
@@ -1025,20 +1042,20 @@ class TestCanvasFactory(unittest.TestCase):
         plot = PreviewPlot()
         plot._scatter = None
         plot._preview_image = object()
-        plot._preview_image_source = np.zeros((10, 10, 4), dtype=np.uint8)
-        plot._preview_image_source[..., 3] = 120
-        plot._preview_image_range = ((0.0, 9.0), (0.0, 9.0))
+        # The two rightmost points share part of the enlarged marker footprint.
+        values = np.array([*range(9), 8.04], dtype=np.float64)
+        dataset = NepPlotData(np.column_stack((values, values)), title="force")
+        base, x_range, y_range, counts = canvas._dataset_cache.preview(
+            dataset, (0.0, 0.0, 1.0, 1.0), True
+        )
+        plot._preview_image_source = base
+        plot._preview_image_range = (x_range, y_range)
+        plot._preview_counts = counts
         plot._full_detail = False
         plot.convert_color = MagicMock(return_value=(1.0, 0.0, 0.0, 1.0))
         plot.set_overlay_image = MagicMock()
         plot.set_overlay_positions = MagicMock()
 
-        dataset = SimpleNamespace(
-            title="force",
-            x=np.arange(10, dtype=np.float32),
-            y=np.arange(10, dtype=np.float32),
-            structure_index=np.arange(10, dtype=np.int32),
-        )
         canvas.axes_list = [plot]
         canvas.nep_result_data = SimpleNamespace(select_index=set(range(9)), reject_index=set())
         with patch.object(canvas, "get_axes_dataset", return_value=dataset):
@@ -1047,8 +1064,10 @@ class TestCanvasFactory(unittest.TestCase):
         plot.set_overlay_image.assert_called_once()
         plot.set_overlay_positions.assert_not_called()
         image = plot.set_overlay_image.call_args.args[1]
-        self.assertGreater(int(image[0, 0, 3]), 0)
-        self.assertEqual(int(image[9, 9, 3]), 0)
+        pixels = canvas._dataset_cache.preview_pixels(values[:9], values[:9], x_range, y_range)
+        selected_counts = np.bincount(pixels, minlength=counts.size).reshape(counts.shape)
+        np.testing.assert_array_equal(image[..., 3], canvas._dataset_cache.preview_alpha(selected_counts, 1.0))
+        self.assertLess(np.count_nonzero(image[..., 3]), np.count_nonzero(base[..., 3]))
 
     def test_vispy_overlay_cache_signature_reuses_nep_plotdata_properties(self):
         canvas = canvas_factory._create_vispy_result_canvas(None)

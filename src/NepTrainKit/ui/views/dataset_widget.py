@@ -421,12 +421,51 @@ class ModelItemWidget(QWidget, DatasetManager):
 
     def show_role_menu(self, key, position):
         menu = QMenu(self)
+        menu.setStyleSheet(f"""
+            QMenu {{
+                background: {palette.SURFACE};
+                border: 1px solid {palette.BORDER_STRONG};
+                border-radius: 9px;
+                padding: 5px;
+            }}
+            QMenu::item {{
+                border-radius: 5px;
+                color: {palette.TEXT_PRIMARY};
+                margin: 1px 2px;
+                padding: 6px 14px 6px 28px;
+            }}
+            QMenu::item:selected {{ background: {palette.ACCENT_SOFT}; }}
+            QMenu::item:disabled {{ color: {palette.TEXT_MUTED}; }}
+            QMenu::separator {{
+                background: {palette.BORDER};
+                height: 1px;
+                margin: 4px 6px;
+            }}
+        """)
         role = self.role(key)
-        for value, label in (("current", self.tr("Set as current")), ("baseline", self.tr("Set as baseline")),
-                             ("compare", self.tr("Add to comparison")), ("hidden", self.tr("Remove from comparison"))):
-            action = menu.addAction(label)
+        for value, icon, label in (
+            ("current", FluentIcon.PLAY, self.tr("Set as current")),
+            ("baseline", FluentIcon.PIN, self.tr("Set as baseline")),
+            ("compare", FluentIcon.ADD, self.tr("Add to comparison")),
+            ("hidden", FluentIcon.REMOVE, self.tr("Remove from comparison")),
+        ):
+            action = Action(icon, label, menu)
             action.setEnabled(value != role and (value != "baseline" or self.suite_filter.currentData() is not None))
             action.triggered.connect(lambda checked=False, v=value: self.roleRequested.emit(key, v))
+            menu.addAction(action)
+        menu.addSeparator()
+        digest = self._viewer_model_digest(key)
+        is_default = bool(digest and digest == Config.get("nep", VIEWER_DEFAULT_MODEL_OPTION))
+        shown = is_default or bool(digest and Config.getboolean(VIEWER_MODEL_SECTION, digest))
+        if is_default:
+            label = self.tr("Show in Show NEP (default potential)")
+        else:
+            label = self.tr("Hide from Show NEP") if shown else self.tr("Show in Show NEP")
+        visibility = Action(FluentIcon.HIDE if shown and not is_default else FluentIcon.VIEW, label, menu)
+        visibility.setEnabled(bool(digest) and not is_default)
+        visibility.triggered.connect(lambda: self._set_viewer_model_visibility(key, not shown))
+        menu.addAction(visibility)
+
         menu.exec(position)
         menu.deleteLater()
 
@@ -475,9 +514,6 @@ class ModelItemWidget(QWidget, DatasetManager):
         compare_action = Action(FluentIcon.ADD, "加入验证对比槽", self.menu)
         compare_action.triggered.connect(self.add_to_comparison)
         self.menu.addAction(compare_action)
-        self.viewer_visibility_action = Action(FluentIcon.VIEW, self.tr("Show in Show NEP"), self.menu)
-        self.viewer_visibility_action.triggered.connect(self._toggle_viewer_model_visibility)
-        self.menu.addAction(self.viewer_visibility_action)
         self.menu.addSeparator()
 
         create_action = Action(self.tr("New"), self.menu)
@@ -521,28 +557,22 @@ class ModelItemWidget(QWidget, DatasetManager):
             self._view.clearSelection()
             self._view.setCurrentIndex(QModelIndex())
         self._update_action_state()
-        digest = self._viewer_model_digest()
-        is_default = bool(digest and digest == Config.get("nep", VIEWER_DEFAULT_MODEL_OPTION))
-        self.viewer_visibility_action.setEnabled(bool(digest) and not is_default)
-        shown = is_default or bool(digest and Config.getboolean(VIEWER_MODEL_SECTION, digest))
-        label = self.tr("Hide from Show NEP") if shown else self.tr("Show in Show NEP")
-        self.viewer_visibility_action.setText(label)
         self.menu.exec_(self._view.viewport().mapToGlobal(pos))
 
-    def _viewer_model_digest(self) -> str | None:
-        model = self.model_item_dict.get(self._selected_model_id())
+    def _viewer_model_digest(self, key: int) -> str | None:
+        model = self.model_item_dict.get(key)
         if model is None or any(kind in (model.model_kind or "") for kind in ("dipole", "polarizability")):
             return None
         return model.content_hash
 
-    def _toggle_viewer_model_visibility(self) -> None:
-        digest = self._viewer_model_digest()
+    def _set_viewer_model_visibility(self, key: int, visible: bool) -> None:
+        digest = self._viewer_model_digest(key)
         if digest is None or digest == Config.get("nep", VIEWER_DEFAULT_MODEL_OPTION):
             return
-        if Config.getboolean(VIEWER_MODEL_SECTION, digest):
-            Config.delete(VIEWER_MODEL_SECTION, digest)
-        else:
+        if visible:
             Config.set(VIEWER_MODEL_SECTION, digest, True)
+        else:
+            Config.delete(VIEWER_MODEL_SECTION, digest)
 
     def _current_index(self):
         """Return the row selected for toolbar or context-menu actions."""

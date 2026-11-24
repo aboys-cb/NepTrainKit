@@ -5,7 +5,7 @@ from types import SimpleNamespace
 from unittest.mock import MagicMock, Mock, patch
 
 import pytest
-from PySide6.QtCore import Qt
+from PySide6.QtCore import QPoint, Qt
 from PySide6.QtTest import QTest
 from PySide6.QtWidgets import QWidget
 from qfluentwidgets import ComboBox
@@ -82,20 +82,41 @@ def test_viewer_chooses_saved_potentials_and_persists_only_explicit_default(
     saved = service.capture_model(model_file, name="Baseline")
     snapshot = service.library.object_path(saved["content_hash"])
     model_file.write_text(MODEL_HEADER + "next model")
-    service.capture_model(model_file, name="Next")
+    other = service.capture_model(model_file, name="Next")
     monkeypatch.setenv("NEPTRAINKIT_LIBRARY", str(service.library.root))
     viewer = show_nep.ShowNepWidget()
     manager = dataset_widget.ModelItemWidget()
     digest = saved["content_hash"]
     key = show_nep._DEFAULT_NEP_MODEL
     manager.model_item_dict[saved["id"]] = SimpleNamespace(model_kind="nep4", content_hash=digest)
-    monkeypatch.setattr(manager, "_selected_model_id", lambda: saved["id"])
+    manager.model_item_dict[other["id"]] = SimpleNamespace(model_kind="nep4", content_hash=other["content_hash"])
+    monkeypatch.setattr(manager, "_selected_model_id", lambda: other["id"])
+
+    def open_row_menu(*, shown, enabled=True):
+        class InspectMenu(dataset_widget.QMenu):
+            def exec(self, _position):
+                visibility = self.actions()[-1]
+                icon = dataset_widget.FluentIcon.HIDE if shown and enabled else dataset_widget.FluentIcon.VIEW
+                assert visibility.fluentIcon is icon
+                assert not visibility.isCheckable()
+                if not enabled:
+                    assert visibility.text() == "Show in Show NEP (default potential)"
+                else:
+                    assert visibility.text() == ("Hide from Show NEP" if shown else "Show in Show NEP")
+                assert visibility.isEnabled() == enabled
+                if enabled:
+                    visibility.trigger()
+
+        with patch.object(dataset_widget, "QMenu", InspectMenu):
+            manager.show_role_menu(saved["id"], QPoint())
+
     try:
         raw = tmp_path / "raw.xyz"
         assert viewer.nep_model_combo.isEnabled()
         assert snapshot not in viewer._available_nep_files
         assert viewer._nep_options_for_open(raw) == {"default_nep_path": show_nep.get_bundled_nep89_path()}
-        manager.viewer_visibility_action.trigger()
+        open_row_menu(shown=False)
+        assert Config.get(VIEWER_MODEL_SECTION, other["content_hash"]) is None
         viewer._update_nep_model_combo()
         assert snapshot in viewer._available_nep_files
         assert len(viewer._library_nep_models) == 1
@@ -105,6 +126,7 @@ def test_viewer_chooses_saved_potentials_and_persists_only_explicit_default(
         assert Config.get("nep", key) is None
         QTest.mouseClick(viewer.default_model_button, Qt.MouseButton.LeftButton)
         assert Config.get("nep", key) == digest
+        open_row_menu(shown=True, enabled=False)
 
         viewer.nep_model_combo.setCurrentIndex(0)
         assert viewer._nep_options_for_open(None) == {"default_nep_path": snapshot}
@@ -114,7 +136,7 @@ def test_viewer_chooses_saved_potentials_and_persists_only_explicit_default(
         assert viewer._nep_options_for_open(raw) == {"nep_txt_path": local}
         QTest.mouseClick(viewer.default_model_button, Qt.MouseButton.LeftButton)
         assert Config.get("nep", key) is None
-        manager.viewer_visibility_action.trigger()
+        open_row_menu(shown=True)
         viewer._update_nep_model_combo()
         assert snapshot not in viewer._available_nep_files
 

@@ -16214,6 +16214,10 @@ Baseline model: {baseline}</source>
         <translation>从 Show NEP 中隐藏</translation>
     </message>
     <message>
+        <source>Show in Show NEP (default potential)</source>
+        <translation>在 Show NEP 中显示（默认势函数）</translation>
+    </message>
+    <message>
         <source>Training set</source>
         <translation>训练集</translation>
     </message>
@@ -24080,8 +24084,8 @@ Dataset SHA-256: {data}</source>
         <translation>仅查看数据</translation>
     </message>
     <message>
-        <source>Right-click a saved model in Projects to add it to this list.</source>
-        <translation>在项目管理中右键已保存的模型，可将其加入此列表。</translation>
+        <source>Use the comparison menu on a saved model in Projects to add it to this list.</source>
+        <translation>在项目管理中打开已保存模型的对比下拉，可将其加入此列表。</translation>
     </message>
     <message>
         <source>Reads existing NEP outputs and leaves missing plots empty.</source>

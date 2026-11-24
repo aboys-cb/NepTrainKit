@@ -721,7 +721,7 @@ class ShowNepWidget(QWidget):
                 "Uses the dataset model or existing results first, then a compatible default potential or built-in nep89."
             )
             if not self._library_nep_models:
-                label_hint += "\n" + self.tr("Right-click a saved model in Projects to add it to this list.")
+                label_hint += "\n" + self.tr("Use the comparison menu on a saved model in Projects to add it to this list.")
         elif path is _OUTPUTS_ONLY:
             label_hint = self.tr("Reads existing NEP outputs and leaves missing plots empty.")
         else:

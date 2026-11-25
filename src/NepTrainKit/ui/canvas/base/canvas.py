@@ -53,6 +53,9 @@ def dataset_axis_labels(dataset) -> tuple[str | None, str | None]:
     if x_label or y_label:
         return x_label, y_label
     labels = _parity_axis_labels(str(getattr(dataset, "title", "") or ""))
+    if getattr(dataset, "prediction_only", False):
+        label = labels[1] if labels else _tr("Predicted value")
+        return label, label
     return labels if labels is not None else (None, None)
 
 

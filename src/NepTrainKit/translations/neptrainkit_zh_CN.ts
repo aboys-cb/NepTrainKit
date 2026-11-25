@@ -1738,6 +1738,10 @@ Fixed periodic reference structures; keep input magnetic order and moment magnit
 <context>
     <name>CanvasBase</name>
     <message>
+        <source>Predicted value</source>
+        <translation>预测值</translation>
+    </message>
+    <message>
         <location filename="../ui/canvas/base/canvas.py" line="25" />
         <source>Reference energy (eV/atom)</source>
         <translation>参考能量 (eV/atom)</translation>

@@ -227,6 +227,38 @@ def small_data(tmp_path):
     return data
 
 
+@pytest.mark.parametrize(("scope", "entry"), [
+    ("all", "export_all_structures"),
+    ("active", "export_active_structures"),
+    ("selected", "export_selected_structures"),
+    ("removed", "export_removed_structures"),
+])
+@pytest.mark.parametrize("fmt", ["xyz", "deepmd/npy/mixed"])
+def test_show_nep_export_entries_dispatch_the_chosen_scope(scope, entry, fmt, tmp_path):
+    data = SimpleNamespace(
+        structure=SimpleNamespace(now_data=[object()], remove_data=[object()]),
+        select_index={0}, prepare_export=Mock(),
+    )
+    viewer = SimpleNamespace(
+        nep_result_data=data, _dataset_ready=lambda: True,
+        _choose_export_format=lambda: (fmt, False, 16),
+    )
+    viewer._export_structures = show_nep.ShowNepWidget._export_structures.__get__(viewer)
+    with (
+        patch.object(show_nep, "BackgroundTask") as worker,
+        patch.object(show_nep, "call_path_dialog", return_value=str(tmp_path)) as dialog,
+    ):
+        getattr(show_nep.ShowNepWidget, entry)(viewer)
+
+    npy = fmt == "deepmd/npy/mixed"
+    data.prepare_export.assert_called_once_with(scope, **({"npy": True} if npy else {}))
+    assert dialog.call_args.args[2] == ("directory" if npy or scope == "all" else "file")
+    if not npy and scope != "all":
+        assert dialog.call_args.kwargs["default_filename"] == f"{scope}_structures.xyz"
+    options = {"npy_format": "mixed", "group_by_config_type": False, "mixed_atom_numb_pad": 16} if npy else {}
+    worker.return_value.start_work.assert_called_once_with(data.prepare_export.return_value, str(tmp_path), **options)
+
+
 @pytest.mark.parametrize("scope,npy", [(scope, npy) for scope in ("selected", "active", "removed", "all", "current")
                                      for npy in (False, True) if scope != "current" or npy])
 def test_export_snapshot_freezes_frames_masks_labels_and_type_map(small_data, tmp_path, scope, npy):

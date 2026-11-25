@@ -15,7 +15,6 @@ import os
 import json
 import threading
 import re
-import shutil
 import traceback
 from collections import Counter
 from functools import cached_property, partial
@@ -285,12 +284,7 @@ class NepData:
         data = self.now_data
         if not data.size:
             return float("nan")
-        left, right = data[:, : self.cols], data[:, self.cols :]
-        rmse = get_rmse(left, right)
-        if np.isfinite(rmse):
-            return rmse
-        valid = np.isfinite(left) & np.isfinite(right)
-        return get_rmse(left[valid], right[valid]) if valid.any() else float("nan")
+        return get_rmse(data[:, : self.cols], data[:, self.cols :])
     def get_formart_rmse(self) -> str:  # noqa: D401 - keep legacy name
         """Return the formatted RMSE string with units inferred from ``title``."""
         rmse = self.get_rmse()
@@ -2530,6 +2524,10 @@ class ResultData(DistributionAnalysisMixin, QObject):
         )
         for export_target, structures in exports:
             if not structures:
+                if export_target.exists() or export_target.is_symlink():
+                    MessageManager.send_warning_message(self.tr(
+                        "Skipped empty DeepMD export group. Existing files were kept: {path}"
+                    ).format(path=export_target))
                 continue
             save_npy_structure(
                 str(export_target),
@@ -2539,15 +2537,6 @@ class ResultData(DistributionAnalysisMixin, QObject):
                 group_by_config_type=group_by_config_type,
                 mixed_atom_numb_pad=mixed_atom_numb_pad,
             )
-        for export_target, structures in exports:
-            if structures or not export_target.exists():
-                continue
-            if export_target.is_symlink() or not export_target.is_dir():
-                raise FileExistsError(
-                    "Empty DeepMD export target is not a removable directory: "
-                    f"{export_target}"
-                )
-            shutil.rmtree(export_target)
         MessageManager.send_info_message(f"File exported to: {target}")
     def export_model_xyz(self, save_path: str | Path) -> None:
         """Export active and removed structures into ``save_path`` folder."""

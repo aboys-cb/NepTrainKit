@@ -210,17 +210,6 @@ class CellStrainCard(MakeDataCard):
     def _custom_axes_from_core(text: str) -> str:
         return text.strip().upper().translate(str.maketrans("XYZ", "ABC")).lower()
 
-    @staticmethod
-    def _dataset_count(dataset) -> int:
-        if dataset is None:
-            return 0
-        if hasattr(dataset, "arrays") and hasattr(dataset, "get_chemical_symbols"):
-            return 1
-        try:
-            return len(dataset)
-        except TypeError:
-            return 0
-
     def set_preview_input_count(self, count: int | None) -> None:
         self._preview_input_count = None if count is None else max(0, int(count))
         self.refresh_compact_presentation()

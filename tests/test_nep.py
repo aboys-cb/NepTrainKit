@@ -95,7 +95,7 @@ class TestNepTrainResultData( unittest.TestCase):
         self.assertEqual(len(good), 23)
         self.assertEqual(len(removed), 2)
 
-    def test_export_model_npy_skips_empty_removed_dataset_and_clears_stale_output(self):
+    def test_export_model_npy_skips_empty_removed_dataset_and_preserves_existing_output(self):
         tmp_dir = self._make_nep_workdir()
         local_train = os.path.join(tmp_dir, "train.xyz")
         result = NepTrainResultData.from_path(local_train)
@@ -105,11 +105,15 @@ class TestNepTrainResultData( unittest.TestCase):
         stale_removed.mkdir()
         (stale_removed / "stale.txt").write_text("old", encoding="utf8")
 
-        with patch.object(MessageManager, "send_info_message") as send_info:
+        with (
+            patch.object(MessageManager, "send_info_message") as send_info,
+            patch.object(MessageManager, "send_warning_message") as send_warning,
+        ):
             result.export_model_npy(tmp_dir, group_by_config_type=False)
 
         self.assertTrue((Path(tmp_dir) / "export_good_model").is_dir())
-        self.assertFalse(stale_removed.exists())
+        self.assertEqual((stale_removed / "stale.txt").read_text(encoding="utf8"), "old")
+        self.assertIn(str(stale_removed), send_warning.call_args.args[0])
         send_info.assert_called_once_with(f"File exported to: {tmp_dir}")
 
     def _make_nep_workdir(self) -> str:
@@ -149,6 +153,7 @@ class TestNepTrainResultData( unittest.TestCase):
                 prepare_export=MagicMock(return_value=export_method),
             ),
         )
+        widget._export_structures = MethodType(show_nep_module.ShowNepWidget._export_structures, widget)
         worker = MagicMock()
         with (
             patch.object(show_nep_module, "BackgroundTask", return_value=worker),

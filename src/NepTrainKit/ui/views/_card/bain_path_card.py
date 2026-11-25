@@ -155,17 +155,6 @@ class BainPathCard(MakeDataCard):
         self._on_coordinate_changed()
         self._on_mode_changed()
 
-    @staticmethod
-    def _dataset_count(dataset) -> int:
-        if dataset is None:
-            return 0
-        if hasattr(dataset, "arrays") and hasattr(dataset, "get_chemical_symbols"):
-            return 1
-        try:
-            return len(dataset)
-        except TypeError:
-            return 0
-
     def set_dataset(self, dataset) -> None:
         super().set_dataset(dataset)
         self._refresh_preview()

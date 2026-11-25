@@ -100,17 +100,6 @@ class ShearMatrixCard(MakeDataCard):
         frame.set_input_value([-2.0, 2.0, 2.0])
         return frame
 
-    @staticmethod
-    def _dataset_count(dataset) -> int:
-        if dataset is None:
-            return 0
-        if hasattr(dataset, "arrays") and hasattr(dataset, "get_chemical_symbols"):
-            return 1
-        try:
-            return len(dataset)
-        except TypeError:
-            return 0
-
     def _on_mode_changed(self, *_args) -> None:
         if combo_value(self.mode_combo, "symmetric") == "symmetric":
             self.xy_field.set_label(self.tr("εxy tensor component"))

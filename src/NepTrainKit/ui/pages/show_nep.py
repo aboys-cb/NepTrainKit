@@ -1257,154 +1257,63 @@ class ShowNepWidget(QWidget):
         self.export_all_structures()
 
     def export_all_structures(self):
-        """Export active + removed structures in either XYZ or deepmd/npy format."""
-        if not self._dataset_ready():
-            MessageManager.send_info_message(self.tr("NEP data has not been loaded yet!"))
-            return
-        data = self.nep_result_data
-        choice = self._choose_export_format()
-        if choice is None:
-            return
-        fmt, group_by_config_type, mixed_atom_numb_pad = choice
-        path = call_path_dialog(self, "Choose a folder save location", "directory")
-        if not path:
-            return
-        thread = BackgroundTask(self, show_tip=True, title="Exporting data")
-        if fmt in {"deepmd/npy", "deepmd/npy/mixed"}:
-            thread.start_work(
-                data.prepare_export("all", npy=True),
-                path,
-                npy_format="mixed" if fmt.endswith("/mixed") else "standard",
-                group_by_config_type=group_by_config_type,
-                mixed_atom_numb_pad=mixed_atom_numb_pad,
-            )
-        else:
-            thread.start_work(data.prepare_export("all"), path)
+        """Export active and removed structures."""
+        self._export_structures("all")
 
     def export_active_structures(self):
-        """Export active (non-removed) structures in either XYZ or deepmd/npy format."""
-        if not self._dataset_ready():
-            MessageManager.send_info_message(self.tr("NEP data has not been loaded yet!"))
-            return
-        try:
-            active = int(self.nep_result_data.structure.now_data.shape[0])
-        except Exception:
-            active = 0
-        if active == 0:
-            MessageManager.send_info_message(self.tr("No active structures to export."))
-            return
-        data = self.nep_result_data
-        choice = self._choose_export_format()
-        if choice is None:
-            return
-        fmt, group_by_config_type, mixed_atom_numb_pad = choice
-        thread = BackgroundTask(self, show_tip=True, title="Exporting data")
-        if fmt in {"deepmd/npy", "deepmd/npy/mixed"}:
-            path = call_path_dialog(self, "Choose a folder save location", "directory")
-            if not path:
-                return
-            thread.start_work(
-                data.prepare_export("active", npy=True),
-                path,
-                npy_format="mixed" if fmt.endswith("/mixed") else "standard",
-                group_by_config_type=group_by_config_type,
-                mixed_atom_numb_pad=mixed_atom_numb_pad,
-            )
-            return
-
-        path = call_path_dialog(
-            self,
-            "Choose a file save location",
-            "file",
-            file_filter="XYZ files (*.xyz)",
-            default_filename="active_structures.xyz",
-        )
-        if not path:
-            return
-        thread.start_work(data.prepare_export("active"), path)
+        """Export active structures."""
+        self._export_structures("active")
 
     def export_selected_structures(self):
-        """Export the currently selected subset of structures.
-
-        Returns
-        -------
-        None
-            Starts a background job to write selected atoms to disk.
-        """
-        if not self._dataset_ready():
-            MessageManager.send_info_message(self.tr("NEP data has not been loaded yet!"))
-            return
-        if len(self.nep_result_data.select_index) == 0:
-            MessageManager.send_info_message(self.tr("Please select some structures first!"))
-            return
-        data = self.nep_result_data
-        choice = self._choose_export_format()
-        if choice is None:
-            return
-        fmt, group_by_config_type, mixed_atom_numb_pad = choice
-        if fmt in {"deepmd/npy", "deepmd/npy/mixed"}:
-            path = call_path_dialog(self, "Choose a folder save location", "directory")
-            if not path:
-                return
-            thread = BackgroundTask(self, show_tip=True, title="Exporting data")
-            thread.start_work(
-                data.prepare_export("selected", npy=True),
-                path,
-                npy_format="mixed" if fmt.endswith("/mixed") else "standard",
-                group_by_config_type=group_by_config_type,
-                mixed_atom_numb_pad=mixed_atom_numb_pad,
-            )
-        else:
-            path = call_path_dialog(
-                self,
-                "Please choose the XYZ file",
-                "file",
-                file_filter="XYZ files (*.xyz)",
-                default_filename="selected_structures.xyz",
-            )
-            if not path:
-                return
-            thread = BackgroundTask(self, show_tip=True, title="Exporting data")
-            thread.start_work(data.prepare_export("selected"), path)
+        """Export the selected structures."""
+        self._export_structures("selected")
 
     def export_removed_structures(self):
-        """Export removed structures in either XYZ or deepmd/npy format."""
+        """Export removed structures."""
+        self._export_structures("removed")
+
+    def _export_structures(self, scope: str):
         if not self._dataset_ready():
             MessageManager.send_info_message(self.tr("NEP data has not been loaded yet!"))
             return
-        removed = int(self.nep_result_data.structure.remove_data.shape[0])
-        if removed == 0:
+        data = self.nep_result_data
+        if scope == "active" and len(data.structure.now_data) == 0:
+            MessageManager.send_info_message(self.tr("No active structures to export."))
+            return
+        if scope == "selected" and not len(data.select_index):
+            MessageManager.send_info_message(self.tr("Please select some structures first!"))
+            return
+        if scope == "removed" and len(data.structure.remove_data) == 0:
             MessageManager.send_info_message(self.tr("No removed structures to export."))
             return
-        data = self.nep_result_data
         choice = self._choose_export_format()
         if choice is None:
             return
         fmt, group_by_config_type, mixed_atom_numb_pad = choice
-        if fmt in {"deepmd/npy", "deepmd/npy/mixed"}:
+        npy = fmt in {"deepmd/npy", "deepmd/npy/mixed"}
+        if npy or scope == "all":
             path = call_path_dialog(self, "Choose a folder save location", "directory")
-            if not path:
-                return
-            thread = BackgroundTask(self, show_tip=True, title="Exporting data")
+        else:
+            path = call_path_dialog(
+                self,
+                "Choose a file save location" if scope == "active" else "Please choose the XYZ file",
+                "file",
+                file_filter="XYZ files (*.xyz)",
+                default_filename=f"{scope}_structures.xyz",
+            )
+        if not path:
+            return
+        thread = BackgroundTask(self, show_tip=True, title="Exporting data")
+        if npy:
             thread.start_work(
-                data.prepare_export("removed", npy=True),
+                data.prepare_export(scope, npy=True),
                 path,
                 npy_format="mixed" if fmt.endswith("/mixed") else "standard",
                 group_by_config_type=group_by_config_type,
                 mixed_atom_numb_pad=mixed_atom_numb_pad,
             )
         else:
-            path = call_path_dialog(
-                self,
-                "Please choose the XYZ file",
-                "file",
-                file_filter="XYZ files (*.xyz)",
-                default_filename="removed_structures.xyz",
-            )
-            if not path:
-                return
-            thread = BackgroundTask(self, show_tip=True, title="Exporting data")
-            thread.start_work(data.prepare_export("removed"), path)
+            thread.start_work(data.prepare_export(scope), path)
 
     def set_work_path(self, path: str, *, ward_virial_order: str | None = None):
         """Validate and load a NEP dataset from the specified path.

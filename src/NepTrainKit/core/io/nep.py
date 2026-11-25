@@ -236,6 +236,7 @@ class NepTrainResultData(ResultData):
         self._force_recalculate_outputs = False
         self._validated_energy_array: npt.NDArray[Any] | None = None
         self._validated_force_array: npt.NDArray[Any] | None = None
+        self._legacy_prediction_outputs: set[str] = set()
     @property
     def datasets(self):
         """Return datasets exposed to the UI in display order."""
@@ -393,6 +394,7 @@ class NepTrainResultData(ResultData):
 
     def _prediction_manifest_alignment_error(self) -> str | None:
         """Validate available NepTrainKit provenance without requiring a calculator."""
+        self._legacy_prediction_outputs.clear()
         if not self.prediction_meta_path.exists():
             return None
         try:
@@ -440,7 +442,40 @@ class NepTrainResultData(ResultData):
             and recorded_model_hash != self._sha256(self.nep_txt_path)
         ):
             return "prediction.meta.json records a different NEP model"
+        if (
+            metadata.get("producer") == "NepTrainKit"
+            and recorded_dataset_hash
+            and not record.get("preserves_missing_references")
+        ):
+            self._legacy_prediction_outputs.update(
+                output["name"] for output in record.get("outputs", []) if output.get("sha256")
+            )
         return None
+
+    def _restore_missing_cached_references(self, outputs) -> None:
+        """Remove fallback values from verified legacy NepTrainKit results in memory."""
+        if not self._legacy_prediction_outputs:
+            return
+        structures = self.structure.now_data
+        frame_bounds = np.arange(len(structures) + 1)
+        atom_bounds = np.r_[0, np.cumsum(self.atoms_num_list)]
+        for path, values, property_name, has_label, per_atom in outputs:
+            if path is None or path.name not in self._legacy_prediction_outputs or not values.size:
+                continue
+            bounds = atom_bounds if per_atom else frame_bounds
+            if values.shape[0] != bounds[-1]:
+                continue
+            reference = values[:, values.shape[1] // 2 :]
+            if property_name == "mforce":
+                reference[np.isnan(self._reference_spin_forces())] = np.nan
+                continue
+            for structure, start, stop in zip(structures, bounds, bounds[1:]):
+                segment = reference[start:stop]
+                if getattr(structure, has_label):
+                    labels = np.asarray(getattr(structure, property_name)).reshape(segment.shape)
+                    segment[np.isnan(labels)] = np.nan
+                else:
+                    segment[:] = np.nan
 
     def _prepare_cached_output_alignment(self) -> None:
         """Validate complete cached outputs before descriptors are attached."""
@@ -557,6 +592,14 @@ class NepTrainResultData(ResultData):
                     f"but {self.data_xyz_path.name} contains {self.atoms_num_list.shape[0]}. "
                     "Move the existing official .out files aside before generating new predictions."
                 )
+            self._restore_missing_cached_references((
+                (self.energy_out_path, energy_array, "energy", "has_energy", False),
+                (self.force_out_path, force_array, "forces", "has_forces", True),
+                (self.virial_out_path, virial_array, "nep_virial", "has_virial", False),
+                (self.stress_out_path, stress_array, "nep_virial", "has_virial", False),
+                (self.spin_force_out_path, spin_force_array, "mforce", None, True),
+                (self.bec_out_path, bec_array, "bec", "has_bec", True),
+            ))
         self._energy_dataset = NepPlotData(energy_array, title="energy")
         default_forces = parse_forces_mode(Config.get("widget", "forces_data", ForcesMode.Raw))
         self._force_vector_dataset = (
@@ -684,7 +727,7 @@ class NepTrainResultData(ResultData):
         """
 
         ref_energies = np.array([s.energy if s.has_energy else np.nan for s in self.structure.now_data], dtype=np.float64)
-        energy_array = concat_nep_dft_array(np.asarray(potentials, dtype=np.float64), ref_energies, quantity="energies")
+        energy_array = concat_nep_dft_array(np.asarray(potentials, dtype=np.float64), ref_energies)
 
         energy_array=energy_array/ self.atoms_num_list.reshape(-1, 1)
         energy_array = np.asarray(energy_array, dtype=get_storage_float_dtype())
@@ -709,7 +752,7 @@ class NepTrainResultData(ResultData):
             s.forces if s.has_forces else np.full((len(s), 3), np.nan, dtype=np.float64)
             for s in self.structure.now_data
         ], dtype=np.float64)
-        forces_array = concat_nep_dft_array(np.asarray(forces, dtype=np.float64), ref_forces, quantity="forces")
+        forces_array = concat_nep_dft_array(np.asarray(forces, dtype=np.float64), ref_forces)
         forces_array = np.asarray(forces_array, dtype=get_storage_float_dtype())
 
         if forces_array.size != 0 and self.cache_outputs_enabled():
@@ -734,7 +777,7 @@ class NepTrainResultData(ResultData):
             s.nep_virial if s.has_virial else np.full(6, np.nan, dtype=np.float64)
             for s in self.structure.now_data
         ], dtype=np.float64)
-        virials_array = concat_nep_dft_array(np.asarray(virials, dtype=np.float64), ref_virials, quantity="virials")
+        virials_array = concat_nep_dft_array(np.asarray(virials, dtype=np.float64), ref_virials)
         virials_array = np.asarray(virials_array, dtype=get_storage_float_dtype())
 
         stress_array = virials_array * coefficient * 160.21766208  # Unit conversion to MPa
@@ -767,7 +810,7 @@ class NepTrainResultData(ResultData):
             for s in self.structure.now_data
         ])
 
-        bec_array = concat_nep_dft_array(nep_bec, ref_bec, quantity="BEC values")
+        bec_array = concat_nep_dft_array(nep_bec, ref_bec)
         bec_array = np.asarray(bec_array, dtype=get_storage_float_dtype())
         if getattr(self, "bec_out_path", None) and bec_array.size != 0 and self.cache_outputs_enabled():
             np.savetxt(self.bec_out_path, bec_array, fmt='%.17g')
@@ -808,7 +851,6 @@ class NepTrainResultData(ResultData):
         values = concat_nep_dft_array(
             np.asarray(mforces, dtype=np.float64),
             reference,
-            quantity="magnetic forces",
         )
         values = np.asarray(values, dtype=get_storage_float_dtype())
         if values.size and self.spin_force_out_path and self.cache_outputs_enabled():
@@ -837,6 +879,7 @@ class NepTrainResultData(ResultData):
             )
         record = {
             "nep_adapters_version": nep_adapters_version,
+            "preserves_missing_references": True,
             "model": {
                 "path": str(self.nep_txt_path.resolve()),
                 "sha256": self.nep_calc.model_info.sha256,

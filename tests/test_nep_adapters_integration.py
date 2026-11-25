@@ -128,6 +128,41 @@ def test_cached_output_reference_check_detects_same_size_reordering(tmp_path: Pa
     assert force_error is not None and "force_train.out" in force_error
 
 
+@pytest.mark.parametrize("managed", [False, True])
+def test_cached_prediction_missing_labels_require_verified_neptrainkit_provenance(tmp_path: Path, managed: bool):
+    labelled = _labeled_structure(1.0, [[1.0, 2.0, 3.0]])
+    unlabelled = _labeled_structure(2.0, [[4.0, 5.0, 6.0]])
+    unlabelled.additional_fields.pop("energy")
+    unlabelled.atomic_properties.pop("forces")
+    result = _alignment_result(tmp_path, [labelled, unlabelled])
+    result.data_xyz_path.write_text("source dataset", encoding="utf-8")
+    np.savetxt(result.energy_out_path, [[1.1, 1.0], [2.0, 2.0]])
+    np.savetxt(result.force_out_path, [[2, 3, 4, 1, 2, 3], [5, 6, 7, 5, 6, 7]])
+    for path in (result.stress_out_path, result.virial_out_path):
+        np.savetxt(path, np.ones((2, 12)))
+    paths = (result.energy_out_path, result.force_out_path, result.virial_out_path, result.stress_out_path)
+    before = [path.read_bytes() for path in paths]
+    if managed:
+        result.prediction_meta_path.write_text(json.dumps({
+            "producer": "NepTrainKit",
+            "schema_version": 1,
+            "predictions": {"train.xyz": {
+                "dataset": {"sha256": result._sha256(result.data_xyz_path)},
+                "outputs": [{"name": path.name, "sha256": result._sha256(path)} for path in paths],
+            }},
+        }), encoding="utf-8")
+
+    result._load_dataset()
+
+    assert result.energy.get_rmse() == pytest.approx(0.1 if managed else 0.1 / np.sqrt(2), rel=1e-5)
+    assert result.force.get_rmse() == pytest.approx(1.0 if managed else 1 / np.sqrt(2))
+    if managed:
+        assert np.isnan(result.virial.get_rmse())
+    else:
+        assert result.virial.get_rmse() == 0
+    assert [path.read_bytes() for path in paths] == before
+
+
 def test_cached_output_mismatch_activates_recalculation(tmp_path: Path, monkeypatch):
     structures = [
         _labeled_structure(1.0, [[1.0, 2.0, 3.0]]),

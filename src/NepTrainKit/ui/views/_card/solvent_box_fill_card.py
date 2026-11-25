@@ -277,17 +277,6 @@ class SolventBoxFillCard(MakeDataCard):
             self.collision_field.set_helper_text(self.tr("0 uses the selected placement clearance."))
 
     @staticmethod
-    def _first_structure(dataset):
-        if dataset is None:
-            return None
-        if hasattr(dataset, "arrays") and hasattr(dataset, "get_chemical_symbols"):
-            return dataset
-        try:
-            return next(iter(dataset))
-        except (StopIteration, TypeError):
-            return None
-
-    @staticmethod
     def _dataset_count(dataset):
         if dataset is None:
             return 0

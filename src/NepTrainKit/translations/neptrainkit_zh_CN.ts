@@ -9277,9 +9277,14 @@ Fixed periodic reference structures; keep input magnetic order and moment magnit
 <context>
     <name>DeepmdResultData</name>
     <message>
-        <location filename="../core/io/deepmd.py" line="250" /><location filename="../core/io/deepmd.py" line="251" />
-        <source>Existing DeepMD outputs do not match the loaded structure order ({reason}). NepTrainKit will recalculate them.</source>
-        <translation>已有 DeepMD 输出与当前结构顺序不匹配（{reason}）。NepTrainKit 将重新计算。</translation>
+        <location filename="../core/io/deepmd.py" line="254" />
+        <source>Existing DeepMD outputs do not match the loaded structure order ({reason}). NepTrainKit will recalculate them in memory.</source>
+        <translation>已有 DeepMD 输出与当前结构顺序不匹配（{reason}）。NepTrainKit 将重新计算，结果保留在内存中。</translation>
+    </message>
+    <message>
+        <location filename="../core/io/deepmd.py" line="415" />
+        <source>NEP returned no energy predictions.</source>
+        <translation>NEP 未返回能量预测。</translation>
     </message>
 </context>
 <context>
@@ -19893,6 +19898,11 @@ All child items will also be deleted.</source>
 </context>
 <context>
     <name>ResultData</name>
+    <message>
+        <location filename="../core/io/base.py" line="2533" />
+        <source>Skipped empty DeepMD export group. Existing files were kept: {path}</source>
+        <translation>已跳过空的 DeepMD 导出分组，原有文件已保留：{path}</translation>
+    </message>
     <message>
         <location filename="../core/io/base.py" line="3122" /><location filename="../core/io/base.py" line="3123" />
         <source>the DFT x columns in {file} do not match the parsed per-atom structure energies</source>

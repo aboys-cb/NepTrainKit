@@ -20,7 +20,25 @@ from NepTrainKit.core.types import (
     DistributionSelectMode,
     DistributionCurveStyle,
 )
-from NepTrainKit.core.io.base import DistributionRequest, StructureSyncRule
+from NepTrainKit.core.io.base import DPPlotData, DistributionRequest, StructureSyncRule
+from NepTrainKit.core.utils import concat_nep_dft_array
+
+
+@pytest.mark.parametrize("plot_type,deepmd", [(NepPlotData, False), (DPPlotData, True)])
+def test_prediction_pairing_excludes_missing_values_from_rmse(plot_type, deepmd):
+    predictions = np.array([0.2, 0.3])
+    references = np.array([0.1, np.nan])
+    plot = plot_type(concat_nep_dft_array(predictions, references, deepmd), title="energy")
+    np.testing.assert_allclose(plot.x, references)
+    np.testing.assert_allclose(plot.y, predictions)
+    assert np.isnan(references[1])
+    assert plot.get_formart_rmse() == "100.00 meV/atom"
+    assert plot.get_max_error_index(2) == [0]
+
+    for pred, ref in [(predictions, np.full(2, np.nan)), (np.array([]), references)]:
+        unpaired = plot_type(concat_nep_dft_array(pred, ref, deepmd), title="energy")
+        assert unpaired.get_formart_rmse() == "—"
+        assert unpaired.get_max_error_index(2) == []
 
 @pytest.fixture
 def test_setup():

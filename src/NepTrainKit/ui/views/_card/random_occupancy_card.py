@@ -185,17 +185,6 @@ class RandomOccupancyCard(MakeDataCard):
         self.seed_field.setVisible(bool(checked))
         self._refresh_preview_and_presentation()
 
-    @staticmethod
-    def _first_structure(dataset):
-        if dataset is None:
-            return None
-        if hasattr(dataset, "arrays") and hasattr(dataset, "get_chemical_symbols"):
-            return dataset
-        try:
-            return next(iter(dataset))
-        except (StopIteration, TypeError):
-            return None
-
     def set_dataset(self, dataset) -> None:
         super().set_dataset(dataset)
         self._input_structure = self._first_structure(dataset)

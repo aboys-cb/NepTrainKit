@@ -234,6 +234,7 @@ class NepTrainResultData(ResultData):
         self._check_default_elements = False
         self._pending_prediction: Prediction | None = None
         self._force_recalculate_outputs = False
+        self._preserve_prediction_outputs: bool | None = None
         self._validated_energy_array: npt.NDArray[Any] | None = None
         self._validated_force_array: npt.NDArray[Any] | None = None
         self._legacy_prediction_outputs: set[str] = set()
@@ -378,19 +379,64 @@ class NepTrainResultData(ResultData):
         return True
 
     def cache_outputs_enabled(self) -> bool:
-        return not self.outputs_only and super().cache_outputs_enabled()
+        return not (self.outputs_only or self._preserve_prediction_outputs) and super().cache_outputs_enabled()
 
-    def _can_load_without_calculator(self) -> bool:
-        """Return whether complete official outputs can be displayed directly."""
-        required_paths = [
+    def _prediction_output_paths(self) -> list[Path | None]:
+        paths = [
             self.energy_out_path,
             self.force_out_path,
             self.virial_out_path,
             self.spin_force_out_path if self.is_spin_model else self.stress_out_path,
         ]
         if self.is_charge_model:
-            required_paths.extend((self.charge_out_path, self.bec_out_path))
-        return all(path is not None and path.exists() for path in required_paths)
+            paths.extend((self.charge_out_path, self.bec_out_path))
+        return paths
+
+    def _can_load_without_calculator(self) -> bool:
+        """Return whether complete official outputs can be displayed directly."""
+        return self.cache_outputs_enabled() and all(
+            path is not None and path.is_file() for path in self._prediction_output_paths()
+        )
+
+    def _protect_external_prediction_outputs(self, metadata=None) -> None:
+        if self._preserve_prediction_outputs is not None or not self.cache_outputs_enabled():
+            return
+        existing = [
+            path for path in self._prediction_output_paths()
+            if path is not None and (path.exists() or path.is_symlink())
+        ]
+        if not existing and not self.prediction_meta_path.exists() and not self.prediction_meta_path.is_symlink():
+            return
+        self._preserve_prediction_outputs = True
+        if self.prediction_meta_path.is_symlink():
+            return
+        if metadata is None:
+            try:
+                metadata = json.loads(self.prediction_meta_path.read_text(encoding="utf-8"))
+            except (OSError, ValueError):
+                metadata = {}
+        if not isinstance(metadata, dict) or metadata.get("producer") != "NepTrainKit" or metadata.get("schema_version") != 1:
+            return
+        if not existing:
+            self._preserve_prediction_outputs = False
+            return
+        predictions = metadata.get("predictions")
+        record = predictions.get(self.data_xyz_path.name) if isinstance(predictions, dict) else None
+        outputs = record.get("outputs") if isinstance(record, dict) else None
+        if not isinstance(outputs, list):
+            return
+        hashes = {row.get("name"): row.get("sha256") for row in outputs
+                  if isinstance(row, dict) and isinstance(row.get("name"), str)}
+        try:
+            self._preserve_prediction_outputs = not all(
+                path.parent == self.prediction_meta_path.parent
+                and not path.is_symlink()
+                and hashes.get(path.name)
+                and self._sha256(path) == hashes[path.name]
+                for path in existing
+            )
+        except OSError:
+            pass
 
     def _prediction_manifest_alignment_error(self) -> str | None:
         """Validate available NepTrainKit provenance without requiring a calculator."""
@@ -417,23 +463,6 @@ class NepTrainResultData(ResultData):
         if output_error:
             return output_error
 
-        dataset_record = record.get("dataset", {})
-        recorded_dataset_hash = dataset_record.get("sha256")
-        if recorded_dataset_hash and recorded_dataset_hash != self._sha256(
-            self.data_xyz_path
-        ):
-            return "prediction.meta.json records a different structure file"
-        recorded_structures = dataset_record.get("structures")
-        if recorded_structures is not None and int(recorded_structures) != int(
-            len(self.atoms_num_list)
-        ):
-            return "prediction.meta.json records a different structure count"
-        recorded_atoms = dataset_record.get("atoms")
-        if recorded_atoms is not None and int(recorded_atoms) != int(
-            np.sum(self.atoms_num_list)
-        ):
-            return "prediction.meta.json records a different atom count"
-
         model_record = record.get("model", {})
         recorded_model_hash = model_record.get("sha256")
         if (
@@ -444,7 +473,7 @@ class NepTrainResultData(ResultData):
             return "prediction.meta.json records a different NEP model"
         if (
             metadata.get("producer") == "NepTrainKit"
-            and recorded_dataset_hash
+            and record.get("dataset", {}).get("sha256")
             and not record.get("preserves_missing_references")
         ):
             self._legacy_prediction_outputs.update(
@@ -521,12 +550,14 @@ class NepTrainResultData(ResultData):
 
     def _cached_descriptors_are_usable(self) -> bool:
         """Reject descriptors whenever the paired official outputs are stale."""
-        return not self._force_recalculate_outputs
+        return not (self._force_recalculate_outputs or self._preserve_prediction_outputs)
 
     def _load_descriptors(self) -> None:
         """Validate cached output alignment before loading paired descriptors."""
         if not self.outputs_only:
             self._prepare_cached_output_alignment()
+            if self.nep_calc is not None:
+                self._should_recalculate()
         super()._load_descriptors()
 
     def _read_existing_output(self, path: Path | None, shape: tuple[int, int]) -> np.ndarray:
@@ -651,23 +682,12 @@ class NepTrainResultData(ResultData):
         bool
             ``True`` if NEP predictions need to be regenerated.
         """
-        if self._force_recalculate_outputs or not self.cache_outputs_enabled():
+        if self._force_recalculate_outputs:
+            self._protect_external_prediction_outputs()
             return True
-        required_paths = [
-            self.energy_out_path,
-            self.force_out_path,
-            self.virial_out_path,
-        ]
-        if not getattr(self, "is_spin_model", False):
-            required_paths.append(self.stress_out_path)
-        else:
-            required_paths.append(self.spin_force_out_path)
-        if getattr(self, "is_charge_model", False):
-            if self.charge_out_path:
-                required_paths.append(self.charge_out_path)
-            if self.bec_out_path:
-                required_paths.append(self.bec_out_path)
-        required_paths = [path for path in required_paths if path is not None]
+        if not self.cache_outputs_enabled():
+            return True
+        required_paths = [path for path in self._prediction_output_paths() if path is not None]
         existing = [path.exists() for path in required_paths]
         metadata = None
         record = None
@@ -689,20 +709,20 @@ class NepTrainResultData(ResultData):
             record = metadata.get("predictions", {}).get(self.data_xyz_path.name)
         if all(existing):
             if record is not None and self._prediction_manifest_alignment_error() is not None:
+                self._protect_external_prediction_outputs(metadata)
                 return True
             if record is None or getattr(self, "nep_calc", None) is None:
                 return False
             expected_model = self.nep_calc.model_info.sha256
             expected_dataset = self._sha256(self.data_xyz_path)
-            return not (
+            if (
                 record.get("model", {}).get("sha256") == expected_model
                 and record.get("dataset", {}).get("sha256") == expected_dataset
                 and record.get("dataset", {}).get("structures")
                 == int(len(self.atoms_num_list))
-            )
-        if record is not None:
-            return True
-        if any(existing):
+            ):
+                return False
+        elif record is None and any(existing):
             existing_names = ", ".join(
                 path.name for path, exists in zip(required_paths, existing) if exists
             )
@@ -711,6 +731,7 @@ class NepTrainResultData(ResultData):
                 f"{existing_names}. NepTrainKit will not overwrite them automatically; "
                 "move the existing .out files aside and retry."
             )
+        self._protect_external_prediction_outputs(metadata)
         return True
     def _save_energy_data(self, potentials:npt.NDArray[np.floating]) -> npt.NDArray[Any]:
         """Persist per-structure energy comparisons to disk.
@@ -864,19 +885,7 @@ class NepTrainResultData(ResultData):
     def _write_prediction_meta(self) -> None:
         if not self.cache_outputs_enabled():
             return
-        output_paths = [
-            self.energy_out_path,
-            self.force_out_path,
-            self.virial_out_path,
-        ]
-        if not self.is_spin_model:
-            output_paths.append(self.stress_out_path)
-        if self.spin_force_out_path:
-            output_paths.append(self.spin_force_out_path)
-        if self.is_charge_model:
-            output_paths.extend(
-                path for path in (self.charge_out_path, self.bec_out_path) if path
-            )
+        output_paths = [path for path in self._prediction_output_paths() if path is not None]
         record = {
             "nep_adapters_version": nep_adapters_version,
             "preserves_missing_references": True,

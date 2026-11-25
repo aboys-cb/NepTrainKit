@@ -2303,8 +2303,7 @@ class ResultData(DistributionAnalysisMixin, QObject):
         return self.structure.all_data[mapped].tolist()
     def prepare_export(self, scope: str, *, npy: bool = False, index: int | None = None):
         """Freeze export contents before dispatching a background writer."""
-        all_structures = self.structure.all_data.tolist() if npy else []
-        type_map = get_type_map(all_structures) if all_structures else None
+        type_map = self._export_type_map() if npy else None
         if scope == "all":
             groups = ([item.copy() for item in self.structure.now_data],
                       [item.copy() for item in self.structure.remove_data])
@@ -2328,6 +2327,22 @@ class ResultData(DistributionAnalysisMixin, QObject):
         if npy:
             options["_type_map"] = type_map
         return partial(writer, **options)
+
+    def _export_type_map(self):
+        structures = self.structure.all_data.tolist()
+        return get_type_map(structures) if structures else None
+
+    @staticmethod
+    def _export_npy_subset(target, structures, type_map, npy_format, group_by_config_type, mixed_atom_numb_pad):
+        save_npy_structure(
+            str(target),
+            structures,
+            type_map=type_map,
+            format=npy_format,
+            group_by_config_type=group_by_config_type,
+            mixed_atom_numb_pad=mixed_atom_numb_pad,
+        )
+        MessageManager.send_info_message(f"File exported to: {target}")
 
     def export_selected_xyz(self, save_file_path: str | Path, *, _structures=None) -> None:
         """Write the currently selected structures to ``save_file_path``."""
@@ -2355,18 +2370,11 @@ class ResultData(DistributionAnalysisMixin, QObject):
         if not selected:
             MessageManager.send_info_message("Please select some structures first!")
             return
-        target = Path(save_path).joinpath("export_selected_model")
-        all_structures = self.structure.all_data.tolist() if _structures is None else []
-        type_map = _type_map if _structures is not None else (get_type_map(all_structures) if all_structures else None)
-        save_npy_structure(
-            str(target),
-            selected,
-            type_map=type_map,
-            format=npy_format,
-            group_by_config_type=group_by_config_type,
-            mixed_atom_numb_pad=mixed_atom_numb_pad,
+        type_map = self._export_type_map() if _structures is None else _type_map
+        self._export_npy_subset(
+            Path(save_path) / "export_selected_model", selected, type_map,
+            npy_format, group_by_config_type, mixed_atom_numb_pad,
         )
-        MessageManager.send_info_message(f"File exported to: {target}")
 
     def export_active_xyz(self, save_file_path: str | Path, *, _structures=None) -> None:
         """Write active (non-removed) structures to ``save_file_path``."""
@@ -2397,18 +2405,11 @@ class ResultData(DistributionAnalysisMixin, QObject):
         if not active:
             MessageManager.send_info_message("No active structures to export.")
             return
-        target = Path(save_path).joinpath("export_active_model")
-        all_structures = self.structure.all_data.tolist() if _structures is None else []
-        type_map = _type_map if _structures is not None else (get_type_map(all_structures) if all_structures else None)
-        save_npy_structure(
-            str(target),
-            active,
-            type_map=type_map,
-            format=npy_format,
-            group_by_config_type=group_by_config_type,
-            mixed_atom_numb_pad=mixed_atom_numb_pad,
+        type_map = self._export_type_map() if _structures is None else _type_map
+        self._export_npy_subset(
+            Path(save_path) / "export_active_model", active, type_map,
+            npy_format, group_by_config_type, mixed_atom_numb_pad,
         )
-        MessageManager.send_info_message(f"File exported to: {target}")
 
     def export_removed_xyz(self, save_file_path: str | Path, *, _structures=None) -> None:
         """Write removed structures (if any) to ``save_file_path``."""
@@ -2439,18 +2440,11 @@ class ResultData(DistributionAnalysisMixin, QObject):
         if not removed:
             MessageManager.send_info_message("No removed structures to export.")
             return
-        target = Path(save_path).joinpath("export_remove_model")
-        all_structures = self.structure.all_data.tolist() if _structures is None else []
-        type_map = _type_map if _structures is not None else (get_type_map(all_structures) if all_structures else None)
-        save_npy_structure(
-            str(target),
-            removed,
-            type_map=type_map,
-            format=npy_format,
-            group_by_config_type=group_by_config_type,
-            mixed_atom_numb_pad=mixed_atom_numb_pad,
+        type_map = self._export_type_map() if _structures is None else _type_map
+        self._export_npy_subset(
+            Path(save_path) / "export_remove_model", removed, type_map,
+            npy_format, group_by_config_type, mixed_atom_numb_pad,
         )
-        MessageManager.send_info_message(f"File exported to: {target}")
 
     def export_current_npy(
         self,
@@ -2465,18 +2459,11 @@ class ResultData(DistributionAnalysisMixin, QObject):
     ) -> None:
         """Export a single structure as DeepMD-style ``deepmd/npy`` dataset."""
         structure = self.get_atoms(index) if _structures is None else _structures[0]
-        target = Path(save_path).joinpath(f"structure_{int(index)}")
-        all_structures = self.structure.all_data.tolist() if _structures is None else []
-        type_map = _type_map if _structures is not None else (get_type_map(all_structures) if all_structures else None)
-        save_npy_structure(
-            str(target),
-            [structure],
-            type_map=type_map,
-            format=npy_format,
-            group_by_config_type=group_by_config_type,
-            mixed_atom_numb_pad=mixed_atom_numb_pad,
+        type_map = self._export_type_map() if _structures is None else _type_map
+        self._export_npy_subset(
+            Path(save_path) / f"structure_{int(index)}", [structure], type_map,
+            npy_format, group_by_config_type, mixed_atom_numb_pad,
         )
-        MessageManager.send_info_message(f"File exported to: {target}")
 
     def export_model_extxyz(self, save_path: str | Path, *, _groups=None) -> None:
         """Export active and removed structures into ``save_path`` folder as extxyz."""
@@ -2510,14 +2497,13 @@ class ResultData(DistributionAnalysisMixin, QObject):
         target = Path(save_path)
         good_target = target / "export_good_model"
         removed_target = target / "export_remove_model"
-        all_structures = self.structure.all_data.tolist() if _groups is None else []
         active_structures, removed_structures = (
             (self.structure.now_data.tolist(), self.structure.remove_data.tolist()) if _groups is None else _groups
         )
         if not active_structures and not removed_structures:
             MessageManager.send_info_message("No structures to export.")
             return
-        type_map = _type_map if _groups is not None else (get_type_map(all_structures) if all_structures else None)
+        type_map = self._export_type_map() if _groups is None else _type_map
         exports = (
             (good_target, active_structures),
             (removed_target, removed_structures),
@@ -2930,9 +2916,6 @@ class ResultData(DistributionAnalysisMixin, QObject):
             elif desc_array.shape[0] == self.atoms_num_list.shape[0]:
                 pass
             else:
-                if self.cache_outputs_enabled():
-                    self.descriptor_path.unlink(True)
-                    return self._load_descriptors()
                 desc_array = np.array([])
 
         if desc_array.size == 0:

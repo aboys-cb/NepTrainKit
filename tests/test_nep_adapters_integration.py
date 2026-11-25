@@ -434,6 +434,54 @@ def test_partial_external_outputs_are_not_overwritten(tmp_path: Path, monkeypatc
         raise AssertionError("partial external outputs must be protected")
 
 
+@pytest.mark.parametrize("origin", ["external", "edited_after_manifest", "managed", "aligned_external"])
+def test_nep_load_only_replaces_verified_managed_files(tmp_path: Path, origin: str):
+    fixture = Path(__file__).parent / "data/nep"
+    for name in ("train.xyz", "nep.txt"):
+        shutil.copy2(fixture / name, tmp_path / name)
+    result = NepTrainResultData.from_path(tmp_path / "train.xyz", cache_outputs=True)
+    result.load_structures()
+    frames, atoms = len(result.atoms_num_list), int(result.atoms_num_list.sum())
+    paths = (result.energy_out_path, result.force_out_path, result.virial_out_path, result.stress_out_path)
+    for path, shape in zip(paths, ((frames, 2), (atoms, 6), (frames, 12), (frames, 12))):
+        np.savetxt(path, np.full(shape, 123.456))
+    result.descriptor_path.write_text("9 9\n", encoding="utf-8")
+    if origin == "aligned_external":
+        structures = result.structure.now_data
+        energy = np.array([structure.per_atom_energy for structure in structures])
+        force = np.vstack([structure.forces for structure in structures])
+        np.savetxt(result.energy_out_path, np.column_stack((np.full(frames, 123.456), energy)))
+        np.savetxt(result.force_out_path, np.column_stack((np.full_like(force, 123.456), force)))
+    elif origin != "external":
+        outputs = [{"name": path.name, "sha256": result._sha256(path)} for path in paths]
+        result.prediction_meta_path.write_text(json.dumps({
+            "producer": "NepTrainKit",
+            "schema_version": 1,
+            "predictions": {"train.xyz": {"dataset": {"sha256": "old-dataset"}, "outputs": outputs}},
+        }), encoding="utf-8")
+        if origin == "edited_after_manifest":
+            with result.force_out_path.open("a", encoding="utf-8") as stream:
+                stream.write("\n")
+    before = {path: path.read_bytes() for path in (*paths, result.descriptor_path, result.prediction_meta_path)
+              if path.is_file()}
+
+    result.load()
+
+    assert result.load_flag
+    assert np.isfinite(result.energy.y).all()
+    if origin == "aligned_external":
+        assert result.nep_calc is None
+        np.testing.assert_allclose(result.energy.y, 123.456)
+    else:
+        assert not np.allclose(result.energy.y, 123.456)
+    if origin == "managed":
+        assert all(path.read_bytes() != before[path] for path in paths)
+        assert result.prediction_meta_path.read_bytes() != before[result.prediction_meta_path]
+    else:
+        assert all(path.read_bytes() == old for path, old in before.items())
+        assert result.prediction_meta_path.exists() == (origin == "edited_after_manifest")
+
+
 def test_automatic_preference_checks_all_frames_before_opening_calculator(tmp_path, monkeypatch):
     from NepTrainKit.core.io import base
     from NepTrainKit.paths import get_bundled_nep89_path

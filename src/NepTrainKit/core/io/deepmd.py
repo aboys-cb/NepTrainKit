@@ -101,7 +101,7 @@ class DeepmdResultData(ResultData):
         structures : list[Structure], optional
             Pre-loaded structures to attach instead of reading from disk.
         nep_txt_path : Path or str, optional
-            Override the NEP model text file used for (re)calculation.
+            Calculate with these weights in memory instead of using existing evaluation files.
         model_type : int, optional
             Ignored. Accepted for API compatibility with NEP loaders.
 
@@ -111,7 +111,7 @@ class DeepmdResultData(ResultData):
             Configured loader pointing at the resolved dataset.
         """
         dataset_path = as_path(path)
-        # file_name=dataset_path.name
+        explicit_model = nep_txt_path is not None
         if nep_txt_path is None:
             nep_txt_path = dataset_path.with_name("nep.txt")
             if not Path(nep_txt_path).exists():
@@ -137,8 +137,9 @@ class DeepmdResultData(ResultData):
             if nep_stem == "nep":
                 output_dir = dataset_path.parent
             else:
-                output_dir = dataset_path.parent / f"{dataset_path}_{nep_stem}"
-                output_dir.mkdir(exist_ok=True)
+                output_dir = dataset_path.with_name(f"{dataset_path.name}_{nep_stem}")
+                if not explicit_model:
+                    output_dir.mkdir(exist_ok=True)
             suffix = "detail"
         descriptor_path = output_dir / "descriptor.out"
         energy_out_path = output_dir / f"{suffix}.e_peratom.out"
@@ -160,6 +161,7 @@ class DeepmdResultData(ResultData):
             spin_out_path=spin_out_path,
             cached_outputs_only=cached_outputs_only,
         )
+        inst._force_recalculate_outputs = explicit_model
         if structures is not None:
             try:
                 inst.set_structures(structures)
@@ -221,6 +223,10 @@ class DeepmdResultData(ResultData):
     def cache_outputs_enabled(self) -> bool:
         """Keep imported results and their descriptors read-only."""
         return not (self._cached_outputs_only or self._force_recalculate_outputs) and super().cache_outputs_enabled()
+
+    @property
+    def uses_imported_predictions(self) -> bool:
+        return self._cached_outputs_only and not self._force_recalculate_outputs
 
     def _prepare_cached_output_alignment(self) -> None:
         """Validate DeepMD result rows before descriptors are attached."""

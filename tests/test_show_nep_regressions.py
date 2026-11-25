@@ -214,6 +214,37 @@ def test_cancelled_switch_restores_loaded_model_label(tmp_path):
         viewer.deleteLater()
 
 
+def test_imported_deepmd_outputs_allow_selecting_the_same_potential_for_calculation(tmp_path):
+    from qfluentwidgets import ComboBox
+
+    model = tmp_path / "nep.txt"
+    model.write_text("example weights", encoding="utf-8")
+    data = SimpleNamespace(
+        nep_txt_path=model, data_xyz_path=tmp_path, uses_imported_predictions=True,
+        _loaded_model_hash=show_nep._model_file_digest(model),
+    )
+    viewer = LoadHarness()
+    viewer.nep_result_data = data
+    viewer.nep_model_combo = ComboBox(viewer)
+    viewer.nep_model_combo.setPlaceholderText("View data only")
+    viewer.nep_model_combo.addItem(model.name)
+    viewer._available_nep_files = [model]
+    viewer._nep_result_cache = {model: data}
+    viewer._updating_nep_combo = False
+    viewer._update_default_model_button = Mock()
+    viewer._checked_potential = lambda path: path
+    viewer._reload_with_nep_file = Mock()
+    try:
+        viewer._select_loaded_model()
+        assert viewer.nep_model_combo.currentIndex() == -1
+        assert viewer.nep_model_combo.text() == "View data only"
+        viewer._on_nep_model_changed(0)
+        viewer._reload_with_nep_file.assert_called_once_with(str(tmp_path), model)
+        assert model not in viewer._nep_result_cache
+    finally:
+        viewer.deleteLater()
+
+
 @pytest.fixture
 def small_data(tmp_path):
     data = ResultData(tmp_path / "nep.txt", tmp_path / "train.xyz", tmp_path / "descriptor.out")
@@ -273,11 +304,20 @@ def test_export_snapshot_freezes_frames_masks_labels_and_type_map(small_data, tm
     data.structure.group_array.revoke()
     if npy:
         with patch("NepTrainKit.core.io.base.save_npy_structure") as save:
-            writer(tmp_path)
+            writer(tmp_path, npy_format="mixed", group_by_config_type=False, mixed_atom_numb_pad=16)
         expected = {"all": [[1.], [2.]], "removed": [[2.]]}.get(scope, [[1.]])
         assert [[frame.energy for frame in call.args[1]] for call in save.call_args_list] == expected
+        names = {
+            "all": ["export_good_model", "export_remove_model"],
+            "selected": ["export_selected_model"],
+            "active": ["export_active_model"],
+            "removed": ["export_remove_model"],
+            "current": ["structure_0"],
+        }
+        assert [Path(call.args[0]).name for call in save.call_args_list] == names[scope]
         for call in save.call_args_list:
-            assert set(call.kwargs["type_map"]) == {"H", "He"}
+            assert call.kwargs == {"type_map": ["H", "He"], "format": "mixed",
+                                   "group_by_config_type": False, "mixed_atom_numb_pad": 16}
             assert np.all(call.args[1][0].positions == 0.)
     else:
         path = tmp_path if scope == "all" else tmp_path / "frames.xyz"

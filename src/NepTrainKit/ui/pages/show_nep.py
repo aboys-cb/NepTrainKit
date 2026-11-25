@@ -540,12 +540,14 @@ class ShowNepWidget(QWidget):
 
         key = nep_file.resolve()
         digest = _model_file_digest(nep_file)
-        if (data.nep_txt_path is not None and Path(data.nep_txt_path).resolve() == key
+        if (not getattr(data, "uses_imported_predictions", False)
+                and data.nep_txt_path is not None and Path(data.nep_txt_path).resolve() == key
                 and digest and getattr(data, "_loaded_model_hash", None) == digest):
             self._select_loaded_model()
             return
         cached = self._nep_result_cache.get(key)
-        if (cached is not None and digest and cached._loaded_model_hash == digest
+        if (cached is not None and not getattr(cached, "uses_imported_predictions", False)
+                and digest and cached._loaded_model_hash == digest
                 and cached.data_xyz_path == data.data_xyz_path
                 and np.array_equal(cached.structure.now_indices, data.structure.now_indices)):
             frame = self.struct_index_spinbox.value()
@@ -699,7 +701,9 @@ class ShowNepWidget(QWidget):
             path = _OUTPUTS_ONLY
         if isinstance(path, Path):
             path = path.resolve()
-        index = next((i for i, file in enumerate(self._available_nep_files) if file == path), 0)
+        index = -1 if getattr(data, "uses_imported_predictions", False) else next(
+            (i for i, file in enumerate(self._available_nep_files) if file == path), 0
+        )
         blocked = combo.blockSignals(True)
         try:
             combo.setCurrentIndex(index)
@@ -1016,6 +1020,7 @@ class ShowNepWidget(QWidget):
 
         self.nep_model_combo = ComboBox(self.path_container)
         self.nep_model_combo.setAccessibleName(self.tr("Potential"))
+        self.nep_model_combo.setPlaceholderText(self.tr("View data only"))
         self.nep_model_combo.setFixedWidth(176)
         self.nep_model_combo.installEventFilter(ToolTipFilter(self.nep_model_combo, 300, ToolTipPosition.TOP))
         self.nep_model_combo.currentIndexChanged.connect(self._on_nep_model_changed)
@@ -1410,7 +1415,8 @@ class ShowNepWidget(QWidget):
         digest = getattr(info, "sha256", None) or getattr(self.nep_result_data, "_loaded_model_hash", None)
         self.nep_result_data._loaded_model_hash = digest
         nep_path = getattr(self.nep_result_data, "nep_txt_path", None)
-        if isinstance(nep_path, Path) and digest and digest == _model_file_digest(nep_path):
+        if (not getattr(self.nep_result_data, "uses_imported_predictions", False)
+                and isinstance(nep_path, Path) and digest and digest == _model_file_digest(nep_path)):
             try:
                 self._nep_result_cache[nep_path.resolve()] = self.nep_result_data
             except Exception:

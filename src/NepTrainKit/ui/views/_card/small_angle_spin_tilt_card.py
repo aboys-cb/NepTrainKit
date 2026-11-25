@@ -5,7 +5,7 @@ from __future__ import annotations
 from qfluentwidgets import BodyLabel, CheckBox, ComboBox, LineEdit, ToolTipFilter, ToolTipPosition
 
 from NepTrainKit.core import CardManager
-from NepTrainKit.core.cards.magnetism import SmallAngleSpinTiltOperation, SmallAngleSpinTiltParams
+from NepTrainKit.core.cards.magnetism import SmallAngleSpinTiltParams
 from NepTrainKit.core.cards.operation import params_to_dict
 from NepTrainKit.ui.widgets import (
     ElementLineEdit,
@@ -406,9 +406,6 @@ class SmallAngleSpinTiltCard(MakeDataCard):
 
     def process_structure(self, structure):
         return self.create_operation().run_structure(structure, self.get_params())
-
-    def create_operation(self):
-        return SmallAngleSpinTiltOperation()
 
     def get_params(self) -> SmallAngleSpinTiltParams:
         return SmallAngleSpinTiltParams(

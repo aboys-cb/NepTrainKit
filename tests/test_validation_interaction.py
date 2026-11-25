@@ -51,12 +51,12 @@ def test_star_preserves_plot_identity_focus_zoom_and_hidden_series(scored):
     p = w.detail.eos_plots[0]
     p.setRange(xRange=(33, 34), yRange=(.1, .2), padding=0)
     before = p.viewRange()
-    selection = w.table.selectionModel().selectedRows()
+    selection = w._group_selection.selectedRows()
     with patch.object(w, 'refresh') as refresh, patch.object(w, '_update_detail') as render:
         w.toggle_star()
         refresh.assert_not_called(); render.assert_not_called()
     assert w.detail.eos_plots[0] is p and p.viewRange() == before
-    assert w.table.selectionModel().selectedRows() == selection
+    assert w._group_selection.selectedRows() == selection
     assert w.star_action.isChecked()
     w.close()
 
@@ -68,7 +68,7 @@ def test_scope_matches_visible_counts_and_each_run_action(scored, tmp_path):
     w = ModelLibraryWidget(service=s)
     w.open_scorecard(suite['id'], scored.new['id'])
     w.set_comparison_ids([scored.old['id']])
-    w.table.selectRow(0)
+    w.detail.groupFocused.emit("G1")
     # Zoom/focus is a view operation; default scope explicitly says all EOS groups.
     ids = w.selected_model_ids()
     assert len(w.run_jobs(model_ids=ids)) == 4
@@ -76,7 +76,8 @@ def test_scope_matches_visible_counts_and_each_run_action(scored, tmp_path):
     w.scope_combo.setCurrentIndex(w.scope_combo.findData('selection'))
     assert len(w.run_jobs(model_ids=ids)) == 2
     with patch.object(s, 'evaluate', wraps=s.evaluate) as evaluate:
-        w.run_selected()
+        assert w.run_selected() is not None
+        w.detail.groupFocused.emit("G2")
         assert _wait_until(lambda: w._run_task is None)
         assert {c.args for c in evaluate.call_args_list} == {(i, scored.eos['id']) for i in ids}
     w.scope_combo.setCurrentIndex(w.scope_combo.findData('suite'))

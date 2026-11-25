@@ -1777,30 +1777,6 @@ class TrainingSetAuditWidget(QWidget):
             "mixed": self.tr("Mixed coupling"),
         }.get(label, label)
 
-    def _phase_point_for_reduced_counts(self, reduced_counts: tuple[int, ...]):
-        if self._result is None or self._result.phase_inventory is None:
-            return None
-        return next(
-            (
-                point
-                for point in self._result.phase_inventory.composition_points
-                if point.reduced_counts == reduced_counts
-            ),
-            None,
-        )
-
-    def _magnetic_point_for_reduced_counts(self, reduced_counts: tuple[int, ...]):
-        if self._result is None or self._result.magnetic_inventory is None:
-            return None
-        return next(
-            (
-                point
-                for point in self._result.magnetic_inventory.composition_points
-                if point.reduced_counts == reduced_counts
-            ),
-            None,
-        )
-
     def _render_phase_summary(
         self,
         structure_indices: tuple[int, ...] = (),

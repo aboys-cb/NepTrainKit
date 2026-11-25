@@ -4,7 +4,7 @@ from PySide6.QtWidgets import QHBoxLayout, QWidget
 from qfluentwidgets import CheckBox
 
 from NepTrainKit.core import CardManager
-from NepTrainKit.core.cards.lattice import CellScalingOperation, CellScalingParams
+from NepTrainKit.core.cards.lattice import CellScalingParams
 from NepTrainKit.core.cards.operation import params_to_dict
 from NepTrainKit.ui.widgets import (
     CompactField,
@@ -215,9 +215,6 @@ class CellScalingCard(MakeDataCard):
                 self.tr("Sobol balance is best with 4, 8, 16, 32, 64, … outputs.")
             )
         return " ".join(notes)
-
-    def create_operation(self):
-        return CellScalingOperation()
 
     def get_params(self) -> CellScalingParams:
         return CellScalingParams(

@@ -280,9 +280,6 @@ class VibrationModePerturbCard(MakeDataCard):
             )
         return " ".join(notes)
 
-    def create_operation(self):
-        return VibrationModePerturbOperation()
-
     def get_params(self) -> VibrationModePerturbParams:
         return VibrationModePerturbParams(
             sampling_mode=combo_value(self.sampling_combo),

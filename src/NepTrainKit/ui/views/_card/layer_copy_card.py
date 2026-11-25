@@ -9,7 +9,7 @@ from qfluentwidgets import CaptionLabel, CheckBox, ComboBox, LineEdit, TextEdit
 
 from NepTrainKit.core import CardManager, MessageManager
 from NepTrainKit.core.cards.operation import params_to_dict
-from NepTrainKit.core.cards.structure import LayerCopyOperation, LayerCopyParams
+from NepTrainKit.core.cards.structure import LayerCopyParams
 from NepTrainKit.ui.messages import translate_runtime_message
 from NepTrainKit.ui.views._card.i18n_utils import (
     add_translated_items,
@@ -378,9 +378,6 @@ class LayerCopyCard(MakeDataCard):
                 after=f"{summary['cell_c_after']:.4g}",
             )
         )
-
-    def create_operation(self):
-        return LayerCopyOperation()
 
     def get_summary_text(self) -> str:
         try:

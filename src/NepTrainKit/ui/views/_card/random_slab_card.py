@@ -399,9 +399,6 @@ class RandomSlabCard(MakeDataCard):
             )
         )
 
-    def create_operation(self):
-        return RandomSlabOperation()
-
     def get_params(self) -> RandomSlabParams:
         return RandomSlabParams(
             hkl_list=self.plane_table.planes(),

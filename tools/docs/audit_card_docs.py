@@ -213,12 +213,10 @@ def extract_params_fields(source_file: str) -> list[str] | None:
     if not ui_path.exists():
         return None
     ui_text = ui_path.read_text(encoding="utf-8-sig")
-    # find which operation class is used:  return FooOperation()
-    op_match = re.search(r"def create_operation.*\n\s+return\s+(\w+)\(\)", ui_text)
-    if not op_match:
+    params_match = re.search(r"def get_params\(self\)\s*->\s*(\w+):", ui_text)
+    if not params_match:
         return None
-    op_name = op_match.group(1)  # e.g., CellStrainOperation
-    params_name = op_name.replace("Operation", "Params")  # e.g., CellStrainParams
+    params_name = params_match.group(1)
 
     for core_path in sorted(CORE_CARDS_DIR.glob("*.py")):
         if core_path.name.startswith("_"):

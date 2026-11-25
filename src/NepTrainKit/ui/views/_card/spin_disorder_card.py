@@ -8,7 +8,7 @@ from qfluentwidgets import CaptionLabel, CheckBox, ComboBox
 
 from NepTrainKit.ui.messages import translate_runtime_error
 from NepTrainKit.core import CardManager
-from NepTrainKit.core.cards.magnetism import SpinDisorderOperation, SpinDisorderParams
+from NepTrainKit.core.cards.magnetism import SpinDisorderParams
 from NepTrainKit.core.cards.operation import params_to_dict
 from NepTrainKit.ui.widgets import (
     CompactField,
@@ -347,9 +347,6 @@ class SpinDisorderCard(MakeDataCard):
                 total=self._preview_input_count * per_input
             )
         return note
-
-    def create_operation(self):
-        return SpinDisorderOperation()
 
     def get_params(self) -> SpinDisorderParams:
         return SpinDisorderParams(

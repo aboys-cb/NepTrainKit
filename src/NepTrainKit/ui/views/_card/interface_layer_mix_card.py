@@ -6,7 +6,7 @@ import numpy as np
 from qfluentwidgets import CheckBox, ComboBox, LineEdit
 
 from NepTrainKit.core import CardManager
-from NepTrainKit.core.cards.alloy import InterfaceLayerMixOperation, InterfaceLayerMixParams
+from NepTrainKit.core.cards.alloy import InterfaceLayerMixParams
 from NepTrainKit.core.cards.errors import CardOperationError
 from NepTrainKit.core.cards.operation import params_to_dict
 from NepTrainKit.ui.messages import translate_runtime_message
@@ -343,9 +343,6 @@ class InterfaceLayerMixCard(MakeDataCard):
     def set_preview_structure(self, structure) -> None:
         self._input_structure = structure
         self.refresh_compact_presentation()
-
-    def create_operation(self):
-        return InterfaceLayerMixOperation()
 
     def _summary(self):
         if self._input_structure is None:

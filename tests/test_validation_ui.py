@@ -240,7 +240,6 @@ def test_eos_overview_has_fixed_columns_and_normalizes_each_group(make_service, 
     widget.resize(1180, 740)
     widget.show()
     QApplication.processEvents()
-    assert widget.table.isHidden()
     assert widget.detail._grid_columns == 3
     assert widget.metrics_model.rowCount() == 10
     assert widget.metrics_model.columnCount() == 5
@@ -258,7 +257,7 @@ def test_eos_overview_has_fixed_columns_and_normalizes_each_group(make_service, 
     widget.detail.groupFocused.emit("G4")
     assert len(widget.detail.eos_plots[0].listDataItems()) == 1
     assert widget.detail._groups[0][0] == "G4"
-    widget.table.selectionModel().select(widget.metrics_model.index(5, 0), QItemSelectionModel.SelectionFlag.Select | QItemSelectionModel.SelectionFlag.Rows)
+    widget._group_selection.select(widget.metrics_model.index(5, 0), QItemSelectionModel.SelectionFlag.Select | QItemSelectionModel.SelectionFlag.Rows)
     assert [group[0] for group in widget.detail._groups] == ["G4", "G6"]
     assert len(widget.detail.eos_plots) == 2
     widget.all_groups_button.click()
@@ -287,7 +286,7 @@ def test_eos_relative_zero_preserves_model_offset_and_refresh_selection(make_ser
     widget = ModelLibraryWidget(service=service)
     widget.open_scorecard(suite["id"], model["id"])
     widget.set_comparison_ids([])
-    widget.table.selectRow(1)
+    widget.detail.groupFocused.emit("G2")
     widget.detail.offset_checkbox.setChecked(False)
     ref, pred = widget.detail.eos_plots[0].listDataItems()
     np.testing.assert_allclose(pred.getData()[1] - ref.getData()[1], 700)
@@ -302,7 +301,7 @@ def test_eos_relative_zero_preserves_model_offset_and_refresh_selection(make_ser
     np.testing.assert_allclose(pred.getData()[1] - ref.getData()[1], 0.7)
     widget.refresh()
     assert widget.comparison_ids() == []
-    assert [i.row() for i in widget.table.selectionModel().selectedRows()] == [1]
+    assert [i.row() for i in widget._group_selection.selectedRows()] == [1]
     assert len(widget.detail.eos_plots[0].listDataItems()) == 2
     widget.deleteLater()
 

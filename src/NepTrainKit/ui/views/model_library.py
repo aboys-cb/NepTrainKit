@@ -3,7 +3,9 @@
 from __future__ import annotations
 
 
-from PySide6.QtCore import QAbstractTableModel, QEvent, QModelIndex, QSize, Qt, QTimer, Signal
+from PySide6.QtCore import (
+    QAbstractTableModel, QEvent, QItemSelection, QItemSelectionModel, QModelIndex, QSignalBlocker, QSize, Qt, QTimer, Signal,
+)
 from PySide6.QtGui import QColor, QFont, QIcon, QPainter, QPen, QPixmap
 from PySide6.QtWidgets import (
     QAbstractItemView,
@@ -32,7 +34,6 @@ from qfluentwidgets import (
     PrimarySplitPushButton,
     PushButton,
     SegmentedWidget,
-    TableView,
     TableWidget,
     TransparentPushButton,
     TransparentToolButton,
@@ -1312,13 +1313,9 @@ class ModelLibraryWidget(QWidget):
         self._benchmarks = []
 
         self.model = ScorecardTableModel(self)
-        self.table = TableView(self)
         self.metrics_model = GroupMetricsTableModel(self.model, self)
-        self.table.setModel(self.metrics_model)
-        self.table.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
-        self.table.setSelectionMode(QAbstractItemView.SelectionMode.ExtendedSelection)
-        self.table.selectionModel().selectionChanged.connect(self._on_group_selection_changed)
-        self.table.hide()
+        self._group_selection = QItemSelectionModel(self.metrics_model, self)
+        self._group_selection.selectionChanged.connect(self._on_group_selection_changed)
 
         self.detail = RunDetailPanel(self)
         self.detail.load_scan_energies = lambda item, run: self.service().absolute_scan_energies(item, run)
@@ -1732,32 +1729,27 @@ class ModelLibraryWidget(QWidget):
     def _load_groups(self, *, update_detail=True):
         kind = self.property_combo.currentData() or "eos"
         self.property_combo.setVisible(self.property_combo.count() > 1)
-        selected = {self.metrics_model.benchmarks[i.row()]["id"] for i in self.table.selectionModel().selectedRows()}
+        selection = self._group_selection
+        selected = {self.metrics_model.benchmarks[i.row()]["id"] for i in selection.selectedRows()}
         benchmarks = [item for item in self._benchmarks if item["protocol"] == kind]
-        selection = self.table.selectionModel()
-        selection.blockSignals(True)
-        self.metrics_model.set_groups(
-            benchmarks, self.model.row_of_model(self.model_combo.currentData()), kind
-        )
-        if kind in ("eos", "diagnostic", "response"):
-            self.table.setSelectionMode(QAbstractItemView.SelectionMode.ExtendedSelection)
-            if selected and selected < {b["id"] for b in benchmarks}:
-                from PySide6.QtCore import QItemSelectionModel
-
-                for i, benchmark in enumerate(benchmarks):
-                    if benchmark["id"] in selected:
-                        selection.select(
-                            self.metrics_model.index(i, 0),
-                            QItemSelectionModel.SelectionFlag.Select | QItemSelectionModel.SelectionFlag.Rows,
-                        )
-            else:
-                self.table.selectAll()
-        else:
-            self.table.setSelectionMode(QAbstractItemView.SelectionMode.SingleSelection)
-            if benchmarks:
-                self.table.selectRow(next((i for i, b in enumerate(benchmarks) if b["id"] in selected), 0))
-        selection.blockSignals(False)
-        self.all_groups_button.setVisible(kind in ("eos", "diagnostic", "response"))
+        multi_group = kind in ("eos", "diagnostic", "response")
+        with QSignalBlocker(selection):
+            self.metrics_model.set_groups(
+                benchmarks, self.model.row_of_model(self.model_combo.currentData()), kind
+            )
+            if multi_group:
+                if selected and selected < {b["id"] for b in benchmarks}:
+                    for i, benchmark in enumerate(benchmarks):
+                        if benchmark["id"] in selected:
+                            selection.select(
+                                self.metrics_model.index(i, 0),
+                                QItemSelectionModel.SelectionFlag.Select | QItemSelectionModel.SelectionFlag.Rows,
+                            )
+                else:
+                    self._select_all_group_rows()
+            elif benchmarks:
+                self._select_group_row(next((i for i, b in enumerate(benchmarks) if b["id"] in selected), 0))
+        self.all_groups_button.setVisible(multi_group)
         self._update_run_scope()
         if update_detail:
             self._update_detail()
@@ -1766,8 +1758,24 @@ class ModelLibraryWidget(QWidget):
         self._update_run_scope()
         self._update_detail()
 
+    def _select_group_row(self, row):
+        index = self.metrics_model.index(row, 0)
+        if index.isValid():
+            self._group_selection.select(
+                index, QItemSelectionModel.SelectionFlag.ClearAndSelect | QItemSelectionModel.SelectionFlag.Rows,
+            )
+
+    def _select_all_group_rows(self):
+        last_row = self.metrics_model.rowCount() - 1
+        if last_row >= 0:
+            self._group_selection.select(
+                QItemSelection(self.metrics_model.index(0, 0), self.metrics_model.index(last_row, 0)),
+                QItemSelectionModel.SelectionFlag.ClearAndSelect | QItemSelectionModel.SelectionFlag.Rows,
+            )
+
     def _select_all_groups(self):
-        self.table.selectAll()
+        if self.metrics_model.kind in ("eos", "diagnostic", "response"):
+            self._select_all_group_rows()
         self._update_detail()
 
     def _on_selection_changed(self, *, update_detail=True) -> None:
@@ -1803,7 +1811,7 @@ class ModelLibraryWidget(QWidget):
             self._update_detail()
 
     def _focus_plot_group(self, tag):
-        self.table.selectRow(int(tag[1:]) - 1)
+        self._select_group_row(int(tag[1:]) - 1)
 
     def _update_detail(self, *, group_rows=None, group_total=None) -> None:
         if not self.curves_button.isChecked():
@@ -1813,7 +1821,7 @@ class ModelLibraryWidget(QWidget):
         if not benchmarks:
             self.detail.show_runs(None, [])
             return
-        selected = group_rows if group_rows is not None else sorted(index.row() for index in self.table.selectionModel().selectedRows())
+        selected = group_rows if group_rows is not None else sorted(index.row() for index in self._group_selection.selectedRows())
         focused = len(selected) < len(benchmarks)
         self.all_groups_button.setEnabled(focused)
         self.all_groups_button.setVisible(focused or self.metrics_model.kind == "eos")
@@ -1929,7 +1937,7 @@ class ModelLibraryWidget(QWidget):
         try:
             selected = [
                 self.metrics_model.benchmarks[index.row()]
-                for index in self.table.selectionModel().selectedRows()
+                for index in self._group_selection.selectedRows()
             ]
             experiments = [
                 experiment(self.service().set_frames(item["id"]))
@@ -2217,7 +2225,7 @@ class ModelLibraryWidget(QWidget):
             return list(self._benchmarks)
         benchmarks = list(self.metrics_model.benchmarks)
         if scope == "selection":
-            indexes = {index.row() for index in self.table.selectionModel().selectedRows()}
+            indexes = {index.row() for index in self._group_selection.selectedRows()}
             return [item for i, item in enumerate(benchmarks) if i in indexes]
         return benchmarks
 
@@ -2256,7 +2264,6 @@ class ModelLibraryWidget(QWidget):
         self.refresh_button.setEnabled(idle)
         self.model_combo.setEnabled(idle and bool(self.model._rows))
         self.property_combo.setEnabled(idle)
-        self.table.setEnabled(idle)
         self.retry_button.setVisible(
             idle
             and bool(self._failed_jobs)

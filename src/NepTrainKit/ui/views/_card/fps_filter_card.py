@@ -15,7 +15,7 @@ from qfluentwidgets import (
 from NepTrainKit import module_path
 from NepTrainKit.config import Config
 from NepTrainKit.core import CardManager
-from NepTrainKit.core.cards.filter import FPSFilterOperation, FPSFilterParams
+from NepTrainKit.core.cards.filter import FPSFilterParams
 from NepTrainKit.core.cards.operation import params_to_dict
 from NepTrainKit.core.types import get_configured_nep_backend
 from NepTrainKit.paths import get_bundled_nep89_path, portable_model_path, resolve_model_path
@@ -289,10 +289,6 @@ class FPSFilterDataCard(FilterDataCard):
             )
         self.strategy_hint.updateGeometry()
         self._refresh_preview()
-
-    def create_operation(self):
-        """Return the UI-independent FPS operation."""
-        return FPSFilterOperation()
 
     def get_summary_text(self) -> str:
         params = self.get_params()

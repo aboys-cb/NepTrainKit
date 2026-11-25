@@ -7,7 +7,7 @@ from qfluentwidgets import CaptionLabel, CheckBox, ComboBox, LineEdit
 
 from NepTrainKit.core import CardManager
 from NepTrainKit.core.cards.operation import params_to_dict
-from NepTrainKit.core.magnetic_response import MagneticResponseScanOperation, MagnetoelasticResponseParams
+from NepTrainKit.core.magnetic_response import MagnetoelasticResponseParams
 from NepTrainKit.ui.messages import MessageManager, translate_runtime_error
 from NepTrainKit.ui.views._card.i18n_utils import add_translated_items, combo_value, set_combo_value
 from NepTrainKit.ui.widgets import (
@@ -301,10 +301,7 @@ class MagnetoelasticResponseCard(MakeDataCard):
             "Input structures need finite non-zero vector spins. Every listed atom rotates together about the Cartesian spin axis at each lattice point."
         )
 
-    def create_operation(self):
-        return MagneticResponseScanOperation()
-
-    def get_params(self):
+    def get_params(self) -> MagnetoelasticResponseParams:
         return MagnetoelasticResponseParams(
             structural_mode=combo_value(self.mode_combo),
             structural_scan=_scaled_scan_text(self.struct_scan.scan_text(), 0.01),

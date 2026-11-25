@@ -32,6 +32,13 @@ def audit_operation_architecture(repo_root: Path) -> int:
     errors: list[str] = []
     card_dir = repo_root / "src" / "NepTrainKit" / "ui" / "views" / "_card"
     core_cards_dir = repo_root / "src" / "NepTrainKit" / "core" / "cards"
+    workflow = ast.parse((core_cards_dir.parent / "workflow.py").read_text(encoding="utf-8"))
+    registry = next(
+        ast.literal_eval(node.value)
+        for node in workflow.body
+        if isinstance(node, ast.AnnAssign) and isinstance(node.target, ast.Name)
+        and node.target.id == "CARD_REGISTRY"
+    )
 
     for path in sorted(card_dir.glob("*.py")):
         if path.name == "__init__.py":
@@ -50,8 +57,8 @@ def audit_operation_architecture(repo_root: Path) -> int:
                 continue
 
             methods = {item.name for item in node.body if isinstance(item, ast.FunctionDef)}
-            if "create_operation" not in methods:
-                errors.append(f"{path.relative_to(repo_root)}:{node.name} missing create_operation()")
+            if node.name not in registry and "create_operation" not in methods:
+                errors.append(f"{path.relative_to(repo_root)}:{node.name} missing operation registration or factory")
             if "run" in methods:
                 errors.append(f"{path.relative_to(repo_root)}:{node.name} defines custom run()")
 

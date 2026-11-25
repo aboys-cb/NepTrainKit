@@ -7,7 +7,6 @@ from qfluentwidgets import CheckBox, ComboBox, LineEdit
 
 from NepTrainKit.core import CardManager
 from NepTrainKit.core.cards.alloy import (
-    CompositionGradientOperation,
     CompositionGradientParams,
 )
 from NepTrainKit.core.cards.operation import params_to_dict
@@ -253,9 +252,6 @@ class CompositionGradientCard(MakeDataCard):
         """Attach one read-only imported structure for pre-run guidance."""
         self._input_structure = structure
         self.refresh_compact_presentation()
-
-    def create_operation(self):
-        return CompositionGradientOperation()
 
     def get_summary_text(self) -> str:
         try:

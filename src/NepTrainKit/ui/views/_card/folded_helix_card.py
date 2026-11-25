@@ -370,9 +370,6 @@ class FoldedHelixCard(MakeDataCard):
             )
         return text
 
-    def create_operation(self):
-        return FoldedHelixOperation()
-
     def get_params(self) -> FoldedHelixParams:
         layer_axis = self.layer_axis_frame.get_input_value()
         plane_normal = (

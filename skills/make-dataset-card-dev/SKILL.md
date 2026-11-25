@@ -104,7 +104,7 @@ UI 类放在 `src/NepTrainKit/ui/views/_card/*.py`，遵循现有风格：
 - 为右侧检查器提供简洁且随参数更新的 `get_summary_text()` 和 `get_guidance_text()`；高成本内容遵守后台预览规则。
 - 不在单卡重复添加文档、卡片信息或复制 JSON；这些动作属于右侧检查器。查看输出和可用结果的导出属于顶层卡片头，工作流复制/粘贴属于左侧管理区。
 - 新卡必须在默认主窗口的右侧检查器中无横向滚动，数值不被步进按钮或单位遮挡，并通过宽屏 → 默认尺寸的往返缩放。
-- 提供 `create_operation()`、`get_params()`、`set_params(params)`。
+- 在 `core/workflow.py` 的 `CARD_REGISTRY` 注册 operation。基类提供 `create_operation()`，构造参数有特殊兼容要求时可覆盖。提供带返回类型的 `get_params()` 和 `set_params(params)`。
 - 所有卡片禁止覆盖 `run()`：基类 `MakeDataCard.run()` 已根据 `create_operation()` 返回的 operation 类型自动分发到正确线程。
 - `process_structure()` 若保留，只能作为兼容委托层。结构卡调用 `run_structure(...)`；dataset/generator 卡片不要新增伪 `process_structure()` 通路。
 - 生成型卡片使用 `GeneratorOperation` 和 `requires_input_dataset = False`。

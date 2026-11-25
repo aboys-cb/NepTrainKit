@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import subprocess
 import tempfile
 import sys
 from pathlib import Path
@@ -24,6 +25,7 @@ from NepTrainKit.core.cards.params import (
 from NepTrainKit.core.workflow import (
     CARD_REGISTRY,
     WorkflowError,
+    card_operation_type,
     load_workflow,
     run_workflow,
 )
@@ -94,15 +96,27 @@ def _si2():
 class TestHeadlessContract:
     def test_core_workflow_module_does_not_require_qt_widgets(self):
         """Loading and running must not need QApplication or a display."""
-        assert "PySide6.QtWidgets" not in sys.modules or True  # documented by test below
-        run = load_workflow(_workflow({
+        workflow = _workflow({
             "class": "SuperCellCard",
             "check_state": True,
             "params": _supercell_params(),
-        }))
-        result = run.run([_si2()])
-        assert len(result.final()) == 1
-        assert len(result.final()[0]) == 16
+        })
+        subprocess.run(
+            [sys.executable, "-c", """
+import json
+import sys
+sys.path.insert(0, sys.argv[1])
+from ase.io import read
+from NepTrainKit.core.workflow import load_workflow
+
+assert "NepTrainKit.core.cards.lattice" not in sys.modules
+result = load_workflow(json.loads(sys.argv[3])).run([read(sys.argv[2])])
+assert [len(atoms) for atoms in result.final()] == [16]
+assert "PySide6.QtWidgets" not in sys.modules
+assert "NepTrainKit.ui" not in sys.modules
+""", str(SRC_PATH), str(SI2), json.dumps(workflow)],
+            check=True,
+        )
 
     def test_run_needs_no_display_variable(self, monkeypatch):
         monkeypatch.delenv("DISPLAY", raising=False)
@@ -173,6 +187,7 @@ class TestParamsFromDict:
             if widget_class is not None:
                 widget = widget_class()
                 try:
+                    assert type(widget.create_operation()) is card_operation_type(card_class), card_class
                     widget_params = widget.get_params()
                 finally:
                     # One widget per registered card; left alive they pile up on

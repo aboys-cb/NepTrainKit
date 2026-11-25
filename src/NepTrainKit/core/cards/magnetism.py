@@ -883,20 +883,6 @@ class MagneticOrderOperation(StructureOperation):
             dirs = np.where(mask[:, None], dirs, axis[None, :])
         return mags, dirs
 
-    def _make_collinear(self, structure, params: MagneticOrderParams, *, signs: np.ndarray) -> np.ndarray:
-        mags, _dirs = self._per_atom_mags_and_dirs(structure, params)
-        signs = np.asarray(signs, dtype=float).reshape(-1)
-        if signs.shape[0] != mags.shape[0]:
-            raise ValueError("signs shape mismatch")
-        return signs * mags
-
-    def _make_noncollinear_axis(self, structure, params: MagneticOrderParams, *, signs: np.ndarray) -> np.ndarray:
-        mags, dirs = self._per_atom_mags_and_dirs(structure, params)
-        signs = np.asarray(signs, dtype=float).reshape(-1)
-        if signs.shape[0] != mags.shape[0]:
-            raise ValueError("signs shape mismatch")
-        return (signs[:, None] * mags[:, None]) * dirs
-
 
 @dataclass(frozen=True)
 class SpinSpiralParams:

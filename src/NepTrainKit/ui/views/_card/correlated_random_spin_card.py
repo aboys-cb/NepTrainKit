@@ -6,7 +6,7 @@ from PySide6.QtWidgets import QHBoxLayout, QWidget
 from qfluentwidgets import CaptionLabel, CheckBox, ComboBox
 
 from NepTrainKit.core import CardManager
-from NepTrainKit.core.cards.magnetism import CorrelatedRandomSpinOperation, CorrelatedRandomSpinParams
+from NepTrainKit.core.cards.magnetism import CorrelatedRandomSpinParams
 from NepTrainKit.core.cards.operation import params_to_dict
 from NepTrainKit.ui.views._card.i18n_utils import add_translated_items, combo_value, set_combo_value
 from NepTrainKit.ui.widgets import (
@@ -320,9 +320,6 @@ class CorrelatedRandomSpinCard(MakeDataCard):
                 total=self._preview_input_count * int(self.samples_frame.get_input_value()[0])
             )
         return note
-
-    def create_operation(self):
-        return CorrelatedRandomSpinOperation()
 
     def get_params(self) -> CorrelatedRandomSpinParams:
         return CorrelatedRandomSpinParams(

@@ -713,9 +713,6 @@ class OrganicMolConfigPBCCard(MakeDataCard):
         """
         return combo_value(self.pbc_combo)
 
-    def create_operation(self):
-        return OrganicMolConfigPBCOperation()
-
     def get_params(self) -> OrganicMolConfigPBCParams:
         return OrganicMolConfigPBCParams(
             perturb_per_frame=int(self.perturb_frame.get_input_value()[0]),

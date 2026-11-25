@@ -8,7 +8,7 @@ from qfluentwidgets import CaptionLabel, CheckBox, ComboBox, LineEdit
 
 from NepTrainKit.core import CardManager
 from NepTrainKit.core.cards.operation import params_to_dict
-from NepTrainKit.core.cards.solvation import DEFAULT_WATER_XYZ, LocalSolvationOperation, LocalSolvationParams, has_valid_cell
+from NepTrainKit.core.cards.solvation import DEFAULT_WATER_XYZ, LocalSolvationParams, has_valid_cell
 from NepTrainKit.ui.messages import translate_runtime_message
 from NepTrainKit.ui.views._card.i18n_utils import add_translated_items, combo_value, set_combo_value
 from NepTrainKit.ui.widgets import (
@@ -391,10 +391,7 @@ class LocalSolvationCard(MakeDataCard):
                 widgets.extend(self.flex_max_frame.object_list)
         self.tab_order_widgets = widgets
 
-    def create_operation(self):
-        return LocalSolvationOperation()
-
-    def get_params(self):
+    def get_params(self) -> LocalSolvationParams:
         flex_max_values = self.flex_max_frame.get_input_value()
         box_values = self.box_frame.get_input_value()
         return LocalSolvationParams(

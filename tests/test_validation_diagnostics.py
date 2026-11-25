@@ -403,7 +403,7 @@ def test_global_response_mode_preserves_hidden_curves_and_evidence(service,seed,
     panel.eos_cards[0].findChild(TransparentPushButton,'diagnosticEvidenceButton').click()
     evidence=panel.eos_cards[0].findChild(QTextBrowser,'diagnosticEvidence')
     assert evidence.isVisible() and '解析导数' in evidence.toPlainText() and '差分步长' in evidence.toPlainText()
-    widget.table.selectRow(1)
+    widget.detail.groupFocused.emit("G2")
     assert panel.diagnostic_mode.currentData()=='derivative'
     assert not panel._curves[model['id']][0].isVisible()
     panel.diagnostic_mode.setCurrentIndex(0)

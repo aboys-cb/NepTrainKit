@@ -6,7 +6,7 @@ from PySide6.QtCore import Qt
 from qfluentwidgets import CaptionLabel, CheckBox
 
 from NepTrainKit.core import CardManager
-from NepTrainKit.core.cards.defect import StrictGSFEPathOperation, StrictGSFEPathParams
+from NepTrainKit.core.cards.defect import StrictGSFEPathParams
 from NepTrainKit.core.cards.operation import params_to_dict
 from NepTrainKit.ui.messages import translate_runtime_message
 from NepTrainKit.ui.widgets import (
@@ -311,9 +311,6 @@ class StrictGSFEPathCard(MakeDataCard):
             widgets.extend(self.layer_frame.object_list)
         widgets.append(self.wrap_checkbox)
         self.tab_order_widgets = widgets
-
-    def create_operation(self):
-        return StrictGSFEPathOperation()
 
     def get_params(self) -> StrictGSFEPathParams:
         u, v = (int(value) for value in self.slip_uv_frame.get_input_value())

@@ -1757,17 +1757,6 @@ class VispyCanvas(VispyCanvasLayoutBase, scene.SceneCanvas, metaclass=CombinedMe
             total_ms=f"{_elapsed_ms(total_t0):.3f}",
         )
 
-    def _refresh_plot_detail(self, plot):
-        if plot is None or self.nep_result_data is None or plot not in self.axes_list:
-            return
-        dataset = self.get_axes_dataset(plot)
-        if dataset is None:
-            return
-        full_detail = plot is self.current_axes
-        if plot._plot_full_detail == full_detail:
-            return
-        self._plot_dataset_on_axes(plot, dataset, full_detail)
-
     def auto_range(self):
         """Delegate auto-ranging to the currently active axes.
         """

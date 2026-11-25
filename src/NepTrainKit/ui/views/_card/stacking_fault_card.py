@@ -3,7 +3,7 @@
 from qfluentwidgets import BodyLabel, CaptionLabel, ToolTipFilter, ToolTipPosition
 
 from NepTrainKit.core import CardManager
-from NepTrainKit.core.cards.defect import StackingFaultOperation, StackingFaultParams
+from NepTrainKit.core.cards.defect import StackingFaultParams
 from NepTrainKit.core.cards.operation import params_to_dict
 from NepTrainKit.ui.widgets import MakeDataCard, SpinBoxUnitInputFrame
 
@@ -74,10 +74,6 @@ class StackingFaultCard(MakeDataCard):
         self.settingLayout.addWidget(self.layer_frame, 2, 1, 1, 2)
         self.settingLayout.addWidget(self.step_label, 3, 0, 1, 1)
         self.settingLayout.addWidget(self.step_frame, 3, 1, 1, 2)
-
-    def create_operation(self):
-        """Return the UI-independent stacking-fault operation."""
-        return StackingFaultOperation()
 
     def get_params(self) -> StackingFaultParams:
         """Read stacking-fault parameters from UI controls."""

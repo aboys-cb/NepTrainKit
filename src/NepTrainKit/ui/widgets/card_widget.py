@@ -27,6 +27,7 @@ from NepTrainKit.core.card_manager import build_card_metadata
 from NepTrainKit.core.cards.operation import DatasetOperation, GeneratorOperation, StructureOperation
 from NepTrainKit.core.io.atomic import atomic_text_output
 from NepTrainKit.core.magnetism import prepare_magnetic_extxyz_export
+from NepTrainKit.core.workflow import CARD_REGISTRY, card_operation_type
 from NepTrainKit.i18n import localized_docs_url
 from NepTrainKit.ui.dialogs import call_path_dialog
 from NepTrainKit.ui.messages import translate_runtime_error, translate_runtime_message
@@ -1031,7 +1032,10 @@ class MakeDataCard(MakeDataCardWidget):
         """Apply UI-independent operation parameters to the card widgets."""
 
     def create_operation(self):
-        """Return a UI-independent operation object for migrated cards."""
+        """Build the registered operation for a built-in card."""
+        for cls in type(self).__mro__:
+            if cls.__module__.startswith("NepTrainKit.ui.views._card.") and cls.__name__ in CARD_REGISTRY:
+                return card_operation_type(cls.__name__)()
         return None
 
     def closeEvent(self, event):

@@ -10,7 +10,7 @@ from qfluentwidgets import CaptionLabel, CheckBox, ComboBox
 from NepTrainKit.ui.messages import translate_runtime_error
 from NepTrainKit.core import CardManager
 from NepTrainKit.core.cards.operation import params_to_dict
-from NepTrainKit.core.magnetic_response import MagneticResponseScanOperation, TextureMagneticResponseParams
+from NepTrainKit.core.magnetic_response import TextureMagneticResponseParams
 from NepTrainKit.ui.views._card.i18n_utils import add_translated_items, combo_value, set_combo_value
 from NepTrainKit.ui.widgets import (
     CompactField,
@@ -344,10 +344,7 @@ class SOCTextureResponseCard(MakeDataCard):
             "Check periodic closure for Cartesian q. The q=0 frame is a generated collinear reference, not the input spin directions."
         )
 
-    def create_operation(self):
-        return MagneticResponseScanOperation()
-
-    def get_params(self):
+    def get_params(self) -> TextureMagneticResponseParams:
         direction = self.q_direction.vector()
         q_magnitude = float(self.q_magnitude_frame.get_input_value()[0])
         q_vector = tuple(q_magnitude * value for value in direction)

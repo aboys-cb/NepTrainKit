@@ -3,7 +3,7 @@
 from qfluentwidgets import CheckBox
 
 from NepTrainKit.core import CardManager
-from NepTrainKit.core.cards.lattice import ShearAngleOperation, ShearAngleParams
+from NepTrainKit.core.cards.lattice import ShearAngleParams
 from NepTrainKit.core.cards.operation import params_to_dict
 from NepTrainKit.ui.messages import translate_runtime_message
 from NepTrainKit.ui.widgets import (
@@ -109,9 +109,6 @@ class ShearAngleCard(MakeDataCard):
     def set_preview_input_count(self, count: int | None) -> None:
         self._preview_input_count = None if count is None else max(0, int(count))
         self.refresh_compact_presentation()
-
-    def create_operation(self):
-        return ShearAngleOperation()
 
     def get_summary_text(self) -> str:
         try:

@@ -9,7 +9,7 @@ from qfluentwidgets import CaptionLabel, CheckBox, ComboBox
 
 from NepTrainKit.ui.messages import translate_runtime_error
 from NepTrainKit.core import CardManager
-from NepTrainKit.core.cards.defect import InsertDefectOperation, InsertDefectParams
+from NepTrainKit.core.cards.defect import InsertDefectParams
 from NepTrainKit.core.cards.operation import params_to_dict
 from NepTrainKit.ui.widgets import (
     CompactField,
@@ -377,10 +377,6 @@ class InsertDefectCard(MakeDataCard):
         if self.advanced_checkbox.isChecked():
             widgets.append(self.max_attempts_frame.object_list[0])
         self.tab_order_widgets = widgets
-
-    def create_operation(self):
-        """Return the UI-independent insertion operation."""
-        return InsertDefectOperation()
 
     def get_params(self) -> InsertDefectParams:
         """Read insertion parameters from UI controls."""

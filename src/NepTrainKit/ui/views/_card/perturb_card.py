@@ -410,10 +410,6 @@ class PerturbCard(MakeDataCard):
             )
         return " ".join(notes)
 
-    def create_operation(self):
-        """Return the UI-independent atomic perturbation operation."""
-        return PerturbOperation()
-
     def get_params(self) -> PerturbParams:
         """Read atomic perturbation parameters from UI controls."""
         use_element_scaling = self.element_scaling_checkbox.isChecked()

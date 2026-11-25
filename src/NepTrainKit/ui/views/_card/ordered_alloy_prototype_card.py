@@ -7,7 +7,6 @@ from qfluentwidgets import CaptionLabel, ComboBox
 
 from NepTrainKit.core import CardManager, MessageManager
 from NepTrainKit.core.cards.alloy import (
-    OrderedAlloyPrototypeOperation,
     OrderedAlloyPrototypeParams,
 )
 from NepTrainKit.core.cards.operation import params_to_dict
@@ -306,9 +305,6 @@ class OrderedAlloyPrototypeCard(MakeDataCard):
                 self.tr("Fix the highlighted parameter meaning before continuing downstream.")
             )
         self.refresh_compact_presentation()
-
-    def create_operation(self):
-        return OrderedAlloyPrototypeOperation()
 
     def get_summary_text(self) -> str:
         params = self.get_params()

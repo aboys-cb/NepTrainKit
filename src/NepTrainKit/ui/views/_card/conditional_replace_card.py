@@ -9,7 +9,7 @@ from PySide6.QtWidgets import QHBoxLayout, QWidget
 from qfluentwidgets import CheckBox, ComboBox, LineEdit
 
 from NepTrainKit.core import CardManager
-from NepTrainKit.core.cards.alloy import ConditionalReplaceOperation, ConditionalReplaceParams
+from NepTrainKit.core.cards.alloy import ConditionalReplaceParams
 from NepTrainKit.core.cards.operation import params_to_dict
 from NepTrainKit.ui.messages import translate_runtime_message
 from NepTrainKit.ui.widgets import (
@@ -313,9 +313,6 @@ class ConditionalReplaceCard(MakeDataCard):
     def set_preview_structure(self, structure) -> None:
         self._input_structure = structure
         self.refresh_compact_presentation()
-
-    def create_operation(self):
-        return ConditionalReplaceOperation()
 
     def get_summary_text(self) -> str:
         try:

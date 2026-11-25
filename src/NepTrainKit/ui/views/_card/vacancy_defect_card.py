@@ -7,7 +7,7 @@ from PySide6.QtWidgets import QHBoxLayout, QWidget
 from qfluentwidgets import CaptionLabel, CheckBox, ComboBox
 
 from NepTrainKit.core import CardManager
-from NepTrainKit.core.cards.defect import VacancyDefectOperation, VacancyDefectParams
+from NepTrainKit.core.cards.defect import VacancyDefectParams
 from NepTrainKit.core.cards.operation import params_to_dict
 from NepTrainKit.ui.messages import translate_runtime_message
 from NepTrainKit.ui.widgets import (
@@ -275,9 +275,6 @@ class VacancyDefectCard(MakeDataCard):
         if self.seed_checkbox.isChecked():
             widgets.append(self.seed_frame.object_list[0])
         self.tab_order_widgets = widgets
-
-    def create_operation(self):
-        return VacancyDefectOperation()
 
     def get_params(self) -> VacancyDefectParams:
         return VacancyDefectParams(

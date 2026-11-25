@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 import uuid
 
-from PySide6.QtCore import QCoreApplication, QEvent, QRect, QSize, Qt, QTimer
+from PySide6.QtCore import QCoreApplication, QEvent, QRect, QSignalBlocker, QSize, Qt, QTimer
 from PySide6.QtGui import QAction, QColor, QPainter
 from PySide6.QtWidgets import (
     QDialog,
@@ -1580,10 +1580,8 @@ class ValidationWorkspace(ModelLibraryWidget):
                 self.detail.show_runs(None, [])
                 self._sync_comparison_groups(None)
                 return
-            selection = self.table.selectionModel()
-            selection.blockSignals(True)
-            self.table.selectRow(row)
-            selection.blockSignals(False)
+            with QSignalBlocker(self._group_selection):
+                self._select_group_row(row)
             self._sync_comparison_groups(benchmarks[row])
             if presentation_for(benchmarks[row]["protocol"]).source_group:
                 keys = self.groups.comparisons | {self._focused_reference}

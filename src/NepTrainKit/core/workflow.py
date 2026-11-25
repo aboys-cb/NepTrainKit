@@ -36,6 +36,7 @@ __all__ = [
     "WorkflowPlan",
     "WorkflowResult",
     "WorkflowRun",
+    "card_operation_type",
     "load_workflow",
     "run_workflow",
 ]
@@ -46,7 +47,7 @@ CONTAINER_CARDS = frozenset({"CardGroup", "WorkflowFork"})
 #: ``card class -> (operation module, operation name, params module, params name, kind)``
 #:
 #: Kept as data so the headless path imports only the modules a workflow actually
-#: uses. Rows mirror ``create_operation``/``get_params`` in the matching card.
+#: uses. Desktop cards use the same operation mapping.
 CARD_REGISTRY: dict[str, tuple[str, str, str, str, str]] = {
     "BainPathCard": (
         "NepTrainKit.core.cards.lattice", "BainPathOperation",
@@ -217,6 +218,12 @@ CARD_REGISTRY: dict[str, tuple[str, str, str, str, str]] = {
         "NepTrainKit.core.cards.structure", "VibrationModePerturbParams", "structure",
     ),
 }
+
+
+def card_operation_type(card_class: str) -> type[StructureOperation | DatasetOperation | GeneratorOperation]:
+    """Resolve a registered card's operation without loading the desktop UI."""
+    module_path, operation_name, *_ = CARD_REGISTRY[card_class]
+    return getattr(import_module(module_path), operation_name)
 
 
 class WorkflowError(ValueError):
@@ -578,10 +585,10 @@ def _run_spec(
 
 
 def _execute_card(spec: CardSpec, incoming: list[Any]) -> list[Any]:
-    module_path, operation_name, params_module, params_name, kind = CARD_REGISTRY[spec.card_class]
+    _, _, params_module, params_name, kind = CARD_REGISTRY[spec.card_class]
 
     try:
-        operation_type = getattr(import_module(module_path), operation_name)
+        operation_type = card_operation_type(spec.card_class)
         params_type = getattr(import_module(params_module), params_name)
     except (ImportError, AttributeError) as exc:
         raise WorkflowError(f"cannot load its implementation: {exc}", card=spec.card_class) from exc

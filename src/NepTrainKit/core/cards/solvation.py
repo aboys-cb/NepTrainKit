@@ -1571,15 +1571,6 @@ class PeriodicSpatialHash:
                         return True
         return False
 
-    def _nearby_atoms(self, position: np.ndarray):
-        base = self._bucket_key(position)
-        rx = range(-self.neighbor_range, self.neighbor_range + 1)
-        for dx in rx:
-            for dy in rx:
-                for dz in rx:
-                    key = self._normalize_key((base[0] + dx, base[1] + dy, base[2] + dz))
-                    yield from self.buckets.get(key, ())
-
     def _bucket_key(self, position: np.ndarray) -> tuple[int, int, int]:
         position = np.asarray(position, dtype=float)
         if self.ortho_lengths is not None:

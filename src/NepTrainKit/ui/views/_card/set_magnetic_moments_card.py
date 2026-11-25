@@ -5,7 +5,7 @@ from __future__ import annotations
 from qfluentwidgets import CheckBox, ComboBox
 
 from NepTrainKit.core import CardManager, MessageManager
-from NepTrainKit.core.cards.magnetism import SetMagneticMomentsOperation, SetMagneticMomentsParams
+from NepTrainKit.core.cards.magnetism import SetMagneticMomentsParams
 from NepTrainKit.core.cards.operation import params_to_dict
 from NepTrainKit.ui.widgets import (
     CompactField,
@@ -238,9 +238,6 @@ class SetMagneticMomentsCard(MakeDataCard):
         return self.tr(
             "The constant magnitude is assigned to every selected element along the reference axis."
         )
-
-    def create_operation(self):
-        return SetMagneticMomentsOperation()
 
     def get_params(self) -> SetMagneticMomentsParams:
         return SetMagneticMomentsParams(

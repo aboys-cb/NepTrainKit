@@ -6,7 +6,7 @@ from PySide6.QtCore import QCoreApplication
 from qfluentwidgets import CaptionLabel, CheckBox, ComboBox, LineEdit
 
 from NepTrainKit.core import CardManager
-from NepTrainKit.core.cards.alloy import RandomOccupancyOperation, RandomOccupancyParams
+from NepTrainKit.core.cards.alloy import RandomOccupancyParams
 from NepTrainKit.core.cards.operation import params_to_dict
 from NepTrainKit.ui.messages import translate_runtime_message
 from NepTrainKit.ui.widgets import (
@@ -343,10 +343,6 @@ class RandomOccupancyCard(MakeDataCard):
             counts=count_text,
             outputs=output_text,
         )
-
-    def create_operation(self):
-        """Return the UI-independent random occupancy operation."""
-        return RandomOccupancyOperation()
 
     def get_params(self) -> RandomOccupancyParams:
         """Read random occupancy parameters from UI controls."""

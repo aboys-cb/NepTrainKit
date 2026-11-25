@@ -1219,24 +1219,6 @@ class CompositionSweepOperation(StructureOperation):
                 stride = 1
         return stride
 
-    @classmethod
-    def _spread_slots(cls, total: int, n_pick: int, *, seed: int | None = None) -> list[int]:
-        total = int(total)
-        n_pick = int(n_pick)
-        if total <= 0 or n_pick <= 0:
-            return []
-        if n_pick >= total:
-            return list(range(total))
-        if seed is None:
-            start = 0
-            stride_hint = int(total * 0.6180339887498949)
-        else:
-            rng = np.random.default_rng(int(seed))
-            start = int(rng.integers(0, total))
-            stride_hint = int(rng.integers(1, total))
-        stride = cls._coprime_stride(total, stride_hint)
-        return [int((start + i * stride) % total) for i in range(n_pick)]
-
 
 @dataclass(frozen=True)
 class OrderedAlloyPrototypeParams:
@@ -2582,11 +2564,6 @@ class RandomOccupancyOperation(StructureOperation):
                 if inner:
                     return parse_composition(inner)
         return {}
-
-    @staticmethod
-    def _eligible_indices(structure, groups_text: str) -> np.ndarray:
-        indices, _groups = RandomOccupancyOperation._selection(structure, groups_text)
-        return indices
 
     @staticmethod
     def _selection(structure, groups_text: str) -> tuple[np.ndarray, tuple[str, ...]]:

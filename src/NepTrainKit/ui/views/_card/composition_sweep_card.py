@@ -257,9 +257,6 @@ class CompositionSweepCard(MakeDataCard):
         self._preview_input_count = None if count is None else max(0, int(count))
         self.refresh_compact_presentation()
 
-    def create_operation(self):
-        return CompositionSweepOperation()
-
     def get_summary_text(self) -> str:
         try:
             summary = self.create_operation().sampling_summary(self.get_params())

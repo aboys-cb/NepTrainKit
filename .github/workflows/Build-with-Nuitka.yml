@@ -141,6 +141,9 @@ jobs:
           python -c "import nep_adapters; assert nep_adapters.backend_status('cpu').available"
           python -m setuptools_scm  --force-write-version-files
 
+      - name: Compile Qt resources
+        run: pyside6-rcc src/NepTrainKit/src.qrc -o src/NepTrainKit/src_rc.py
+
       - name: Compile Qt translations
         run: python tools/update_translations.py --no-lupdate
 
@@ -169,7 +172,7 @@ jobs:
           if ($LASTEXITCODE -ne 0) {
             throw "Importing NepTrainKit native helpers failed with exit code $LASTEXITCODE."
           }
-          python -c "from NepTrainKit.main import create_app; from qfluentwidgets import fontFamilies; app = create_app([]); assert fontFamilies() == app.font().families(); print('GUI imports and font configuration passed')"
+          python -c "from NepTrainKit.main import create_app; from PySide6.QtCore import QFile; from qfluentwidgets import fontFamilies; app = create_app([]); assert fontFamilies() == app.font().families(); assert QFile.exists(':/images/src/images/logo.png') and QFile.exists(':/theme/src/qss/theme.qss'); print('GUI imports, font configuration, and Qt resources passed')"
           if ($LASTEXITCODE -ne 0) {
             throw "Importing and configuring the application failed with exit code $LASTEXITCODE."
           }

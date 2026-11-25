@@ -19,5 +19,4 @@ global-exclude *.so
 global-exclude *.dylib
 global-exclude *.pyd
 global-exclude *.dll
-global-exclude src/NepTrainKit/src/**
-global-exclude src/NepTrainKit/src.qrc
+exclude src/NepTrainKit/src_rc.py

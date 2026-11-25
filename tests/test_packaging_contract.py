@@ -94,10 +94,14 @@ def test_nuitka_build_compiles_and_verifies_native_helpers():
     assert "--neptrainkit-native-health-check" in workflow
 
 
-def test_nuitka_build_copies_and_verifies_chinese_translation_catalog():
+def test_nuitka_build_generates_qt_resources_and_copies_chinese_translation_catalog():
     workflow = (
         ROOT / ".github" / "workflows" / "Build-with-Nuitka.yml"
     ).read_text(encoding="utf-8")
+    assert workflow.index("pyside6-rcc src/NepTrainKit/src.qrc -o src/NepTrainKit/src_rc.py") < workflow.index(
+        "name: Build with Nuitka"
+    )
+    assert "QFile.exists(':/images/src/images/logo.png')" in workflow
     assert workflow.index("python tools/update_translations.py --no-lupdate") < workflow.index("name: Build with Nuitka")
 
     assert "src/NepTrainKit/translations" in workflow

@@ -10,6 +10,7 @@
 .idea/
 /src/NepTrainKit/?.py
 /src/NepTrainKit/_version.py
+/src/NepTrainKit/src_rc.py
 /src/NepTrainKit/Log/*.log
 /src/NepTrainKit/translations/*.qm
 /src/NepTrainKit/translations/.qm-build-*/

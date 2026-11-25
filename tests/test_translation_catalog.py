@@ -5,7 +5,7 @@ from pathlib import Path
 import subprocess
 
 import pytest
-from PySide6.QtCore import QTranslator
+from PySide6.QtCore import QFile, QTranslator
 
 from NepTrainKit import translation_catalog as catalog
 
@@ -101,7 +101,8 @@ def test_install_translator_generates_source_catalog(tmp_path, monkeypatch):
         i18n.install_translator(app, "en_US")
 
 
-def test_build_py_generates_catalog_in_build_output_without_source_qm(tmp_path, monkeypatch):
+@pytest.mark.parametrize("editable", [False, True])
+def test_build_py_generates_qt_resources_and_catalog(tmp_path, monkeypatch, editable):
     import runpy
     from unittest.mock import patch
     from setuptools import Distribution
@@ -113,6 +114,11 @@ def test_build_py_generates_catalog_in_build_output_without_source_qm(tmp_path, 
     package = tmp_path / "src/NepTrainKit"
     package.mkdir(parents=True)
     (package / "__init__.py").touch()
+    (package / "asset.txt").write_text("Qt test resource", encoding="utf-8")
+    (package / "src.qrc").write_text(
+        '<RCC><qresource prefix="/neptrainkit-build-test"><file>asset.txt</file></qresource></RCC>',
+        encoding="utf-8",
+    )
     ts = package / "translations/example.ts"
     _write_ts(ts)
     monkeypatch.chdir(tmp_path)
@@ -126,8 +132,22 @@ def test_build_py_generates_catalog_in_build_output_without_source_qm(tmp_path, 
     command = build_class(distribution)
     command.build_lib = str(tmp_path / "build")
     command.ensure_finalized()
+    command.editable_mode = editable
     command.run()
-    qm = tmp_path / "build/NepTrainKit/translations/example.qm"
+    build_package = Path(command.build_lib) / "NepTrainKit"
+    generated = package if editable else build_package
+    qm = generated / "translations/example.qm"
+    resource_module = generated / "src_rc.py"
     assert _translation(qm) == "你好"
-    assert str(qm) in command.get_outputs()
-    assert not ts.with_suffix(".qm").exists()
+    assert str(build_package / "src_rc.py") in command.get_outputs()
+    if editable:
+        assert Path(command.get_output_mapping()[str(build_package / "src_rc.py")]).resolve() == resource_module
+    else:
+        assert str(qm) in command.get_outputs()
+        assert not ts.with_suffix(".qm").exists()
+        assert not (package / "src_rc.py").exists()
+    module = runpy.run_path(str(resource_module))
+    try:
+        assert QFile.exists(":/neptrainkit-build-test/asset.txt")
+    finally:
+        module["qCleanupResources"]()

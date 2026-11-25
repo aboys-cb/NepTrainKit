@@ -10,7 +10,9 @@ from __future__ import annotations
 import os
 from pathlib import Path
 import runpy
+import subprocess
 import sys
+import tempfile
 
 import pybind11
 from setuptools import Extension, setup
@@ -23,18 +25,30 @@ _compile_catalog = runpy.run_path(
 )["compile_catalog"]
 
 
-class BuildPyWithTranslations(build_py):
-    """Ship freshly compiled catalogs in wheels, including builds from sdists."""
+class BuildPyWithQtResources(build_py):
+    """Generate Qt resources and translation catalogs for wheels and source installs."""
 
     def run(self):
         super().run()
-        package = Path(self.get_package_dir("NepTrainKit")) if self.editable_mode else Path(self.build_lib) / "NepTrainKit"
+        source = Path(self.get_package_dir("NepTrainKit"))
+        package = source if self.editable_mode else Path(self.build_lib) / "NepTrainKit"
+        with tempfile.TemporaryDirectory(dir=package) as directory:
+            output = Path(directory) / "src_rc.py"
+            subprocess.run(
+                [sys.executable, "-c", "from PySide6.scripts.pyside_tool import rcc; rcc()",
+                 str(source / "src.qrc"), "-o", str(output)],
+                check=True,
+            )
+            output.replace(package / output.name)
         for ts in (package / "translations").glob("*.ts"):
             _compile_catalog(ts, force=not self.editable_mode)
 
     def get_outputs(self, include_bytecode=1):
         outputs = super().get_outputs(include_bytecode)
         package = Path(self.build_lib) / "NepTrainKit"
+        resource_module = str(package / "src_rc.py")
+        if resource_module not in outputs:
+            outputs.append(resource_module)
         for ts in (package / "translations").glob("*.ts"):
             qm = str(ts.with_suffix(".qm"))
             if qm not in outputs:
@@ -94,7 +108,7 @@ neighbor_header = "src/native/include/neptrainkit/native/periodic_neighbors.hpp"
 fast_float_header = "src/native/io/fast_float.h"
 
 setup(
-    cmdclass={"build_py": BuildPyWithTranslations},
+    cmdclass={"build_py": BuildPyWithQtResources},
     ext_modules=[
         native_extension("_io", "src/native/io/module.cpp", depends=(fast_float_header,)),
         native_extension("_dump", "src/native/dump/module.cpp", depends=(fast_float_header,)),

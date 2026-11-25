@@ -39,6 +39,9 @@ def _analysis_payload():
                 "field_label": "spin_vec",
                 "component": "norm",
                 "value_view": "reference",
+                "hist_left": 0.0,
+                "hist_right": 2.0,
+                "bins": 2,
                 "series": [
                     {
                         "series_key": "Fe",
@@ -80,16 +83,21 @@ def test_distribution_explorer_keeps_request_and_bin_selection_contract():
     assert explorer.metricCombo.count() == 1
     assert explorer.seriesCombo.currentData() == "Fe"
 
-    explorer._select_bin(0)
+    metric = explorer._current_metric()
+    explorer._plot_adapter._emit_bin_click(metric, -0.51)
+    explorer._plot_adapter._emit_bin_click(metric, 2.51)
+    assert not data.resolve_calls
+    explorer._plot_adapter._emit_bin_click(metric, -0.5)
 
     assert data.resolve_calls == [(12, "atomic:spin_vec|norm", "Fe", 0)]
     assert selections == [([3, 7], "replace")]
 
     explorer.selectModeCombo.setCurrentIndex(1)
-    explorer._select_bin(1)
+    explorer._plot_adapter._emit_bin_click(metric, 1.0)
     explorer.selectModeCombo.setCurrentIndex(2)
-    explorer._select_bin(1)
+    explorer._plot_adapter._emit_bin_click(metric, 2.5)
 
+    assert data.resolve_calls[-2:] == [(12, "atomic:spin_vec|norm", "Fe", 1)] * 2
     assert selections[-2:] == [([3, 7], "add"), ([3, 7], "intersect")]
     explorer.deleteLater()
     app.processEvents()

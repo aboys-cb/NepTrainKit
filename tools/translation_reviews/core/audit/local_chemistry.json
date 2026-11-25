@@ -1,0 +1,88 @@
+{
+  "items": [
+    {
+      "path": "src/NepTrainKit/core/audit/local_chemistry.py",
+      "source": "A structure has invalid PBC metadata.",
+      "id": 28,
+      "review": "fix",
+      "review_note": "局部化学几何输入的 ValueError 会进入 AuditDimension.reason；页面的通用原因白名单没有这些句子，故原文可直接显示。",
+      "evidence": [
+        "src/NepTrainKit/core/audit/local_chemistry.py:299",
+        "src/NepTrainKit/core/audit/engine.py:251",
+        "src/NepTrainKit/ui/pages/training_set_audit.py:4216"
+      ],
+      "resolution": "whole_message",
+      "template": "A structure has invalid PBC metadata.",
+      "context": "RuntimeMessage"
+    },
+    {
+      "path": "src/NepTrainKit/core/audit/local_chemistry.py",
+      "source": "A structure has invalid positions or cell data.",
+      "id": 29,
+      "review": "fix",
+      "review_note": "局部化学几何输入的 ValueError 会进入 AuditDimension.reason；页面的通用原因白名单没有这些句子，故原文可直接显示。",
+      "evidence": [
+        "src/NepTrainKit/core/audit/local_chemistry.py:299",
+        "src/NepTrainKit/core/audit/engine.py:251",
+        "src/NepTrainKit/ui/pages/training_set_audit.py:4216"
+      ],
+      "resolution": "whole_message",
+      "template": "A structure has invalid positions or cell data.",
+      "context": "RuntimeMessage"
+    },
+    {
+      "path": "src/NepTrainKit/core/audit/local_chemistry.py",
+      "source": "Histogram bins and structure indices must have matching sizes.",
+      "id": 30,
+      "review": "diagnostic",
+      "review_note": "直方图、几何批处理或预测合并的数组/计数/参数契约保护；正常上层代码负责构造这些参数。诊断本身建议保留，外层中文提示另行处理。",
+      "evidence": [
+        "src/NepTrainKit/core/audit/neighbor_scan.py",
+        "src/NepTrainKit/core/calculator.py:290"
+      ],
+      "resolution": "localized_diagnostic"
+    },
+    {
+      "path": "src/NepTrainKit/core/audit/local_chemistry.py",
+      "source": "Histogram bins must be non-negative.",
+      "id": 31,
+      "review": "diagnostic",
+      "review_note": "直方图、几何批处理或预测合并的数组/计数/参数契约保护；正常上层代码负责构造这些参数。诊断本身建议保留，外层中文提示另行处理。",
+      "evidence": [
+        "src/NepTrainKit/core/audit/neighbor_scan.py",
+        "src/NepTrainKit/core/calculator.py:290"
+      ],
+      "resolution": "localized_diagnostic"
+    },
+    {
+      "path": "src/NepTrainKit/core/audit/local_chemistry.py",
+      "source": "A structure has invalid PBC metadata.",
+      "id": 32,
+      "review": "fix",
+      "review_note": "局部化学几何输入的 ValueError 会进入 AuditDimension.reason；页面的通用原因白名单没有这些句子，故原文可直接显示。",
+      "evidence": [
+        "src/NepTrainKit/core/audit/local_chemistry.py:299",
+        "src/NepTrainKit/core/audit/engine.py:251",
+        "src/NepTrainKit/ui/pages/training_set_audit.py:4216"
+      ],
+      "resolution": "whole_message",
+      "template": "A structure has invalid PBC metadata.",
+      "context": "RuntimeMessage"
+    },
+    {
+      "path": "src/NepTrainKit/core/audit/local_chemistry.py",
+      "source": "A structure has invalid PBC metadata.",
+      "id": 33,
+      "review": "fix",
+      "review_note": "局部化学几何输入的 ValueError 会进入 AuditDimension.reason；页面的通用原因白名单没有这些句子，故原文可直接显示。",
+      "evidence": [
+        "src/NepTrainKit/core/audit/local_chemistry.py:299",
+        "src/NepTrainKit/core/audit/engine.py:251",
+        "src/NepTrainKit/ui/pages/training_set_audit.py:4216"
+      ],
+      "resolution": "whole_message",
+      "template": "A structure has invalid PBC metadata.",
+      "context": "RuntimeMessage"
+    }
+  ]
+}

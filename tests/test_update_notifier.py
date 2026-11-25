@@ -1,5 +1,7 @@
 ﻿from __future__ import annotations
 
+import json
+from pathlib import Path
 from typing import Any
 
 import pytest
@@ -14,6 +16,63 @@ from NepTrainKit.ui.update import (
     should_notify_version,
     should_run_auto_check,
 )
+
+
+@pytest.mark.parametrize("failure", [None, "network", "invalid_model", "model_publish", "metadata_publish"])
+def test_nep89_update_preserves_previous_files_on_failure(tmp_path, monkeypatch, failure):
+    import requests
+    import NepTrainKit.ui.update as update
+    from NepTrainKit.core.adapter_api import NepAdaptersError
+
+    config = tmp_path / "Config"
+    config.mkdir()
+    model, metadata = config / "nep89.txt", config / "nep.json"
+    original_model, original_metadata = b"original model", b'{"date": 20240101}'
+    model.write_bytes(original_model)
+    metadata.write_bytes(original_metadata)
+    payload = (Path(__file__).parent / "data/nep/nep.txt").read_bytes()
+
+    class Response:
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *args):
+            return False
+
+        def raise_for_status(self):
+            pass
+
+        def iter_content(self, *args):
+            if failure == "network":
+                yield payload[:20]
+                raise OSError("connection reset")
+            yield b"invalid model" if failure == "invalid_model" else payload
+
+    monkeypatch.setattr(update, "module_path", tmp_path)
+    monkeypatch.setattr(requests, "get", lambda *args, **kwargs: Response())
+    successes = []
+    monkeypatch.setattr(update.MessageManager, "send_success_message", successes.append)
+    replace = update.os.replace
+
+    def publish(source, target):
+        if (failure == "model_publish" and target == model or
+                failure == "metadata_publish" and target == metadata):
+            raise OSError("publish failed")
+        return replace(source, target)
+
+    monkeypatch.setattr(update.os, "replace", publish)
+    if failure is None:
+        update.UpdateNEP89Woker.download(None, 20261112)
+        assert model.read_bytes() == payload
+        assert json.loads(metadata.read_text())["date"] == 20261112
+        assert len(successes) == 1
+    else:
+        with pytest.raises((OSError, NepAdaptersError)):
+            update.UpdateNEP89Woker.download(None, 20261112)
+        assert model.read_bytes() == original_model
+        assert metadata.read_bytes() == original_metadata
+        assert not successes
+    assert {path.name for path in config.iterdir()} == {"nep89.txt", "nep.json"}
 
 
 def test_normalize_tag_version_removes_v_prefix() -> None:

@@ -2,30 +2,54 @@
 from __future__ import annotations
 
 import datetime
-import hashlib
-import shutil
+from contextlib import nullcontext
 from pathlib import Path
 
 from typing import Iterable
 from dataclasses import dataclass, field
 
 from loguru import logger
-from sqlalchemy import select, func, distinct
+from sqlalchemy import select, func, distinct, case, update
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import aliased
-
-from NepTrainKit.utils import sha256_file
-from NepTrainKit.paths import get_user_config_path, ensure_directory
 
 from .database import Database
 from .models import (
 
-    Tag,ModelVersionTag,
+    Tag,ModelVersionTag, BenchmarkRun,
     Project,
     ModelVersion,
-    StorageRef,
 )
 from NepTrainKit.core.utils import read_nep_in, read_nep_out_file, get_rmse, get_xyz_nframe
+
+
+def _descendant_ids(session, model, roots):
+    descendants = select(model.id).where(model.id.in_(roots)).cte(recursive=True)
+    descendants = descendants.union(select(model.id).where(model.parent_id == descendants.c.id))
+    return set(session.scalars(select(descendants.c.id)))
+
+
+def preserve_shared_model_runs(session, removed_ids, *, dry_run=False):
+    """Transfer shared run ownership before model/project cascades remove its owner."""
+    if not removed_ids:
+        return {}
+    removed = dict(session.execute(
+        select(ModelVersion.id, ModelVersion.content_hash).where(ModelVersion.id.in_(removed_ids))
+    ).all())
+    survivors = {}
+    for model_id, digest in session.execute(
+        select(ModelVersion.id, ModelVersion.content_hash).where(
+            ModelVersion.id.not_in(removed_ids),
+            ModelVersion.content_hash.in_([value for value in removed.values() if value]),
+        ).order_by(ModelVersion.project_id.is_(None), ModelVersion.id)
+    ):
+        survivors.setdefault(digest, model_id)
+    transfers = {model_id: survivors[digest] for model_id, digest in removed.items() if digest in survivors}
+    if transfers and not dry_run:
+        session.execute(update(BenchmarkRun).where(BenchmarkRun.model_id.in_(transfers)).values(
+            model_id=case(transfers, value=BenchmarkRun.model_id)
+        ))
+    return transfers
 
 
 @dataclass
@@ -66,6 +90,9 @@ class ModelItem:
     tags:list[TagItem]=field( default_factory=list)
 
     children:list[ModelItem]=field( default_factory=list)
+    model_kind: str = ""
+    accuracy_source: dict | None = None
+    content_hash: str | None = None
 
 
 @dataclass
@@ -113,48 +140,6 @@ class TagService:
             )
             return [TagItem(name=t.name, tag_id=t.id, color=t.color, notes=t.notes) for t in tags]
 
-def _hash_file(path: str) -> str:
-    """Return the SHA256 hash of a file."""
-    h = hashlib.sha256()
-    with open(path, "rb") as f:  # pragma: no cover - simple
-        for chunk in iter(lambda: f.read(8192), b""):
-            h.update(chunk)
-    return h.hexdigest()
-def _stat_path(p: Path) -> tuple[int | None, datetime.datetime | None, bool]:
-    """Return size, modification time, and existence flag for a path."""
-    try:
-        st = p.stat()
-        return st.st_size, datetime.datetime.fromtimestamp(st.st_mtime), True
-    except FileNotFoundError:
-        return None, None, False
-
-def _create_storage(session, path: str, scheme: str = "file") -> StorageRef:
-    """Persist a storage reference for the given filesystem path."""
-    p = Path(path).expanduser().resolve()
-    size, mtime, ok = _stat_path(p)
-
-    if scheme == "file":
-        uri =  str(p)
-        content_hash = sha256_file(p)
-    else:
-        # Persist content-addressable storage copy under the user cache directory.
-        content_hash = sha256_file(p)
-        cas_dir = ensure_directory(get_user_config_path() / 'cas')
-        dst = cas_dir / content_hash
-        if not dst.exists():
-            shutil.copy2(p, dst)
-        uri = content_hash
-    storage = StorageRef(
-        scheme=f"{scheme}://",
-        uri=uri,
-        size=size,
-        content_hash=content_hash,
-        mtime=mtime,
-        exist_flag=True
-    )
-    session.add(storage)
-    session.flush()
-    return storage
 @dataclass
 class ProjectService:
     """Manage creation and traversal of project hierarchies."""
@@ -194,33 +179,51 @@ class ProjectService:
             return None
         return projects[0]
 
-    def create_project(self,  name: str, notes: str = "", parent_id: int = None   ) -> Project|None:
+    def create_project(self, name: str, notes: str = "", parent_id: int = None, *, _session=None) -> Project|None:
         """Create a project record and return the ORM instance."""
         try:
-            with self.db.session() as session:
+            with (self.db.session() if _session is None else nullcontext(_session)) as session:
                 family = Project(name=name, notes=notes,parent_id=parent_id )
                 session.add(family)
-                session.commit()
+                session.flush()
+                if _session is None:
+                    session.commit()
                 return family
         except Exception as e:
             logger.error(e)
             return None
     def modify_project(self, project_id: int, name: str, notes: str = "", parent_id: int = None ) -> Project|None:
         """Update project attributes and persist the changes."""
-
-
-        with self.db.session() as session:
-
+        with self.db.write_session() as session:
+            if session.get(Project, project_id) is None:
+                raise ValueError(f"Project {project_id} not found")
+            if session.scalar(select(Project.id).where(Project.name == name, Project.id != project_id)) is not None:
+                raise ValueError("Project name already exists.")
+            seen = {project_id}
+            ancestor_id = parent_id
+            while ancestor_id is not None:
+                if ancestor_id in seen:
+                    raise ValueError("A project cannot be its own ancestor.")
+                seen.add(ancestor_id)
+                ancestor = session.get(Project, ancestor_id)
+                if ancestor is None:
+                    raise ValueError(f"Project {ancestor_id} not found")
+                ancestor_id = ancestor.parent_id
             session.query(Project).filter_by(id=project_id).update(
-                {"name":name,"notes":notes,"parent_id":parent_id}
+                {"name": name, "notes": notes, "parent_id": parent_id}
             )
-
-            session.commit()
 
 
     def remove_project(self, project_id: int) -> Project|None:
         """Delete a project by id."""
-        with self.db.session() as session:
+        with self.db.write_session() as session:
+            project_ids = _descendant_ids(session, Project, [project_id])
+            removed_ids = set(session.scalars(select(ModelVersion.id).where(ModelVersion.project_id.in_(project_ids))))
+            # Lineage is not ownership: a different project's derived version survives.
+            session.execute(update(ModelVersion).where(
+                ModelVersion.parent_id.in_(removed_ids), ModelVersion.id.not_in(removed_ids),
+            ).values(parent_id=None))
+            preserve_shared_model_runs(session, removed_ids)
             session.query(Project).filter_by(id=project_id).delete()
 
 
@@ -303,7 +306,7 @@ class ModelService:
 
             # Tag filter: match any of the provided tags
             if names_any:
-                q = q.join(mv.tags).filter(tg.name.in_(names_any)).distinct()
+                q = q.filter(mv.tags.any(tg.name.in_(names_any)))
 
             # Tag filter: require all provided tags
             if names_all:
@@ -351,76 +354,50 @@ class ModelService:
         return result
 
     # --- Tag helpers ---
-    def _get_or_create_tags(self, names: Iterable[str]) -> list["Tag"]:
-        """Fetch existing tags or create new ones for the provided names."""
+    def _get_or_create_tags(self, names: Iterable[str], session) -> list["Tag"]:
+        """Return existing and new tags in the caller's transaction."""
         names = self._normalize_names(names)
         if not names:
             return []
-        with self.db.session() as session:
-
-            # Query existing rows; Tag.name uses a NOCASE unique constraint.
-            existing = session.query(Tag).where(Tag.name.in_(names)).all()
-            have_lower = {t.name.lower(): t for t in existing}
-
-            # Create any tags that do not already exist.
-            to_create = [Tag(name=n) for n in names if n.lower() not in have_lower]
-            if to_create:
-                session.add_all(to_create)
-
-                session.flush()
-
-
-        return list(have_lower.values())
-    def _get_or_create_tags_simple(self, names: Iterable[str], session) -> list["Tag"]:
-        """Simplified helper that ensures tags exist within the current session."""
-        names = self._normalize_names(names)
-        if not names:
-            return []
-        # Step 1: query all existing tags
-
-
         existing = session.query(Tag).where(Tag.name.in_(names)).all()
 
         have_lower = {t.name.lower(): t for t in existing}
-        # Step 2: create any missing tags within the same session
         to_create = [Tag(name=n) for n in names if n.lower() not in have_lower]
         if to_create:
             session.add_all(to_create)
-            session.flush()  # obtain generated primary keys
-            session.commit()
+            session.flush()  # caller owns the transaction
         return existing + to_create
-    def _build_tree(self, node: ModelVersion) -> ModelItem:
-        """Recursively map ORM model hierarchy into ``ModelItem`` objects."""
-
-        item = ModelItem(
-            model_id=node.id,
-            name=node.name,
-            notes=node.notes,
-            parent_id=node.parent_id,
-            project_id=node.project_id,
-            model_type=node.model_type,
-            data_size=node.data_size,
-            energy=node.energy,
-            force=node.force,
-            virial=node.virial,
-            model_path=node.model_path,
-            # train_params=node.train_params,
-            # calc_params=node.calc_params,
-            created_at=node.created_at,
-
-
+    @staticmethod
+    def _model_item(node: ModelVersion) -> ModelItem:
+        return ModelItem(
+            model_id=node.id, name=node.name, notes=node.notes, parent_id=node.parent_id,
+            project_id=node.project_id, model_type=node.model_type, model_kind=node.model_kind,
+            accuracy_source=node.accuracy_source, content_hash=node.content_hash,
+            data_size=node.data_size, energy=node.energy, force=node.force, virial=node.virial,
+            model_path=node.model_path, created_at=node.created_at,
+            tags=[TagItem(name=t.name, tag_id=t.id, notes=t.notes, color=t.color) for t in node.tags],
         )
-        for tag in node.tags:
-            item.tags.append(TagItem(name=tag.name, tag_id=tag.id,notes=tag.notes,color=tag.color))
-        # Recursive CTE to collect descendant projects
-        for child in node.children:
-            item.children.append(self._build_tree(child))
+
+    def _build_tree(self, node: ModelVersion) -> ModelItem:
+        item = self._model_item(node)
+        item.children = [self._build_tree(child) for child in node.children]
         return item
 
-
-    def get_models_by_project_id(self, project_id: int) -> list[ModelItem]:
-        return self.search_models_advanced(project_id=project_id,parent_id=-1)
-
+    def get_models_by_project_id(self, project_id: int | None) -> list[ModelItem]:
+        """List registered versions once, including versions whose parent is outside the filter."""
+        with self.db.session() as session:
+            query = select(ModelVersion).where(ModelVersion.project_id.is_not(None))
+            if project_id is not None:
+                projects = self._project_ids_with_descendants_subq(session, [project_id])
+                query = query.where(ModelVersion.project_id.in_(projects)).order_by(ModelVersion.created_at)
+            else:
+                query = query.order_by(ModelVersion.created_at.desc())
+            items = {row.id: self._model_item(row) for row in session.scalars(query.order_by(ModelVersion.id))}
+        roots = []
+        for item in items.values():
+            parent = items.get(item.parent_id)
+            (parent.children if parent is not None else roots).append(item)
+        return roots
 
     def add_version_from_path(self,
                               model_type:str,
@@ -481,21 +458,21 @@ class ModelService:
                     tags:list[str] | None = None,
                     notes: str = "",
                     parent_id: int | None = None,
-                    id:int|None = None
+                    id:int|None = None,
+                    *, _session=None,
                     ) -> ModelVersion:
 
-        with self.db.session() as session:
-            tag_objs = self._get_or_create_tags_simple(tags or [],session)
+        with (self.db.session() if _session is None else nullcontext(_session)) as session:
+            tag_objs = self._get_or_create_tags(tags or [],session)
 
             project = session.get(Project, project_id)
             if project is None:
                 raise ValueError(f"Project {project} not found")
-            # data_sr =   None
-            # model_sr =   None
-            # if model_file:
-            #     model_sr  = _create_storage(session,model_file )
-            # if data_file:
-            #     data_sr  = _create_storage(session,data_file)
+            if parent_id is not None:
+                if id is not None and id == parent_id:
+                    raise ValueError("A model cannot be its own ancestor.")
+                if session.get(ModelVersion, parent_id) is None:
+                    raise ValueError(f"ModelVersion {parent_id} not found")
 
             # if parent_id is None:
             #     parent_id = project.active_model_version_id
@@ -533,45 +510,75 @@ class ModelService:
             #     payload_json=json.dumps({"path": path}),
             # )
             # session.add(event)
-            session.commit()
+            if _session is None:
+                session.commit()
             return version
-    def modify_model(self,model_id:int,**kwargs):
-        with self.db.session() as session:
-            mv = session.get(ModelVersion, model_id)  # Load the model version
-            if not mv:
+    def modify_model(self, model_id: int, **kwargs) -> ModelVersion:
+        """Edit metadata; different model bytes create a new immutable version."""
+        with self.db.write_session() as session:
+            original = session.get(ModelVersion, model_id)
+            if original is None:
                 raise ValueError(f"ModelVersion {model_id} not found")
-            tag_objs = self._get_or_create_tags_simple(kwargs.pop("tags", []) or [],session)
-
-            # Update basic scalar fields
-            for key, value in kwargs.items():
-                setattr(mv, key, value)
-
-            # Update relationship fields
-            if tag_objs:
+            mv = original
+            path_value = str(kwargs.get("model_path", original.model_path))
+            if original.content_hash:
+                if kwargs.get("model_type", original.model_type).upper() != original.model_type.upper():
+                    raise ValueError("已有快照的势版本不能修改模型类型，请新建模型。")
+                path = Path(path_value).expanduser()
+                if path.is_dir():
+                    path = path / "nep.txt"
+                # Metadata edits still work when an unchanged source is offline.
+                if path_value != original.model_path or path.is_file():
+                    from NepTrainKit.core.validation.service import ModelDraft, parse_model_header
+                    from NepTrainKit.core.validation.library import Library
+                    draft = ModelDraft.from_file(path)
+                    if draft.content_hash != original.content_hash:
+                        library = Library(self.db.path.parent, create=False)
+                        kind, elements = parse_model_header(draft.data)
+                        digest = library.put_bytes(draft.data)
+                        mv = ModelVersion(
+                            name=original.name, project_id=original.project_id,
+                            model_type=original.model_type, model_path=path_value,
+                            notes=original.notes, parent_id=original.id,
+                            content_hash=digest, model_kind=kind, elements=list(elements),
+                            source_path=draft.source_path, tags=set(original.tags),
+                        )
+                        session.add(mv)
+                        # Never carry measurements from the old model to new bytes.
+                        for key in ("energy", "force", "virial", "data_size"):
+                            if kwargs.get(key) == getattr(original, key):
+                                kwargs.pop(key, None)
+                        kwargs.pop("parent_id", None)
+                        if kwargs.get("name", original.name) == original.name:
+                            kwargs["name"] = original.name[:70] + " · 新版本"
+                    else:
+                        mv.source_path = draft.source_path
+            if mv is original:
+                ancestor_id = kwargs.get("parent_id", original.parent_id)
+                seen = {original.id}
+                while ancestor_id is not None:
+                    if ancestor_id in seen:
+                        raise ValueError("A model cannot be its own ancestor.")
+                    seen.add(ancestor_id)
+                    ancestor = session.get(ModelVersion, ancestor_id)
+                    if ancestor is None:
+                        raise ValueError(f"ModelVersion {ancestor_id} not found")
+                    ancestor_id = ancestor.parent_id
+            tags = kwargs.pop("tags", None)
+            if tags is not None:
+                # This helper flushes rather than committing a partial model edit.
+                tag_objs = self._get_or_create_tags(tags, session)
                 mv.tags = set(tag_objs)
+            for key, value in kwargs.items():
+                if key in ("energy", "force", "virial") and value != getattr(mv, key):
+                    mv.accuracy_source = None
+                setattr(mv, key, str(value) if key == "model_path" else value)
             session.commit()
+            return mv
+
     def remove_model(self, model_id: int) :
         with self.db.session() as session:
+            removed_ids = _descendant_ids(session, ModelVersion, [model_id])
+            preserve_shared_model_runs(session, removed_ids)
             session.query(ModelVersion).filter_by(id=model_id).delete()
             session.commit()
-
-class LineageService:
-    """Query lineage chains for data and model versions."""
-
-    def __init__(self, db: Database):
-        self.db = db
-
-    def _trace(self, cls, start_id: int):
-        with self.db.session() as session:
-            node = session.get(cls, start_id)
-            chain = []
-            while node is not None:
-                chain.append(node)
-                if node.parent_id is None:
-                    break
-                node = session.get(cls, node.parent_id)
-            return chain
-
-
-    def model_lineage(self, model_version_id: int):
-        return self._trace(ModelVersion, model_version_id)

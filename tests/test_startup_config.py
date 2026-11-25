@@ -9,6 +9,23 @@ import sys
 ROOT = Path(__file__).resolve().parents[1]
 
 
+def test_test_session_isolates_persistent_config_and_runtime():
+    from NepTrainKit.config import Config
+    from NepTrainKit.paths import get_user_config_path
+
+    root = Path(os.environ["NEPTRAINKIT_LIBRARY"]).parent
+    assert get_user_config_path() == root / "config"
+    assert Path(Config._instance.engine.url.database).parent == root / "config"
+    assert Path(os.environ["NEPTRAINKIT_RUNTIME_ROOT"]) == root / "runtime"
+
+
+def test_headless_session_has_explicit_vispy_dpi():
+    from vispy import config
+
+    if os.environ.get("QT_QPA_PLATFORM") in {"offscreen", "minimal"}:
+        assert config["dpi"] == 96
+
+
 def test_unusable_config_directory_stops_startup_with_actionable_error(
     tmp_path: Path,
 ) -> None:

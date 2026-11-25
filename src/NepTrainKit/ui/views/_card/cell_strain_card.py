@@ -3,7 +3,7 @@
 from qfluentwidgets import CheckBox, ComboBox, LineEdit
 
 from NepTrainKit.core import CardManager
-from NepTrainKit.core.cards.lattice import CellStrainOperation, CellStrainParams
+from NepTrainKit.core.cards.lattice import CellStrainParams
 from NepTrainKit.core.cards.operation import params_to_dict
 from NepTrainKit.ui.messages import translate_runtime_message
 from NepTrainKit.ui.views._card.i18n_utils import combo_value, set_combo_value
@@ -14,6 +14,37 @@ from NepTrainKit.ui.widgets import (
     RangeTripletInputFrame,
     ResponsiveFormGrid,
 )
+
+
+class _StrainRangeFrame(RangeTripletInputFrame):
+    """Stack high-precision strain values when the inspector is narrow."""
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self._labels = [self.layout().itemAtPosition(0, i).widget() for i in range(3)]
+        self._stacked = None
+        for control in self.object_list:
+            control.valueChanged.connect(self._reflow)
+
+    def resizeEvent(self, event):
+        super().resizeEvent(event)
+        self._reflow()
+
+    def _reflow(self, *_args):
+        if not hasattr(self, "_labels"):
+            return
+        stacked = self.width() < 3 * max(c.readable_width_hint() for c in self.object_list) + 12
+        if stacked == self._stacked:
+            return
+        self._stacked = stacked
+        layout = self.layout()
+        for widget in self._labels + self.object_list:
+            layout.removeWidget(widget)
+        for i, (label, control) in enumerate(zip(self._labels, self.object_list)):
+            layout.addWidget(label, i if stacked else 0, 0 if stacked else i)
+            layout.addWidget(control, i if stacked else 1, 1 if stacked else i)
+            layout.setColumnStretch(i, int(i == 1) if stacked else 1)
+        self.updateGeometry()
 
 
 @CardManager.register_card
@@ -117,10 +148,11 @@ class CellStrainCard(MakeDataCard):
         self._on_mode_changed()
 
     def _range_frame(self) -> RangeTripletInputFrame:
-        frame = RangeTripletInputFrame(self)
+        frame = _StrainRangeFrame(self)
+        frame.setDecimals(6)
         frame.object_list[0].setRange(-99.0, 100.0)
         frame.object_list[1].setRange(-99.0, 100.0)
-        frame.object_list[2].setRange(0.001, 199.0)
+        frame.object_list[2].setRange(0.000001, 199.0)
         frame.set_input_value([-5.0, 5.0, 1.0])
         return frame
 
@@ -178,23 +210,9 @@ class CellStrainCard(MakeDataCard):
     def _custom_axes_from_core(text: str) -> str:
         return text.strip().upper().translate(str.maketrans("XYZ", "ABC")).lower()
 
-    @staticmethod
-    def _dataset_count(dataset) -> int:
-        if dataset is None:
-            return 0
-        if hasattr(dataset, "arrays") and hasattr(dataset, "get_chemical_symbols"):
-            return 1
-        try:
-            return len(dataset)
-        except TypeError:
-            return 0
-
     def set_preview_input_count(self, count: int | None) -> None:
         self._preview_input_count = None if count is None else max(0, int(count))
         self.refresh_compact_presentation()
-
-    def create_operation(self):
-        return CellStrainOperation()
 
     def get_summary_text(self) -> str:
         try:

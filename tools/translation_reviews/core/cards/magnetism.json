@@ -1,0 +1,495 @@
+{
+  "items": [
+    {
+      "path": "src/NepTrainKit/core/cards/magnetism.py",
+      "source": "Scan range must contain exactly three values: start, stop, step.",
+      "id": 177,
+      "review": "fix",
+      "review_note": "属于卡片 operation 的输入校验或失败说明。已对照操作调用关系，异常由工作线程交给卡片状态及消息框；部分会先被结构化异常包装，但原始 reason 仍保留。",
+      "evidence": [
+        "src/NepTrainKit/ui/threads.py:159",
+        "src/NepTrainKit/ui/threads.py:222",
+        "src/NepTrainKit/ui/widgets/card_widget.py:1144"
+      ],
+      "resolution": "whole_message",
+      "template": "Scan range must contain exactly three values: start, stop, step.",
+      "context": "CardOperationError"
+    },
+    {
+      "path": "src/NepTrainKit/core/cards/magnetism.py",
+      "source": "Scan range values must be finite.",
+      "id": 178,
+      "review": "fix",
+      "review_note": "属于卡片 operation 的输入校验或失败说明。已对照操作调用关系，异常由工作线程交给卡片状态及消息框；部分会先被结构化异常包装，但原始 reason 仍保留。",
+      "evidence": [
+        "src/NepTrainKit/ui/threads.py:159",
+        "src/NepTrainKit/ui/threads.py:222",
+        "src/NepTrainKit/ui/widgets/card_widget.py:1144"
+      ],
+      "resolution": "whole_message",
+      "template": "Scan range values must be finite.",
+      "context": "CardOperationError"
+    },
+    {
+      "path": "src/NepTrainKit/core/cards/magnetism.py",
+      "source": "Scan range step must be positive.",
+      "id": 179,
+      "review": "fix",
+      "review_note": "属于卡片 operation 的输入校验或失败说明。已对照操作调用关系，异常由工作线程交给卡片状态及消息框；部分会先被结构化异常包装，但原始 reason 仍保留。",
+      "evidence": [
+        "src/NepTrainKit/ui/threads.py:159",
+        "src/NepTrainKit/ui/threads.py:222",
+        "src/NepTrainKit/ui/widgets/card_widget.py:1144"
+      ],
+      "resolution": "whole_message",
+      "template": "Scan range step must be positive.",
+      "context": "CardOperationError"
+    },
+    {
+      "path": "src/NepTrainKit/core/cards/magnetism.py",
+      "source": "Integer scan range must contain exactly three values: start, stop, step.",
+      "id": 180,
+      "review": "fix",
+      "review_note": "属于卡片 operation 的输入校验或失败说明。已对照操作调用关系，异常由工作线程交给卡片状态及消息框；部分会先被结构化异常包装，但原始 reason 仍保留。",
+      "evidence": [
+        "src/NepTrainKit/ui/threads.py:159",
+        "src/NepTrainKit/ui/threads.py:222",
+        "src/NepTrainKit/ui/widgets/card_widget.py:1144"
+      ],
+      "resolution": "whole_message",
+      "template": "Integer scan range must contain exactly three values: start, stop, step.",
+      "context": "CardOperationError"
+    },
+    {
+      "path": "src/NepTrainKit/core/cards/magnetism.py",
+      "source": "Integer scan range step must be positive.",
+      "id": 181,
+      "review": "fix",
+      "review_note": "属于卡片 operation 的输入校验或失败说明。已对照操作调用关系，异常由工作线程交给卡片状态及消息框；部分会先被结构化异常包装，但原始 reason 仍保留。",
+      "evidence": [
+        "src/NepTrainKit/ui/threads.py:159",
+        "src/NepTrainKit/ui/threads.py:222",
+        "src/NepTrainKit/ui/widgets/card_widget.py:1144"
+      ],
+      "resolution": "whole_message",
+      "template": "Integer scan range step must be positive.",
+      "context": "CardOperationError"
+    },
+    {
+      "path": "src/NepTrainKit/core/cards/magnetism.py",
+      "source": "MagneticOrder: reference axis must be a finite nonzero 3-vector.",
+      "id": 182,
+      "review": "fix",
+      "review_note": "属于卡片 operation 的输入校验或失败说明。已对照操作调用关系，异常由工作线程交给卡片状态及消息框；部分会先被结构化异常包装，但原始 reason 仍保留。",
+      "evidence": [
+        "src/NepTrainKit/ui/threads.py:159",
+        "src/NepTrainKit/ui/threads.py:222",
+        "src/NepTrainKit/ui/widgets/card_widget.py:1144"
+      ],
+      "resolution": "whole_message",
+      "template": "MagneticOrder: reference axis must be a finite nonzero 3-vector.",
+      "context": "CardOperationError"
+    },
+    {
+      "path": "src/NepTrainKit/core/cards/magnetism.py",
+      "source": "MagneticOrder: AFM group mode requires atoms.arrays['group']; add Layer Groups upstream or choose k-vector mode.",
+      "id": 183,
+      "review": "fix",
+      "review_note": "属于卡片 operation 的输入校验或失败说明。已对照操作调用关系，异常由工作线程交给卡片状态及消息框；部分会先被结构化异常包装，但原始 reason 仍保留。",
+      "evidence": [
+        "src/NepTrainKit/ui/threads.py:159",
+        "src/NepTrainKit/ui/threads.py:222",
+        "src/NepTrainKit/ui/widgets/card_widget.py:1144"
+      ],
+      "resolution": "whole_message",
+      "template": "MagneticOrder: AFM group mode requires atoms.arrays['group']; add Layer Groups upstream or choose k-vector mode.",
+      "context": "CardOperationError"
+    },
+    {
+      "path": "src/NepTrainKit/core/cards/magnetism.py",
+      "source": "MagneticOrder: AFM group labels must be non-empty.",
+      "id": 184,
+      "review": "fix",
+      "review_note": "属于卡片 operation 的输入校验或失败说明。已对照操作调用关系，异常由工作线程交给卡片状态及消息框；部分会先被结构化异常包装，但原始 reason 仍保留。",
+      "evidence": [
+        "src/NepTrainKit/ui/threads.py:159",
+        "src/NepTrainKit/ui/threads.py:222",
+        "src/NepTrainKit/ui/widgets/card_widget.py:1144"
+      ],
+      "resolution": "whole_message",
+      "template": "MagneticOrder: AFM group labels must be non-empty.",
+      "context": "CardOperationError"
+    },
+    {
+      "path": "src/NepTrainKit/core/cards/magnetism.py",
+      "source": "SmallAngleSpinTilt: canting_mode must be Global tilt, Single-spin tilt, Atom pair canting, or Group pair canting.",
+      "id": 185,
+      "review": "fix",
+      "review_note": "属于卡片 operation 的输入校验或失败说明。已对照操作调用关系，异常由工作线程交给卡片状态及消息框；部分会先被结构化异常包装，但原始 reason 仍保留。",
+      "evidence": [
+        "src/NepTrainKit/ui/threads.py:159",
+        "src/NepTrainKit/ui/threads.py:222",
+        "src/NepTrainKit/ui/widgets/card_widget.py:1144"
+      ],
+      "resolution": "whole_message",
+      "template": "SmallAngleSpinTilt: canting_mode must be Global tilt, Single-spin tilt, Atom pair canting, or Group pair canting.",
+      "context": "CardOperationError"
+    },
+    {
+      "path": "src/NepTrainKit/core/cards/magnetism.py",
+      "source": "SmallAngleSpinTilt: max_outputs must be >= 2 when include_reference is enabled.",
+      "id": 186,
+      "review": "fix",
+      "review_note": "属于卡片 operation 的输入校验或失败说明。已对照操作调用关系，异常由工作线程交给卡片状态及消息框；部分会先被结构化异常包装，但原始 reason 仍保留。",
+      "evidence": [
+        "src/NepTrainKit/ui/threads.py:159",
+        "src/NepTrainKit/ui/threads.py:222",
+        "src/NepTrainKit/ui/widgets/card_widget.py:1144"
+      ],
+      "resolution": "whole_message",
+      "template": "SmallAngleSpinTilt: max_outputs must be >= 2 when include_reference is enabled.",
+      "context": "CardOperationError"
+    },
+    {
+      "path": "src/NepTrainKit/core/cards/magnetism.py",
+      "source": "SmallAngleSpinTilt requires usable initial magnetic moments; provide initial_magmoms or select Map/default magnitude.",
+      "id": 187,
+      "review": "fix",
+      "review_note": "属于卡片 operation 的输入校验或失败说明。已对照操作调用关系，异常由工作线程交给卡片状态及消息框；部分会先被结构化异常包装，但原始 reason 仍保留。",
+      "evidence": [
+        "src/NepTrainKit/ui/threads.py:159",
+        "src/NepTrainKit/ui/threads.py:222",
+        "src/NepTrainKit/ui/widgets/card_widget.py:1144"
+      ],
+      "resolution": "whole_message",
+      "template": "SmallAngleSpinTilt requires usable initial magnetic moments; provide initial_magmoms or select Map/default magnitude.",
+      "context": "CardOperationError"
+    },
+    {
+      "path": "src/NepTrainKit/core/cards/magnetism.py",
+      "source": "Manual atom pair canting requires the same number of left and right indices.",
+      "id": 188,
+      "review": "fix",
+      "review_note": "属于卡片 operation 的输入校验或失败说明。已对照操作调用关系，异常由工作线程交给卡片状态及消息框；部分会先被结构化异常包装，但原始 reason 仍保留。",
+      "evidence": [
+        "src/NepTrainKit/ui/threads.py:159",
+        "src/NepTrainKit/ui/threads.py:222",
+        "src/NepTrainKit/ui/widgets/card_widget.py:1144"
+      ],
+      "resolution": "whole_message",
+      "template": "Manual atom pair canting requires the same number of left and right indices.",
+      "context": "CardOperationError"
+    },
+    {
+      "path": "src/NepTrainKit/core/cards/magnetism.py",
+      "source": "Unsupported bond_filter_mode: ⟦value⟧",
+      "id": 189,
+      "review": "fix",
+      "review_note": "属于卡片 operation 的输入校验或失败说明。已对照操作调用关系，异常由工作线程交给卡片状态及消息框；部分会先被结构化异常包装，但原始 reason 仍保留。",
+      "evidence": [
+        "src/NepTrainKit/ui/threads.py:159",
+        "src/NepTrainKit/ui/threads.py:222",
+        "src/NepTrainKit/ui/widgets/card_widget.py:1144"
+      ],
+      "resolution": "whole_message",
+      "template": "Unsupported bond_filter_mode: {value0}",
+      "context": "CardOperationError"
+    },
+    {
+      "path": "src/NepTrainKit/core/cards/magnetism.py",
+      "source": "Spin Disorder mode must be Flip fraction, Cone disorder, or Randomize fraction.",
+      "id": 190,
+      "review": "fix",
+      "review_note": "属于卡片 operation 的输入校验或失败说明。已对照操作调用关系，异常由工作线程交给卡片状态及消息框；部分会先被结构化异常包装，但原始 reason 仍保留。",
+      "evidence": [
+        "src/NepTrainKit/ui/threads.py:159",
+        "src/NepTrainKit/ui/threads.py:222",
+        "src/NepTrainKit/ui/widgets/card_widget.py:1144"
+      ],
+      "resolution": "whole_message",
+      "template": "Spin Disorder mode must be Flip fraction, Cone disorder, or Randomize fraction.",
+      "context": "CardOperationError"
+    },
+    {
+      "path": "src/NepTrainKit/core/cards/magnetism.py",
+      "source": "Spin Disorder magnitude_source must be Existing initial magmoms or Map/default magnitude.",
+      "id": 191,
+      "review": "fix",
+      "review_note": "属于卡片 operation 的输入校验或失败说明。已对照操作调用关系，异常由工作线程交给卡片状态及消息框；部分会先被结构化异常包装，但原始 reason 仍保留。",
+      "evidence": [
+        "src/NepTrainKit/ui/threads.py:159",
+        "src/NepTrainKit/ui/threads.py:222",
+        "src/NepTrainKit/ui/widgets/card_widget.py:1144"
+      ],
+      "resolution": "whole_message",
+      "template": "Spin Disorder magnitude_source must be Existing initial magmoms or Map/default magnitude.",
+      "context": "CardOperationError"
+    },
+    {
+      "path": "src/NepTrainKit/core/cards/magnetism.py",
+      "source": "Spin Disorder requires vector magnetic moments or liftable scalar magmoms.",
+      "id": 192,
+      "review": "technical",
+      "review_note": "余下英文仅为代码参数、枚举值、已使用的卡片标识或磁矩字段；没有未翻译的英文谓语/操作说明。可润色卡片名，但不按本次混排缺陷计。",
+      "evidence": [
+        "src/NepTrainKit/ui/messages.py:294"
+      ]
+    },
+    {
+      "path": "src/NepTrainKit/core/cards/magnetism.py",
+      "source": "Correlated Random Spin: samples must be >= 1.",
+      "id": 193,
+      "review": "technical",
+      "review_note": "余下英文仅为代码参数、枚举值、已使用的卡片标识或磁矩字段；没有未翻译的英文谓语/操作说明。可润色卡片名，但不按本次混排缺陷计。",
+      "evidence": [
+        "src/NepTrainKit/ui/messages.py:294"
+      ]
+    },
+    {
+      "path": "src/NepTrainKit/core/cards/magnetism.py",
+      "source": "Correlated Random Spin: magnitude_source must be Existing initial magmoms or Map/default magnitude.",
+      "id": 194,
+      "review": "fix",
+      "review_note": "属于卡片 operation 的输入校验或失败说明。已对照操作调用关系，异常由工作线程交给卡片状态及消息框；部分会先被结构化异常包装，但原始 reason 仍保留。",
+      "evidence": [
+        "src/NepTrainKit/ui/threads.py:159",
+        "src/NepTrainKit/ui/threads.py:222",
+        "src/NepTrainKit/ui/widgets/card_widget.py:1144"
+      ],
+      "resolution": "whole_message",
+      "template": "Correlated Random Spin: magnitude_source must be Existing initial magmoms or Map/default magnitude.",
+      "context": "CardOperationError"
+    },
+    {
+      "path": "src/NepTrainKit/core/cards/magnetism.py",
+      "source": "Correlated Random Spin requires vector magnetic moments or liftable scalar magmoms.",
+      "id": 195,
+      "review": "fix",
+      "review_note": "属于卡片 operation 的输入校验或失败说明。已对照操作调用关系，异常由工作线程交给卡片状态及消息框；部分会先被结构化异常包装，但原始 reason 仍保留。",
+      "evidence": [
+        "src/NepTrainKit/ui/threads.py:159",
+        "src/NepTrainKit/ui/threads.py:222",
+        "src/NepTrainKit/ui/widgets/card_widget.py:1144"
+      ],
+      "resolution": "whole_message",
+      "template": "Correlated Random Spin requires vector magnetic moments or liftable scalar magmoms.",
+      "context": "CardOperationError"
+    },
+    {
+      "path": "src/NepTrainKit/core/cards/magnetism.py",
+      "source": "MagneticOrder: PM cone angle must be between 0 and 180 degrees.",
+      "id": 196,
+      "review": "fix",
+      "review_note": "属于卡片 operation 的输入校验或失败说明。已对照操作调用关系，异常由工作线程交给卡片状态及消息框；部分会先被结构化异常包装，但原始 reason 仍保留。",
+      "evidence": [
+        "src/NepTrainKit/ui/threads.py:159",
+        "src/NepTrainKit/ui/threads.py:222",
+        "src/NepTrainKit/ui/widgets/card_widget.py:1144"
+      ],
+      "resolution": "whole_message",
+      "template": "MagneticOrder: PM cone angle must be between 0 and 180 degrees.",
+      "context": "CardOperationError"
+    },
+    {
+      "path": "src/NepTrainKit/core/cards/magnetism.py",
+      "source": "MagneticOrder: seed must be nonnegative.",
+      "id": 197,
+      "review": "fix",
+      "review_note": "属于卡片 operation 的输入校验或失败说明。已对照操作调用关系，异常由工作线程交给卡片状态及消息框；部分会先被结构化异常包装，但原始 reason 仍保留。",
+      "evidence": [
+        "src/NepTrainKit/ui/threads.py:159",
+        "src/NepTrainKit/ui/threads.py:222",
+        "src/NepTrainKit/ui/widgets/card_widget.py:1144"
+      ],
+      "resolution": "whole_message",
+      "template": "MagneticOrder: seed must be nonnegative.",
+      "context": "CardOperationError"
+    },
+    {
+      "path": "src/NepTrainKit/core/cards/magnetism.py",
+      "source": "Spin Disorder cone_angle must be within [0, 180] degrees.",
+      "id": 198,
+      "review": "fix",
+      "review_note": "属于卡片 operation 的输入校验或失败说明。已对照操作调用关系，异常由工作线程交给卡片状态及消息框；部分会先被结构化异常包装，但原始 reason 仍保留。",
+      "evidence": [
+        "src/NepTrainKit/ui/threads.py:159",
+        "src/NepTrainKit/ui/threads.py:222",
+        "src/NepTrainKit/ui/widgets/card_widget.py:1144"
+      ],
+      "resolution": "whole_message",
+      "template": "Spin Disorder cone_angle must be within [0, 180] degrees.",
+      "context": "CardOperationError"
+    },
+    {
+      "path": "src/NepTrainKit/core/cards/magnetism.py",
+      "source": "Spin Disorder fractions must be finite values within (0, 1].",
+      "id": 199,
+      "review": "fix",
+      "review_note": "属于卡片 operation 的输入校验或失败说明。已对照操作调用关系，异常由工作线程交给卡片状态及消息框；部分会先被结构化异常包装，但原始 reason 仍保留。",
+      "evidence": [
+        "src/NepTrainKit/ui/threads.py:159",
+        "src/NepTrainKit/ui/threads.py:222",
+        "src/NepTrainKit/ui/widgets/card_widget.py:1144"
+      ],
+      "resolution": "whole_message",
+      "template": "Spin Disorder fractions must be finite values within (0, 1].",
+      "context": "CardOperationError"
+    },
+    {
+      "path": "src/NepTrainKit/core/cards/magnetism.py",
+      "source": "Correlated Random Spin: cone_angle must be within [0, 180] degrees.",
+      "id": 200,
+      "review": "fix",
+      "review_note": "属于卡片 operation 的输入校验或失败说明。已对照操作调用关系，异常由工作线程交给卡片状态及消息框；部分会先被结构化异常包装，但原始 reason 仍保留。",
+      "evidence": [
+        "src/NepTrainKit/ui/threads.py:159",
+        "src/NepTrainKit/ui/threads.py:222",
+        "src/NepTrainKit/ui/widgets/card_widget.py:1144"
+      ],
+      "resolution": "whole_message",
+      "template": "Correlated Random Spin: cone_angle must be within [0, 180] degrees.",
+      "context": "CardOperationError"
+    },
+    {
+      "path": "src/NepTrainKit/core/cards/magnetism.py",
+      "source": "MagneticOrder: unsupported PM direction ⟦value⟧.",
+      "id": 201,
+      "review": "fix",
+      "review_note": "属于卡片 operation 的输入校验或失败说明。已对照操作调用关系，异常由工作线程交给卡片状态及消息框；部分会先被结构化异常包装，但原始 reason 仍保留。",
+      "evidence": [
+        "src/NepTrainKit/ui/threads.py:159",
+        "src/NepTrainKit/ui/threads.py:222",
+        "src/NepTrainKit/ui/widgets/card_widget.py:1144"
+      ],
+      "resolution": "whole_message",
+      "template": "MagneticOrder: unsupported PM direction {value0}.",
+      "context": "CardOperationError"
+    },
+    {
+      "path": "src/NepTrainKit/core/cards/magnetism.py",
+      "source": "SmallAngleSpinTilt pair_group_filter requires atoms.arrays['group'].",
+      "id": 202,
+      "review": "technical",
+      "review_note": "余下英文仅为代码参数、枚举值、已使用的卡片标识或磁矩字段；没有未翻译的英文谓语/操作说明。可润色卡片名，但不按本次混排缺陷计。",
+      "evidence": [
+        "src/NepTrainKit/ui/messages.py:294"
+      ]
+    },
+    {
+      "path": "src/NepTrainKit/core/cards/magnetism.py",
+      "source": "SmallAngleSpinTilt group-pair mode requires atoms.arrays['group'].",
+      "id": 203,
+      "review": "fix",
+      "review_note": "属于卡片 operation 的输入校验或失败说明。已对照操作调用关系，异常由工作线程交给卡片状态及消息框；部分会先被结构化异常包装，但原始 reason 仍保留。",
+      "evidence": [
+        "src/NepTrainKit/ui/threads.py:159",
+        "src/NepTrainKit/ui/threads.py:222",
+        "src/NepTrainKit/ui/widgets/card_widget.py:1144"
+      ],
+      "resolution": "whole_message",
+      "template": "SmallAngleSpinTilt group-pair mode requires atoms.arrays['group'].",
+      "context": "CardOperationError"
+    },
+    {
+      "path": "src/NepTrainKit/core/cards/magnetism.py",
+      "source": "SmallAngleSpinTilt group-pair mode requires nonzero magnetic atoms in both groups '⟦value⟧' and '⟦value⟧'.",
+      "id": 204,
+      "review": "fix",
+      "review_note": "属于卡片 operation 的输入校验或失败说明。已对照操作调用关系，异常由工作线程交给卡片状态及消息框；部分会先被结构化异常包装，但原始 reason 仍保留。",
+      "evidence": [
+        "src/NepTrainKit/ui/threads.py:159",
+        "src/NepTrainKit/ui/threads.py:222",
+        "src/NepTrainKit/ui/widgets/card_widget.py:1144"
+      ],
+      "resolution": "whole_message",
+      "template": "SmallAngleSpinTilt group-pair mode requires nonzero magnetic atoms in both groups '{group_a}' and '{group_b}'.",
+      "context": "CardOperationError"
+    }
+  ],
+  "followup_fixes": [
+    {
+      "path": "src/NepTrainKit/core/cards/magnetism.py",
+      "source": "Correlated Random Spin: unsupported correlation_kernel '⟦value⟧'.",
+      "id": 1036,
+      "template": "Correlated Random Spin: unsupported correlation_kernel '{value}'.",
+      "context": "CardOperationError"
+    },
+    {
+      "path": "src/NepTrainKit/core/cards/magnetism.py",
+      "source": "MagneticOrder: unsupported ⟦value⟧ ⟦value⟧.",
+      "id": 1037,
+      "template": "MagneticOrder: unsupported {label} {text}.",
+      "context": "CardOperationError"
+    },
+    {
+      "path": "src/NepTrainKit/core/cards/magnetism.py",
+      "source": "SmallAngleSpinTilt: max_outputs must be >= 1.",
+      "id": 1038,
+      "template": "SmallAngleSpinTilt: max_outputs must be >= 1.",
+      "context": "CardOperationError"
+    },
+    {
+      "path": "src/NepTrainKit/core/cards/magnetism.py",
+      "source": "Spin Disorder samples_per_fraction must be >= 1.",
+      "id": 1039,
+      "template": "Spin Disorder samples_per_fraction must be >= 1.",
+      "context": "CardOperationError"
+    },
+    {
+      "path": "src/NepTrainKit/core/cards/magnetism.py",
+      "source": "Spin Disorder max_outputs must be >= 1.",
+      "id": 1040,
+      "template": "Spin Disorder max_outputs must be >= 1.",
+      "context": "CardOperationError"
+    },
+    {
+      "path": "src/NepTrainKit/core/cards/magnetism.py",
+      "source": "Spin Disorder seed must be >= 0.",
+      "id": 1041,
+      "template": "Spin Disorder seed must be >= 0.",
+      "context": "CardOperationError"
+    },
+    {
+      "path": "src/NepTrainKit/core/cards/magnetism.py",
+      "source": "Correlated Random Spin: unsupported mode '⟦value⟧'.",
+      "id": 1042,
+      "template": "Correlated Random Spin: unsupported mode '{value0}'.",
+      "context": "CardOperationError"
+    },
+    {
+      "path": "src/NepTrainKit/core/cards/magnetism.py",
+      "source": "Correlated Random Spin: samples must be >= 1.",
+      "id": 1043,
+      "template": "Correlated Random Spin: samples must be >= 1.",
+      "context": "CardOperationError"
+    },
+    {
+      "path": "src/NepTrainKit/core/cards/magnetism.py",
+      "source": "Correlated Random Spin: correlation_length must be positive.",
+      "id": 1044,
+      "template": "Correlated Random Spin: correlation_length must be positive.",
+      "context": "CardOperationError"
+    },
+    {
+      "path": "src/NepTrainKit/core/cards/magnetism.py",
+      "source": "Correlated Random Spin: max_atoms_for_full must be >= 1.",
+      "id": 1045,
+      "template": "Correlated Random Spin: max_atoms_for_full must be >= 1.",
+      "context": "CardOperationError"
+    },
+    {
+      "path": "src/NepTrainKit/core/cards/magnetism.py",
+      "source": "Correlated Random Spin: seed must be >= 0.",
+      "id": 1046,
+      "template": "Correlated Random Spin: seed must be >= 0.",
+      "context": "CardOperationError"
+    },
+    {
+      "path": "src/NepTrainKit/core/cards/magnetism.py",
+      "source": "SmallAngleSpinTilt pair_group_filter requires atoms.arrays['group'].",
+      "id": 1047,
+      "template": "SmallAngleSpinTilt pair_group_filter requires atoms.arrays['group'].",
+      "context": "CardOperationError"
+    }
+  ]
+}

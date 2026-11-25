@@ -5,8 +5,13 @@ from typing import Sequence
 
 import numpy as np
 
+from NepTrainKit.core.ward import WARD_UNIT
+
 from .extract import StructureAuditRecord
 from .result import AuditBiasType, AuditDimension, AuditSeverity, AuditSlice, AuditStatus, SliceMetric
+
+
+WARD_PLOT_ID = "label_ranges:ward_residual"
 
 
 def _label_histogram_plot(
@@ -104,6 +109,19 @@ def audit_label_ranges(
         )
         if plot is not None
     )
+    ward_rows = tuple(
+        (record.index, record.config_type, record.ward)
+        for record in records if record.ward is not None
+    )
+    if ward_rows:
+        ward_values = [record.ward.norm if record.ward is not None else None for record in records]
+        ward_plot = _label_histogram_plot(
+            "ward_residual", "Ward residual distribution", f"Ward residual ({WARD_UNIT})",
+            records, ward_values,
+        )
+        if ward_plot is None:
+            ward_plot = {"id": WARD_PLOT_ID, "title": "Ward residual distribution"}
+        plots += ({**ward_plot, "rows": ward_rows, "total_count": total_count},)
     high_force, high_force_threshold = _tail_selection(
         records, force_values, 0.90
     )
@@ -188,7 +206,9 @@ def audit_label_ranges(
         "virial_total_count": total_count,
         "label_total_count": total_count,
     }
-    if not overview["has_energy"] and not overview["has_force"] and not overview["has_virial"]:
+    if ward_rows:
+        overview["ward_calculable_count"] = sum(value is not None for value in ward_values)
+    if not (overview["has_energy"] or overview["has_force"] or overview["has_virial"] or ward_rows):
         dimension = AuditDimension("label_ranges", "Label ranges", AuditStatus.UNAVAILABLE, "No energy, force, or virial labels found.")
     else:
         fully_labeled = []

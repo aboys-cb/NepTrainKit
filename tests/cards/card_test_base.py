@@ -14,6 +14,7 @@ if str(SRC_PATH) not in sys.path:
 import numpy as np
 from ase import Atoms
 from ase.io import read
+from PySide6.QtCore import QCoreApplication, QEvent
 from PySide6.QtWidgets import QApplication
 
 from NepTrainKit.ui.views._card import (
@@ -184,6 +185,26 @@ class _MetadataTestCard(MakeDataCard):
         return [structure]
 
 
+
+
+def dispose_card(*cards) -> None:
+    """Release card widgets built inside a loop.
+
+    A card is a QWidget. Creating one per registered class and dropping the
+    reference is not enough: the widget stays parentless-alive on the shared
+    QApplication until the session ends, which is where the multi-second
+    teardown came from. ``deleteLater`` only queues, so flush DeferredDelete.
+    """
+    for card in cards:
+        if card is None:
+            continue
+        try:
+            card.close()
+            card.deleteLater()
+        except RuntimeError:
+            # Already destroyed by Qt; nothing left to release.
+            pass
+    QCoreApplication.sendPostedEvents(None, QEvent.Type.DeferredDelete)
 
 
 class BaseCardTest(unittest.TestCase):

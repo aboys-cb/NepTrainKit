@@ -1,0 +1,150 @@
+{
+  "items": [
+    {
+      "path": "src/NepTrainKit/core/magnetism.py",
+      "source": "Unsupported k-vector ⟦value⟧; use 100, 010, 001, 110, or 111.",
+      "id": 360,
+      "review": "fix",
+      "review_note": "磁性卡片读取用户磁矩映射、自旋字段或晶向；错误会经 operation 显示路径返回。",
+      "evidence": [
+        "src/NepTrainKit/core/cards/magnetism.py:27",
+        "src/NepTrainKit/core/cards/structure.py:721",
+        "src/NepTrainKit/ui/widgets/card_widget.py:1144"
+      ],
+      "resolution": "whole_message",
+      "template": "Unsupported k-vector {value}; use 100, 010, 001, 110, or 111.",
+      "context": "RuntimeMessage"
+    },
+    {
+      "path": "src/NepTrainKit/core/magnetism.py",
+      "source": "positions must have shape (n, 3)",
+      "id": 361,
+      "review": "diagnostic",
+      "review_note": "spiral_unit_vectors 的 positions 必须为 N×3，属于 ASE 坐标数组契约。",
+      "evidence": [
+        "src/NepTrainKit/core/cards/magnetism.py:944"
+      ],
+      "resolution": "localized_diagnostic"
+    },
+    {
+      "path": "src/NepTrainKit/core/magnetism.py",
+      "source": "period must be positive",
+      "id": 362,
+      "review": "fix",
+      "review_note": "磁性卡片读取用户磁矩映射、自旋字段或晶向；错误会经 operation 显示路径返回。",
+      "evidence": [
+        "src/NepTrainKit/core/cards/magnetism.py:27",
+        "src/NepTrainKit/core/cards/structure.py:721",
+        "src/NepTrainKit/ui/widgets/card_widget.py:1144"
+      ],
+      "resolution": "whole_message",
+      "template": "period must be positive",
+      "context": "RuntimeMessage"
+    },
+    {
+      "path": "src/NepTrainKit/core/magnetism.py",
+      "source": "initial_magmoms must be a finite numeric N or N x 3 array",
+      "id": 363,
+      "review": "fix",
+      "review_note": "磁性卡片读取用户磁矩映射、自旋字段或晶向；错误会经 operation 显示路径返回。",
+      "evidence": [
+        "src/NepTrainKit/core/cards/magnetism.py:27",
+        "src/NepTrainKit/core/cards/structure.py:721",
+        "src/NepTrainKit/ui/widgets/card_widget.py:1144"
+      ],
+      "resolution": "whole_message",
+      "template": "initial_magmoms must be a finite numeric N or N x 3 array",
+      "context": "RuntimeMessage"
+    },
+    {
+      "path": "src/NepTrainKit/core/magnetism.py",
+      "source": "magmoms must be a finite numeric N or N x 3 array",
+      "id": 364,
+      "review": "fix",
+      "review_note": "磁性卡片读取用户磁矩映射、自旋字段或晶向；错误会经 operation 显示路径返回。",
+      "evidence": [
+        "src/NepTrainKit/core/cards/magnetism.py:27",
+        "src/NepTrainKit/core/cards/structure.py:721",
+        "src/NepTrainKit/ui/widgets/card_widget.py:1144"
+      ],
+      "resolution": "whole_message",
+      "template": "magmoms must be a finite numeric N or N x 3 array",
+      "context": "RuntimeMessage"
+    },
+    {
+      "path": "src/NepTrainKit/core/magnetism.py",
+      "source": "Magmom JSON must be an object mapping element->moment.",
+      "id": 365,
+      "review": "fix",
+      "review_note": "磁性卡片读取用户磁矩映射、自旋字段或晶向；错误会经 operation 显示路径返回。",
+      "evidence": [
+        "src/NepTrainKit/core/cards/magnetism.py:27",
+        "src/NepTrainKit/core/cards/structure.py:721",
+        "src/NepTrainKit/ui/widgets/card_widget.py:1144"
+      ],
+      "resolution": "whole_message",
+      "template": "Magmom JSON must be an object mapping element->moment.",
+      "context": "RuntimeMessage"
+    },
+    {
+      "path": "src/NepTrainKit/core/magnetism.py",
+      "source": "Magmom JSON must be an object mapping element->moment.",
+      "id": 366,
+      "review": "fix",
+      "review_note": "磁性卡片读取用户磁矩映射、自旋字段或晶向；错误会经 operation 显示路径返回。",
+      "evidence": [
+        "src/NepTrainKit/core/cards/magnetism.py:27",
+        "src/NepTrainKit/core/cards/structure.py:721",
+        "src/NepTrainKit/ui/widgets/card_widget.py:1144"
+      ],
+      "resolution": "whole_message",
+      "template": "Magmom JSON must be an object mapping element->moment.",
+      "context": "RuntimeMessage"
+    },
+    {
+      "path": "src/NepTrainKit/core/magnetism.py",
+      "source": "spin must be a finite numeric N x 3 array",
+      "id": 367,
+      "review": "fix",
+      "review_note": "磁性卡片读取用户磁矩映射、自旋字段或晶向；错误会经 operation 显示路径返回。",
+      "evidence": [
+        "src/NepTrainKit/core/cards/magnetism.py:27",
+        "src/NepTrainKit/core/cards/structure.py:721",
+        "src/NepTrainKit/ui/widgets/card_widget.py:1144"
+      ],
+      "resolution": "whole_message",
+      "template": "spin must be a finite numeric N x 3 array",
+      "context": "RuntimeMessage"
+    },
+    {
+      "path": "src/NepTrainKit/core/magnetism.py",
+      "source": "Invalid magmom vector for ⟦value⟧: ⟦value⟧",
+      "id": 368,
+      "review": "fix",
+      "review_note": "磁性卡片读取用户磁矩映射、自旋字段或晶向；错误会经 operation 显示路径返回。",
+      "evidence": [
+        "src/NepTrainKit/core/cards/magnetism.py:27",
+        "src/NepTrainKit/core/cards/structure.py:721",
+        "src/NepTrainKit/ui/widgets/card_widget.py:1144"
+      ],
+      "resolution": "whole_message",
+      "template": "Invalid magmom vector for {symbol}: {val}",
+      "context": "RuntimeMessage"
+    },
+    {
+      "path": "src/NepTrainKit/core/magnetism.py",
+      "source": "scalar magmoms require a finite nonzero axis for spin:R:3",
+      "id": 369,
+      "review": "fix",
+      "review_note": "磁性卡片读取用户磁矩映射、自旋字段或晶向；错误会经 operation 显示路径返回。",
+      "evidence": [
+        "src/NepTrainKit/core/cards/magnetism.py:27",
+        "src/NepTrainKit/core/cards/structure.py:721",
+        "src/NepTrainKit/ui/widgets/card_widget.py:1144"
+      ],
+      "resolution": "whole_message",
+      "template": "scalar magmoms require a finite nonzero axis for spin:R:3",
+      "context": "RuntimeMessage"
+    }
+  ]
+}

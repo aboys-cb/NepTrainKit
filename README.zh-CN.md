@@ -40,6 +40,8 @@ nepkit
 NepTrainKit
 ```
 
+从 Git 源码开发时，`python -m pip install -e .` 会生成 Qt 资源。如果使用 `PYTHONPATH=src` 直接运行，请先执行 `pyside6-rcc src/NepTrainKit/src.qrc -o src/NepTrainKit/src_rc.py`。
+
 ### NEP 计算后端
 
 NepTrainKit 不再把 NEP 计算后端编译进应用程序。执行 `pip install NepTrainKit` 时，会安装独立的 `nep-adapters` 依赖：

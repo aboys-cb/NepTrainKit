@@ -16,7 +16,7 @@ from qfluentwidgets import (
 
 from NepTrainKit.core import CardManager
 from NepTrainKit.core.cards.operation import params_to_dict
-from NepTrainKit.core.cards.structure import GroupLabelOperation, GroupLabelParams
+from NepTrainKit.core.cards.structure import GroupLabelParams
 from NepTrainKit.ui.messages import MessageManager, translate_runtime_message
 from NepTrainKit.ui.views._card.i18n_utils import add_translated_items, combo_value, set_combo_value
 from NepTrainKit.ui.widgets import (
@@ -288,9 +288,6 @@ class GroupLabelCard(MakeDataCard):
         ]
         for previous, current in zip(self.tab_order_widgets, self.tab_order_widgets[1:]):
             QWidget.setTabOrder(previous, current)
-
-    def create_operation(self):
-        return GroupLabelOperation()
 
     def get_params(self) -> GroupLabelParams:
         return GroupLabelParams(

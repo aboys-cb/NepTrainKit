@@ -375,17 +375,6 @@ class FiniteCellAlloyOccupancyCard(MakeDataCard):
         self.auto_match_label.show()
 
     @staticmethod
-    def _first_structure(dataset):
-        if dataset is None:
-            return None
-        if hasattr(dataset, "arrays") and hasattr(dataset, "get_chemical_symbols"):
-            return dataset
-        try:
-            return next(iter(dataset))
-        except (StopIteration, TypeError):
-            return None
-
-    @staticmethod
     def _site_counts(structure) -> dict[str, int] | None:
         if structure is None:
             return None

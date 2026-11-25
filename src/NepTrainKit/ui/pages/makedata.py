@@ -5,7 +5,6 @@
 import json
 import os.path
 import re
-import tempfile
 from pathlib import Path
 
 import numpy as np
@@ -29,12 +28,14 @@ from ase import Atoms, Atom
 from qfluentwidgets import FluentIcon, HyperlinkLabel, BodyLabel, SubtitleLabel
 
 from NepTrainKit.ui.messages import translate_runtime_error
+from NepTrainKit.core.io.atomic import atomic_text_output
 from NepTrainKit.core import MessageManager, CardManager
 from NepTrainKit.core.workflow_library import WorkflowEntry, WorkflowLibrary
 from NepTrainKit.core.config_type import append_config_tag
 from NepTrainKit.config import Config
 from NepTrainKit.ui.widgets import MakeWorkflowArea
 from NepTrainKit.ui.widgets.workflow_library import localized_workflow_entry_name
+from NepTrainKit.ui.widgets.card_widget import snapshot_card_dataset, write_card_dataset
 
 from NepTrainKit.ui.views import ConsoleWidget
 
@@ -94,6 +95,10 @@ class MakeDataWidget(QWidget):
         self._active_workflow_name: str | None = None
         self._source_template_name: str | None = None
         self._workflow_dirty = False
+        self._sampling_panel = None
+        self._sampling_revision = 0
+        self._sampling_run_revision = -1
+        self._sampling_attached = False
         self.init_action()
         self.init_ui()
         self.dataset=None
@@ -283,6 +288,7 @@ class MakeDataWidget(QWidget):
         self.workspace_card_widget = MakeWorkflowArea(self)
         self._connect_workflow_library()
         self.workspace_card_widget.workflowChanged.connect(self._mark_workflow_dirty)
+        self.workspace_card_widget.workflowChanged.connect(self._invalidate_workflow_results)
         self.workspace_card_widget.workflowChanged.connect(self._refresh_input_count_previews)
         self.setting_group=ConsoleWidget(self)
         self.setting_group.runSignal.connect(self.run_card)
@@ -399,6 +405,7 @@ class MakeDataWidget(QWidget):
 
     def _track_card_parameter_changes(self, card) -> None:
         """Mark named workflows dirty when an editable card control changes."""
+        card._tracked_workflow_params = self._card_parameter_snapshot(card)
         widgets = [card, *card.findChildren(QWidget)]
         editor = getattr(card, "setting_widget", None)
         if editor is not None and editor not in widgets:
@@ -412,11 +419,21 @@ class MakeDataWidget(QWidget):
                 "textChanged",
                 "valueChanged",
                 "currentIndexChanged",
+                "editingFinished",
+                "rulesChanged",
+                "changed",
+                "rowCountChanged",
+                "itemChanged",
+                "clicked",
             ):
                 signal = getattr(widget, signal_name, None)
                 if signal is None or not hasattr(signal, "connect"):
                     continue
                 try:
+                    if signal_name == "clicked":
+                        signal.connect(lambda *_args, selected=card: self._on_card_editor_structure_changed(selected))
+                        connected = True
+                        continue
                     signal.connect(
                         lambda *_args, selected=card: self._on_card_parameter_changed(
                             selected
@@ -428,12 +445,33 @@ class MakeDataWidget(QWidget):
             if connected:
                 widget.setProperty("workflowDirtyTracked", True)
 
+    def _on_card_editor_structure_changed(self, card):
+        self._on_card_parameter_changed(card)
+        # Rule/element buttons can create controls after the initial tracking pass.
+        self._track_card_parameter_changes(card)
+
     def _on_card_parameter_changed(self, card) -> None:
         """Refresh the compact canvas readout and mark its workflow dirty."""
         refresh = getattr(card, "refresh_compact_presentation", None)
         if callable(refresh):
             refresh()
+        params = self._card_parameter_snapshot(card)
+        if params == getattr(card, "_tracked_workflow_params", None):
+            return
+        card._tracked_workflow_params = params
         self._mark_workflow_dirty()
+        if self._sampling_attached and not self._sampling_panel._updating:
+            if card is self._sampling_card:
+                self._sampling_panel.sync_from_card()
+            self._invalidate_sampling_results()
+        elif not self._sampling_attached:
+            self._invalidate_workflow_results()
+
+    @staticmethod
+    def _card_parameter_snapshot(card):
+        getter = getattr(card, "get_params", None)
+        params = getter() if callable(getter) else None
+        return (card.check_state, params) if params is not None else card.to_dict()
 
     def _confirm_discard_workflow_changes(self) -> bool:
         if not self._workflow_dirty or not self.workspace_card_widget.cards:
@@ -452,6 +490,94 @@ class MakeDataWidget(QWidget):
             return
         self.workspace_card_widget.clear_cards()
         self._set_active_workflow(None, dirty=False)
+
+    def load_sampling_draft(self, payload: dict) -> None:
+        """Load a validation handoff into a fresh editor, never replace a workflow."""
+        if self.workspace_card_widget.cards or self.dataset:
+            raise ValueError("Sampling drafts must be opened in a fresh workflow tab.")
+        cards = self._normalise_card_config_payload(payload["workflow"])
+        self.dataset = [atoms.copy() for atoms in payload["structures"]]
+        self._add_card_configs(cards, notify=False)
+        title = self.tr("mEOS sampling · {name}") if payload.get("kind") == "mEOS" else self.tr("EOS sampling · {name}")
+        self._set_active_workflow(None, dirty=True,
+                                  display_name=title.format(name=payload["name"]))
+        self.dataset_info_label.setText(self.tr("Success load {count} structures.").format(count=len(self.dataset)))
+        self._refresh_input_count_previews()
+        if payload.get("eos_context"):
+            from NepTrainKit.ui.widgets.eos_sampling import EOSSamplingPanel
+            area = self.workspace_card_widget
+            self._sampling_card = area.cards[0]
+            self._sampling_parent = self.dataset[0]
+            self._sampling_panel = EOSSamplingPanel(area.canvas_column, card=self._sampling_card,
+                                                    atoms=self._sampling_parent, context=payload["eos_context"])
+            self._sampling_attached = True
+            area.canvas_column_layout.addWidget(self._sampling_panel, 3)
+            area.scroll_area.setMinimumHeight(110)
+            area.selectedCardChanged.connect(self._select_sampling_context)
+            area.workflowChanged.connect(self._refresh_sampling_context)
+            self._sampling_panel.parametersChanged.connect(self._invalidate_sampling_results)
+
+    def _select_sampling_context(self, card):
+        self._sampling_panel.setVisible(self._sampling_attached and card is self._sampling_card)
+
+    def _refresh_sampling_context(self):
+        if not self._sampling_attached:
+            return
+        if (not self.dataset or len(self.dataset) != 1 or self.dataset[0] is not self._sampling_parent
+                or not self.workspace_card_widget.cards
+                or self.workspace_card_widget.cards[0] is not self._sampling_card):
+            self._invalidate_sampling_results()
+            self._sampling_attached = False
+            self._sampling_panel.hide()
+
+    def _lock_sampling_controls(self, locked):
+        if self._sampling_attached:
+            self._sampling_panel.set_editing_enabled(not locked)
+            self._sampling_card.setting_widget.setEnabled(not locked)
+
+    def _invalidate_sampling_results(self):
+        if not self._sampling_attached:
+            return
+        self._sampling_revision += 1
+        self._invalidate_workflow_results()
+
+    def _invalidate_workflow_results(self):
+        nodes = self.workspace_card_widget.all_cards()
+        for node in nodes:
+            # A worker may finish after stop() returns; its old output stays invalid.
+            node._results_invalidated = True
+        self.stop_run_card()
+        for node in nodes:
+            node.result_dataset = []
+            node.set_output_available(False)
+            if hasattr(node, "run_outcome") and not self._card_is_running(node):
+                node.run_outcome = "idle"
+                status = getattr(node, "_set_card_status", None) or node._set_run_status
+                status("idle")
+        self._last_completed_card_index = None
+        self.setting_group.set_output_available(False)
+        self._lock_sampling_controls(False)
+
+    def _on_sampling_output_finished(self, card):
+        if not self._sampling_attached:
+            return
+        if self._sampling_run_revision != self._sampling_revision:
+            card.result_dataset = []
+            card.run_outcome = "canceled"
+            card.set_output_available(False)
+            return
+        if card is self._sampling_card and card.run_outcome == "succeeded":
+            from NepTrainKit.core.validation.sampling import reference_overlaps
+            repeats = sum(reference_overlaps(card.result_dataset, self._sampling_panel.context["references"]))
+            if repeats:
+                card.result_dataset = []
+                card.run_outcome = "failed"
+                card.set_output_available(False)
+                card._set_card_status("failed")
+                self._sampling_panel.status_label.setText(self.tr("{count} structures repeat the reference. Adjust the range or point count and run again.").format(count=repeats))
+                self._lock_sampling_controls(False)
+            else:
+                self._sampling_panel.show_outputs(card.result_dataset)
 
     def save_workflow(self) -> None:
         if self._active_workflow_id is None:
@@ -658,7 +784,7 @@ class MakeDataWidget(QWidget):
                 elif isinstance(raw_cfg, (list, tuple, set)):
                     tokens = [str(x) for x in raw_cfg if str(x).strip()]
                 else:
-                    tokens = [t for t in re.split(r"[|\\s]+", str(raw_cfg).strip()) if t]
+                    tokens = [t for t in re.split(r"[|\s]+", str(raw_cfg).strip()) if t]
 
                 atom.info["Config_type"] = ""
                 for t in tokens:
@@ -669,7 +795,9 @@ class MakeDataWidget(QWidget):
                 structures_list.append(atom)
         if len(structures_list)==0:
             return
+        self._invalidate_workflow_results()
         self.dataset=structures_list
+        self._refresh_sampling_context()
         self._refresh_input_count_previews()
         MessageManager.send_success_message(
             self.tr("success load {count} structures.").format(count=len(structures_list))
@@ -722,6 +850,8 @@ class MakeDataWidget(QWidget):
 
     def _cards_for_export(self, include_all: bool):
         """Return available outputs for the requested workflow export scope."""
+        if self._sampling_attached and self._sampling_run_revision != self._sampling_revision:
+            return []
         enabled_cards = [
             card
             for card in self.workspace_card_widget.cards
@@ -751,13 +881,17 @@ class MakeDataWidget(QWidget):
     @staticmethod
     def _available_output_cards(card):
         """Return concrete output-owning cards for a card or structural node."""
+        if getattr(card, "_results_invalidated", False):
+            return []
         getter = getattr(card, "available_output_cards", None)
         if callable(getter):
             return list(getter())
+        if getattr(card, "run_outcome", "succeeded") != "succeeded":
+            return []
         output = getattr(card, "result_dataset", None) or []
         return [card] if output else []
 
-    def _export_file(self, path, cards):
+    def _export_file(self, path, datasets):
         """Write the explicitly selected card outputs to the given path.
 
         Parameters
@@ -770,27 +904,9 @@ class MakeDataWidget(QWidget):
         None
             Serialises the provided card outputs into a single dataset file.
         """
-        destination = Path(path)
-        temporary_path = None
-        try:
-            with tempfile.NamedTemporaryFile(
-                mode="w",
-                encoding="utf8",
-                dir=destination.parent,
-                prefix=f".{destination.name}.",
-                suffix=".tmp",
-                delete=False,
-            ) as file:
-                temporary_path = Path(file.name)
-                for index, card in enumerate(cards):
-                    card.write_result_dataset(file, append=index > 0)
-                file.flush()
-                os.fsync(file.fileno())
-            os.replace(temporary_path, destination)
-            temporary_path = None
-        finally:
-            if temporary_path is not None:
-                temporary_path.unlink(missing_ok=True)
+        with atomic_text_output(path) as file:
+            for index, dataset in enumerate(datasets):
+                write_card_dataset(file, dataset, append=index > 0)
 
 
     def export_file(self):
@@ -832,6 +948,7 @@ class MakeDataWidget(QWidget):
                 )
             )
             return
+        snapshots = [snapshot_card_dataset(card.result_dataset) for card in cards]
         path = call_path_dialog(
             self,
             self.tr("Choose a file save location"),
@@ -844,7 +961,7 @@ class MakeDataWidget(QWidget):
                 show_tip=True,
                 title=self.tr("Exporting data"),
             )
-            thread.start_work(self._export_file, path, cards)
+            thread.start_work(self._export_file, path, snapshots)
 
     def run_card(self):
         """Run the next enabled card using the currently loaded dataset.
@@ -859,6 +976,9 @@ class MakeDataWidget(QWidget):
                 self.tr("Cards are still running. Please wait for the current run to finish.")
             )
             return
+        if self._sampling_attached and not self._sampling_panel.valid:
+            MessageManager.send_info_message(self._sampling_panel.status_label.text())
+            return
         self.stop_run_card()
         self._last_completed_card_index = None
         self.setting_group.set_output_available(False)
@@ -866,7 +986,7 @@ class MakeDataWidget(QWidget):
             card.set_dataset([])
         for index, card in enumerate(self.workspace_card_widget.cards):
             if (
-                card.__class__.__name__ == "WorkflowFork"
+                card.check_state and card.__class__.__name__ == "WorkflowFork"
                 and not bool(getattr(card, "merge_enabled", False))
                 and any(
                     later.check_state
@@ -888,6 +1008,9 @@ class MakeDataWidget(QWidget):
                 )
                 return
             first_card.set_dataset(self.dataset or [])
+
+            self._sampling_run_revision = self._sampling_revision
+            self._lock_sampling_controls(True)
 
             first_card.runFinishedSignal.connect(self._run_next_card)
             self.setting_group.set_running(True)
@@ -957,9 +1080,12 @@ class MakeDataWidget(QWidget):
         """
 
         cards=self.workspace_card_widget.cards
+        if not 0 <= current_card_index < len(cards) or self.sender() is not cards[current_card_index]:
+            return
         current_card=cards[current_card_index]
         current_card.runFinishedSignal.disconnect(self._run_next_card)
         if getattr(current_card, "run_outcome", "succeeded") != "succeeded":
+            self._lock_sampling_controls(False)
             self.setting_group.set_running(False)
             self._last_completed_card_index = None
             self.setting_group.set_output_available(
@@ -976,6 +1102,7 @@ class MakeDataWidget(QWidget):
             next_card.runFinishedSignal.connect(self._run_next_card)
             next_card.run()
         else:
+            self._lock_sampling_controls(False)
             self.setting_group.set_running(False)
             self.setting_group.set_output_available(
                 bool(self._cards_for_export(include_all=True))
@@ -1018,6 +1145,7 @@ class MakeDataWidget(QWidget):
     def _connect_card_output_actions(self, card) -> None:
         """Connect output actions for a card and any nested group cards."""
         if getattr(card, "_output_actions_owner", None) is not self:
+            card.runFinishedSignal.connect(lambda *_args, node=card: self._on_sampling_output_finished(node))
             card.viewOutputSignal.connect(self.request_card_output)
             card.state_checkbox.stateChanged.connect(
                 self._refresh_selected_output_available
@@ -1059,6 +1187,7 @@ class MakeDataWidget(QWidget):
         import warnings
 
         self.setting_group.set_running(False)
+        self._lock_sampling_controls(False)
         for card in self.workspace_card_widget.cards:
             try:
                 with warnings.catch_warnings():

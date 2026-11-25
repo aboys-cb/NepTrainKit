@@ -1,0 +1,17 @@
+{
+  "items": [
+    {
+      "path": "src/NepTrainKit/ui/widgets/tree.py",
+      "source": "parent must be TreeItem or int",
+      "id": 454,
+      "review": "diagnostic",
+      "review_note": "路径入参、运行时健康子进程或绘图/控件树对象契约的原始诊断；不按正常用户文案要求逐词翻译。并不保证程序故障时绝不会暴露诊断。",
+      "evidence": [
+        "src/NepTrainKit/runtime_package.py:645",
+        "src/NepTrainKit/ui/canvas/vispy/structure.py",
+        "src/NepTrainKit/ui/widgets/input.py:214"
+      ],
+      "resolution": "localized_diagnostic"
+    }
+  ]
+}

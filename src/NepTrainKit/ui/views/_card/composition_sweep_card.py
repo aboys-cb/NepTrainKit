@@ -242,23 +242,9 @@ class CompositionSweepCard(MakeDataCard):
         self.seed_field.setVisible(bool(checked))
         self.refresh_compact_presentation()
 
-    @staticmethod
-    def _dataset_count(dataset) -> int:
-        if dataset is None:
-            return 0
-        if hasattr(dataset, "arrays") and hasattr(dataset, "get_chemical_symbols"):
-            return 1
-        try:
-            return len(dataset)
-        except TypeError:
-            return 0
-
     def set_preview_input_count(self, count: int | None) -> None:
         self._preview_input_count = None if count is None else max(0, int(count))
         self.refresh_compact_presentation()
-
-    def create_operation(self):
-        return CompositionSweepOperation()
 
     def get_summary_text(self) -> str:
         try:

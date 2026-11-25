@@ -1,0 +1,18 @@
+{
+  "items": [
+    {
+      "path": "src/NepTrainKit/ui/widgets/parameter_inputs.py",
+      "source": "Direction vector must be nonzero.",
+      "id": 453,
+      "review": "fix",
+      "review_note": "零方向向量可来自方向输入；磁弹响应预览直接 setText(str(exc))，会显示完整英文。",
+      "evidence": [
+        "src/NepTrainKit/ui/widgets/parameter_inputs.py:338",
+        "src/NepTrainKit/ui/views/_card/magnetoelastic_response_card.py:290"
+      ],
+      "resolution": "whole_message",
+      "template": "Direction vector must be nonzero.",
+      "context": "RuntimeMessage"
+    }
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "items": [
+    {
+      "path": "src/NepTrainKit/core/audit/pair_contacts.py",
+      "source": "Contact summary shape ⟦value⟧ does not match ⟦value⟧.",
+      "id": 67,
+      "review": "diagnostic",
+      "review_note": "几何快照、接触汇总或内存计划的结构/数组不变量保护。部分调用端会降级处理，其他故障路径可能暴露诊断；不等同于常规文案，建议外层中文说明并保留原始细节。",
+      "evidence": [
+        "src/NepTrainKit/core/audit/engine.py:80",
+        "src/NepTrainKit/core/audit/pair_contacts.py:163",
+        "src/NepTrainKit/core/io/sampling_plan.py:559"
+      ],
+      "resolution": "localized_diagnostic"
+    }
+  ]
+}

@@ -1159,3 +1159,48 @@ msgstr ""
 
 #~ msgid "勾选 `使用随机种子`（`use_seed`） + 固定 `随机种子`（`seed`） → 相同输入可复现。模态选择、系数采样均受 seed 控制。"
 #~ msgstr "This section explains the option, its parameters, operation, and expected result."
+
+msgid "可选择随机采样或确定性系数表。后者用于指定正负极性位移、集体位移及多模式组合；模式可以是用户构造的逐原子笛卡尔位移，不要求来自声子计算。"
+msgstr "Choose random sampling or a deterministic coefficient table. The table specifies signed polar displacements, collective displacements and combinations of modes. Modes may be user-supplied Cartesian displacements for each atom; they need not come from phonon calculations."
+
+msgid "确定性系数表不筛选频率、不做频率加权，无须频率数据。所有位移模及系数必须有限。"
+msgstr "Coefficient tables use no frequency filtering or weighting and require no frequency data. All displacement modes and coefficients must be finite."
+
+msgid "确定性系数表则直接使用原始模式："
+msgstr "A deterministic coefficient table uses the raw modes directly:"
+
+msgid "每行严格生成一帧，按行顺序保留重复和零行，不做笛卡尔积。每列对应未筛选的模式列表；编号模式按编号升序排列（例如模式 2、7 对应第 1、2 列），聚合数组按提取顺序。位移模按 Å 提供，系数无量纲；不自动归一化、去平移、按 RMS 缩放或执行有限角度刚性转动。若需要这些约定，应先构造相应的位移模。"
+msgstr "Each row generates exactly one frame, in table order, retaining duplicates and zero rows without taking a Cartesian product. Columns follow the unfiltered mode list: numbered modes are sorted by index (for example, modes 2 and 7 occupy columns 1 and 2); aggregate arrays follow extraction order. Supply displacement modes in angstroms and dimensionless coefficients. There is no automatic normalization, translation removal, RMS scaling or finite-angle rigid rotation. Construct the displacement modes accordingly when those conventions are required."
+
+msgid "该模式不 wrap 坐标，并直接应用指定坐标，不应用 ASE 位置约束；零行逐原子保留原坐标。晶胞、PBC 和磁矩保持不变，改变坐标的帧会清除失效参考标签。随机模式原有的 wrap 行为保持不变。"
+msgstr "This mode does not wrap positions and applies the requested positions directly, bypassing ASE positional constraints. A zero row preserves every input position. The cell, PBC and moments are unchanged; frames with changed positions have stale reference labels cleared. The existing wrapping behaviour in random mode is unchanged."
+
+msgid "补充软模曲线的正负配对点"
+msgstr "Add signed pairs along a soft-mode curve"
+
+msgid "如果模型把极性模两侧的能量曲率或力投影预测错误，可将已知极性位移保存为模式 0，将另一种集体位移保存为模式 1，选择“系数表”，输入 `[[-0.25,0],[0,0],[0.25,0],[0.1,-0.5]]`。前三行生成沿模式 0 的负、零、正配对，最后一行生成两个模式的指定组合。核对坐标差确实等于所给组合，再用同一参考协议计算能量与力投影；另留一个母几何检查斜率是否泛化。这里控制的是输入构型，不自动完成弛豫或判定物性改善。"
+msgstr "If a model predicts the energy curvature or force projection incorrectly on either side of a polar mode, store the known polar displacement as mode 0 and another collective displacement as mode 1. Choose Coefficient table and enter `[[-0.25,0],[0,0],[0.25,0],[0.1,-0.5]]`. The first three rows produce negative, zero and positive points along mode 0; the last produces a specified combination of both modes. Verify the coordinate differences, then calculate energies and force projections with one reference protocol. Hold out another parent geometry to test slope generalization. This controls input configurations; it does not relax them or establish improved properties."
+
+msgid "模式采样（sampling_mode）"
+msgstr "Mode sampling (sampling_mode)"
+
+msgid "`str`，默认 `Random`。可选 `Random`、`Coefficient table`。旧 JSON 缺少该字段时保留随机采样行为。"
+msgstr "`str`, default `Random`. Options: `Random`, `Coefficient table`. Old JSON without this field retains random sampling."
+
+msgid "系数表（coefficient_table）"
+msgstr "Coefficient table (coefficient_table)"
+
+msgid "`str`，默认 `[[-1], [0], [1]]`，仅用于 `Coefficient table`。非空矩形 JSON 数组，每行一个输出，每列一个输入模式；默认适合单模式的负、零、正扫描。多模式输入必须补齐每列，未使用模式填零。禁止 NaN、Inf、布尔值和非数字，不允许缺列或静默截断。"
+msgstr "`str`, default `[[-1], [0], [1]]`, used only for `Coefficient table`. A nonempty rectangular JSON array with one output per row and one input mode per column. The default gives a negative, zero and positive scan for one mode. For multiple modes, supply every column and use zero for unused modes. NaN, Inf, booleans, nonnumeric values and missing columns are rejected; nothing is silently truncated."
+
+msgid "以下随机采样参数仅在 `Random` 模式生效；系数表模式隐藏并忽略这些控件：`distribution`、`amplitude`、`modes_per_sample`、`min_frequency`、`max_num`、`scale_by_frequency`、`exclude_near_zero`、`use_seed`、`seed`。"
+msgstr "The following random-sampling parameters apply only in `Random` mode and are hidden and ignored in coefficient-table mode: `distribution`, `amplitude`, `modes_per_sample`, `min_frequency`, `max_num`, `scale_by_frequency`, `exclude_near_zero`, `use_seed`, `seed`."
+
+msgid "随机模式的总输出数为："
+msgstr "The total output count in random mode is:"
+
+msgid "系数表模式的总输出数为输入帧数乘系数表行数，不受 `max_num` 限制。"
+msgstr "In coefficient-table mode the total output count is the input frame count times the number of table rows, without a `max_num` limit."
+
+msgid "以上为随机模式。系数表模式严格按表行输出，`Config_type` 追加 `ModeScan(row=<零基行号>,c=<系数>)`；同名 metadata 保存 `sampling_mode`、行号、完整系数及候选模式数，系数对应未筛选的模式顺序。系数以完整精度保存在 metadata 中，标签仅作简写。"
+msgstr "The above describes random mode. Coefficient-table mode outputs rows exactly in order and appends `ModeScan(row=<zero-based row>,c=<coefficients>)` to `Config_type`. The same metadata field records `sampling_mode`, the row index, full coefficients and candidate mode count, in unfiltered mode order. Metadata retains full coefficient precision; the tag is an abbreviation."

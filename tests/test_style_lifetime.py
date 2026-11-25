@@ -31,8 +31,13 @@ def _run_script(script: str, timeout: int = 60) -> subprocess.CompletedProcess:
     """Run ``script`` in its own interpreter, where a crash is an exit code."""
     env = os.environ.copy()
     env.update({"QT_QPA_PLATFORM": "offscreen", "PYTHONPATH": str(ROOT / "src")})
+    bootstrap = (
+        "import os\nfrom pathlib import Path\nimport NepTrainKit.paths as paths\n"
+        "paths.get_user_config_path = lambda **kwargs: "
+        "paths.ensure_directory(Path(os.environ['NEPTRAINKIT_LIBRARY']).parent / 'config')\n"
+    )
     return subprocess.run(
-        [sys.executable, "-c", textwrap.dedent(script)],
+        [sys.executable, "-c", bootstrap + textwrap.dedent(script)],
         cwd=ROOT,
         env=env,
         capture_output=True,

@@ -1,0 +1,30 @@
+{
+  "items": [
+    {
+      "path": "src/NepTrainKit/ui/widgets/reference_analysis.py",
+      "source": "volume_per_atom",
+      "review": "technical",
+      "review_note": "实际元数据字段名称，编辑框须保留原值以与 EXTXYZ 字段精确匹配。"
+    },
+    {
+      "path": "src/NepTrainKit/ui/widgets/reference_analysis.py",
+      "source": "site_i, site_j",
+      "review": "technical",
+      "review_note": "实际元数据字段名称，编辑框须保留原值以与 EXTXYZ 字段精确匹配。"
+    }
+  ],
+  "retained_candidates": [
+    {
+      "path": "src/NepTrainKit/ui/widgets/reference_analysis.py",
+      "source": "volume_per_atom",
+      "review": "technical",
+      "reason": "编辑框中的实际元数据字段名称，须原样匹配 EXTXYZ 字段。"
+    },
+    {
+      "path": "src/NepTrainKit/ui/widgets/reference_analysis.py",
+      "source": "site_i, site_j",
+      "review": "technical",
+      "reason": "编辑框中的实际元数据字段名称，须原样匹配 EXTXYZ 字段。"
+    }
+  ]
+}

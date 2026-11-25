@@ -18,6 +18,7 @@ from qfluentwidgets import ScrollBarHandleDisplayMode
 
 from NepTrainKit.core import CardManager
 from NepTrainKit.core.cards.operation import StructureOperation
+from NepTrainKit.core.workflow import load_workflow
 from NepTrainKit.ui.pages.makedata import MakeDataWidget
 from NepTrainKit.ui.views._card.bain_path_card import BainPathCard
 from NepTrainKit.ui.views._card.card_group import CardGroup
@@ -48,9 +49,15 @@ def _wait_until(predicate, timeout_ms=3000):
     loop = QEventLoop()
     timer = QTimer()
 
+    # Back off between polls. A flat 10ms timer re-enters Python 100x/s and
+    # competes with the worker thread for the GIL; on a saturated 4-core CI
+    # runner that starved the very signal this waits for, and the timeout fired
+    # on a test that passes in milliseconds when run alone.
     def poll():
         if predicate():
             loop.quit()
+            return
+        timer.setInterval(min(timer.interval() * 2, 250))
 
     timer.timeout.connect(poll)
     timer.start(10)
@@ -709,6 +716,10 @@ def test_clicking_empty_fork_lane_selects_it_for_the_next_card():
 
     assert fork.branches[0].cards == []
     assert target.cards == [inserted]
+    QTest.mouseClick(target.name_edit, Qt.MouseButton.LeftButton)
+    QTest.mouseClick(inserted.headerLabel, Qt.MouseButton.LeftButton)
+    app.processEvents()
+    assert area.guidance_panel._editor_widget is inserted.setting_widget
     _dispose(area)
 
 
@@ -810,7 +821,10 @@ def test_structural_headers_and_arrows_toggle_both_directions_manually():
 
 def test_group_nested_in_fork_keeps_group_context_and_manual_toggle():
     app = _app()
-    area = MakeWorkflowArea()
+    page = MakeDataWidget()
+    area = page.workspace_card_widget
+    page.resize(1500, 900)
+    page.show()
     fork = WorkflowFork()
     area.add_card(fork)
     target = fork.branches[0]
@@ -849,10 +863,15 @@ def test_group_nested_in_fork_keeps_group_context_and_manual_toggle():
     assert group.card_list == [first, second]
     assert all(card._group_tile_enabled for card in group.card_list)
 
-    area.select_card(first, expand=True)
-    app.processEvents()
-    assert fork.window_state == "expand"
-    assert group.window_state == "expand"
+    for width, child in ((1151, first), (1500, second), (1151, first)):
+        page.resize(width, 900)
+        app.processEvents()
+        area.scroll_area.ensureWidgetVisible(child)
+        QTest.mouseClick(child.headerLabel, Qt.MouseButton.LeftButton)
+        app.processEvents()
+        assert fork.window_state == "expand"
+        assert group.window_state == "expand"
+        assert area.guidance_panel._editor_widget is child.setting_widget
 
     payload = fork.to_dict()
     restored = WorkflowFork()
@@ -865,7 +884,7 @@ def test_group_nested_in_fork_keeps_group_context_and_manual_toggle():
     ]
     assert all(card._group_tile_enabled for card in restored_group.card_list)
     _dispose(restored)
-    _dispose(area)
+    _dispose(page)
 
 
 def test_group_inside_fork_runs_as_one_branch_pipeline_stage():
@@ -1399,6 +1418,32 @@ def test_explicit_merge_concatenates_in_stable_branch_order():
     assert fork.available_output_cards() == [fork]
     assert fork.status_badge.state() == "succeeded"
     assert fork.output_terminal_detail.text() == "A 1 + B 1 → 2 merged"
+    _dispose(fork)
+
+
+def test_gui_and_headless_forks_share_input_and_chain_branch_outputs():
+    def repeat(n):
+        return {"class": "SuperCellCard", "check_state": True,
+                "params": {"mode": "scale", "super_scale": [n, 1, 1]}}
+
+    config = {
+        "class": "WorkflowFork", "check_state": True, "merge": True,
+        "branches": [
+            {"id": "A", "enabled": True, "cards": [repeat(2), repeat(3)]},
+            {"id": "B", "enabled": True, "cards": [repeat(4)]},
+        ],
+    }
+    seed = Atoms("Fe", cell=[[3, 0, 0], [.4, 4, 0], [.2, .3, 5]], pbc=[True, False, True])
+    fork = WorkflowFork()
+    fork.from_dict(config)
+    fork.set_dataset([seed])
+    fork.run()
+    assert _wait_until(lambda: fork.run_outcome == "succeeded")
+    headless = load_workflow({"workflow_schema": 2, "cards": [config]}).run([seed]).final()
+    assert [len(a) for a in fork.result_dataset] == [6, 4]
+    for actual, expected in zip(fork.result_dataset, headless):
+        assert actual == expected
+    assert len(seed) == 1
     _dispose(fork)
 
 

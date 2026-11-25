@@ -1,4 +1,4 @@
-﻿import os
+import os
 import platform
 import shutil
 from typing import Any
@@ -235,10 +235,18 @@ class Config:
             return 0
 Config()
 
-from NepTrainKit.logging_config import DEFAULT_LOG_LEVEL, normalize_log_level, set_log_level
+from NepTrainKit.logging_config import (
+    DEFAULT_LOG_LEVEL,
+    get_pinned_level,
+    normalize_log_level,
+    set_log_level,
+)
 
 _stored_log_level = Config.get("logging", "level", DEFAULT_LOG_LEVEL)
 _active_log_level = normalize_log_level(_stored_log_level)
 if _active_log_level != _stored_log_level:
     Config.set("logging", "level", _active_log_level)
-set_log_level(_active_log_level)
+# A caller that pinned a level (the workflow CLI) owns it: importing config must
+# not silently undo that choice.
+if get_pinned_level() is None:
+    set_log_level(_active_log_level)

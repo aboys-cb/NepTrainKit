@@ -7,7 +7,6 @@ from qfluentwidgets import BodyLabel, CheckBox
 
 from NepTrainKit.core import CardManager
 from NepTrainKit.core.cards.magnetism import (
-    MagneticMomentRotationOperation,
     MagneticMomentRotationParams,
 )
 from NepTrainKit.core.cards.operation import params_to_dict
@@ -243,9 +242,6 @@ class MagneticMomentRotationCard(MakeDataCard):
                 self.tr("Increase the perturbation angle or enable magnitude sampling before running.")
             )
         return " ".join(notes)
-
-    def create_operation(self):
-        return MagneticMomentRotationOperation()
 
     def get_params(self) -> MagneticMomentRotationParams:
         return MagneticMomentRotationParams(

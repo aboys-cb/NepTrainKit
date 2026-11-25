@@ -33,6 +33,7 @@ from NepTrainKit.core.magnetism import (
 )
 
 from .errors import CardOperationError
+from .labels import invalidate_changed_labels
 from .operation import StructureOperation
 from .sampling import derived_structure_seed
 
@@ -47,14 +48,23 @@ def parse_angle_list(text: str) -> list[float]:
         try:
             value = float(token)
         except ValueError:
-            continue
-        if value <= 0:
-            continue
+            value = float("nan")
+        if not np.isfinite(value) or value <= 0:
+            raise CardOperationError(
+                "small_angle_spin_tilt.invalid_angle",
+                "Small-angle Spin Tilt angles must be finite positive numbers; got '{value}'.",
+                value=token,
+            )
         rounded = float(np.round(value, 12))
         if rounded in seen:
             continue
         seen.add(rounded)
-        values.append(rounded)
+        values.append(value)
+    if not values:
+        raise CardOperationError(
+            "small_angle_spin_tilt.empty_angles",
+            "Small-angle Spin Tilt requires at least one positive angle.",
+        )
     return values
 
 
@@ -255,6 +265,7 @@ class MagneticMomentRotationOperation(StructureOperation):
         out[mask] = vec[mask] / current[mask, None] * targets[mask, None]
         return out
 
+    @invalidate_changed_labels
     def run_structure(self, structure, params: MagneticMomentRotationParams) -> list:
         num_structures_value = float(params.num_structures)
         if not np.isfinite(num_structures_value) or not num_structures_value.is_integer():
@@ -436,6 +447,7 @@ class SetMagneticMomentsParams:
 class SetMagneticMomentsOperation(StructureOperation):
     """Set magnetic moments from existing data, maps, or constants."""
 
+    @invalidate_changed_labels
     def run_structure(self, structure, params: SetMagneticMomentsParams) -> list:
         vector_output = params.format == "Non-collinear (vector)"
         moments = self._vector_moments(structure, params) if vector_output else self._scalar_moments(structure, params)
@@ -589,6 +601,7 @@ class MagneticOrderOperation(StructureOperation):
     def normalize_afm_mode(cls, value: str) -> str:
         return cls._normalize_choice(value, cls._AFM_MODE_ALIASES, "AFM mode")
 
+    @invalidate_changed_labels
     def run_structure(self, structure, params: MagneticOrderParams) -> list:
         state = self._prepare(structure, params)
         outputs = []
@@ -870,20 +883,6 @@ class MagneticOrderOperation(StructureOperation):
             dirs = np.where(mask[:, None], dirs, axis[None, :])
         return mags, dirs
 
-    def _make_collinear(self, structure, params: MagneticOrderParams, *, signs: np.ndarray) -> np.ndarray:
-        mags, _dirs = self._per_atom_mags_and_dirs(structure, params)
-        signs = np.asarray(signs, dtype=float).reshape(-1)
-        if signs.shape[0] != mags.shape[0]:
-            raise ValueError("signs shape mismatch")
-        return signs * mags
-
-    def _make_noncollinear_axis(self, structure, params: MagneticOrderParams, *, signs: np.ndarray) -> np.ndarray:
-        mags, dirs = self._per_atom_mags_and_dirs(structure, params)
-        signs = np.asarray(signs, dtype=float).reshape(-1)
-        if signs.shape[0] != mags.shape[0]:
-            raise ValueError("signs shape mismatch")
-        return (signs[:, None] * mags[:, None]) * dirs
-
 
 @dataclass(frozen=True)
 class SpinSpiralParams:
@@ -907,6 +906,7 @@ class SpinSpiralParams:
 class SpinSpiralOperation(StructureOperation):
     """Generate helical and conical spin-spiral magnetic moments."""
 
+    @invalidate_changed_labels
     def run_structure(self, structure, params: SpinSpiralParams) -> list:
         periods = self.period_values(params)
         original_periods = list(periods)
@@ -1227,6 +1227,7 @@ class SmallAngleSpinTiltParams:
 class SmallAngleSpinTiltOperation(StructureOperation):
     """Generate deterministic single-spin and pair-canting small-angle states."""
 
+    @invalidate_changed_labels
     def run_structure(self, structure, params: SmallAngleSpinTiltParams) -> list:
         supported_modes = {
             "Global tilt",
@@ -1260,7 +1261,7 @@ class SmallAngleSpinTiltOperation(StructureOperation):
                 "Small-angle Spin Tilt found no nonzero magnetic moments to tilt.",
             )
 
-        angles = parse_angle_list(params.angle_list) or [1.0, 2.0, 5.0, 10.0]
+        angles = parse_angle_list(params.angle_list)
         outputs = []
         reached_limit = False
 
@@ -1574,6 +1575,11 @@ class SmallAngleSpinTiltOperation(StructureOperation):
         group_values = [str(g) for g in np.asarray(structure.arrays["group"])]
         group_a = (params.group_a or "A").strip()
         group_b = (params.group_b or "B").strip()
+        if group_a == group_b:
+            raise CardOperationError(
+                "small_angle_spin_tilt.identical_groups",
+                "Small-angle Spin Tilt group A and B labels must be different.",
+            )
         norms = np.linalg.norm(base_moments, axis=1)
         left = [idx for idx, (g, mag) in enumerate(zip(group_values, norms)) if g == group_a and mag > 1e-10]
         right = [idx for idx, (g, mag) in enumerate(zip(group_values, norms)) if g == group_b and mag > 1e-10]
@@ -1639,6 +1645,7 @@ class SpinDisorderParams:
 class SpinDisorderOperation(StructureOperation):
     """Generate controlled spin-disorder states between ordered and PM limits."""
 
+    @invalidate_changed_labels
     def run_structure(self, structure, params: SpinDisorderParams) -> list:
         valid_modes = {
             "Flip fraction",
@@ -1838,6 +1845,7 @@ class CorrelatedRandomSpinParams:
 class CorrelatedRandomSpinOperation(StructureOperation):
     """Generate non-collinear magnetic moments from an exact correlated random field."""
 
+    @invalidate_changed_labels
     def run_structure(self, structure, params: CorrelatedRandomSpinParams) -> list:
         if params.mode not in {
             "Cone around reference",
@@ -2058,6 +2066,7 @@ class FoldedHelixParams:
 class FoldedHelixOperation(StructureOperation):
     """Generate symmetric clockwise-then-counterclockwise layered helix moments."""
 
+    @invalidate_changed_labels
     def run_structure(self, structure, params: FoldedHelixParams) -> list:
         angle_steps = range_values(list(params.angle_step_range), minimum=0.0)
         phases = range_values(list(params.phase_range))

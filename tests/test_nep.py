@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 import unittest
+
+import pytest
 import numpy as np
 from pathlib import Path
 import os
@@ -64,49 +66,36 @@ class TestNepTrainResultData( unittest.TestCase):
                 )
 
     def test_load_train(self):
-        """测试结构加载功能"""
+        """Load, select, delete and export a train.xyz with all four targets."""
         tmp_dir = self._make_nep_workdir()
-        local_train = os.path.join(tmp_dir, "train.xyz")
-        result = NepTrainResultData.from_path(local_train)
-
-
+        result = NepTrainResultData.from_path(os.path.join(tmp_dir, "train.xyz"))
         result.load()
+
+        # Energy/stress/virial are per structure; force is per atom.
         self.assertEqual(result.energy.num, 25)
-        self.assertEqual(result.force.num, 6250)
         self.assertEqual(result.stress.num, 25)
         self.assertEqual(result.virial.num, 25)
-        result.select([0,1,3])
-        self.assertEqual(len(result.select_index),3)
-        result.uncheck(0)
-        self.assertEqual(len(result.select_index),2)
+        self.assertEqual(result.force.num, 6250)
 
-        self.assertEqual(result.select_index , {1,3})
+        result.select([0, 1, 3])
+        self.assertEqual(result.select_index, {0, 1, 3})
+        result.uncheck(0)
+        self.assertEqual(result.select_index, {1, 3})
+
         result.delete_selected()
-        self.assertEqual(len(result.select_index) , 0)
+        self.assertEqual(result.select_index, set())
         self.assertEqual(result.energy.num, 23)
-        self.assertEqual(result.force.num, 5750)
         self.assertEqual(result.stress.num, 23)
         self.assertEqual(result.virial.num, 23)
+        self.assertEqual(result.force.num, 5750)
+
         result.export_model_xyz(tmp_dir)
-        export_good_model = Structure.read_multiple(
-            os.path.join(tmp_dir,"export_good_model.xyz"))
-        export_remove_model = Structure.read_multiple(
-            os.path.join(tmp_dir,"export_remove_model.xyz"))
+        good = Structure.read_multiple(os.path.join(tmp_dir, "export_good_model.xyz"))
+        removed = Structure.read_multiple(os.path.join(tmp_dir, "export_remove_model.xyz"))
+        self.assertEqual(len(good), 23)
+        self.assertEqual(len(removed), 2)
 
-        self.assertEqual(len(export_good_model), 23)
-        self.assertEqual(len(export_remove_model), 2)
-
-    def test_load_train2(self):
-        tmp_dir = self._make_nep_workdir()
-        local_train = os.path.join(tmp_dir, "train.xyz")
-        result = NepTrainResultData.from_path(local_train)
-        result.load()
-        self.assertEqual(result.energy.num, 25)
-        self.assertEqual(result.force.num, 6250)
-        self.assertEqual(result.stress.num, 25)
-        self.assertEqual(result.virial.num, 25)
-
-    def test_export_model_npy_skips_empty_removed_dataset_and_clears_stale_output(self):
+    def test_export_model_npy_skips_empty_removed_dataset_and_preserves_existing_output(self):
         tmp_dir = self._make_nep_workdir()
         local_train = os.path.join(tmp_dir, "train.xyz")
         result = NepTrainResultData.from_path(local_train)
@@ -116,11 +105,15 @@ class TestNepTrainResultData( unittest.TestCase):
         stale_removed.mkdir()
         (stale_removed / "stale.txt").write_text("old", encoding="utf8")
 
-        with patch.object(MessageManager, "send_info_message") as send_info:
+        with (
+            patch.object(MessageManager, "send_info_message") as send_info,
+            patch.object(MessageManager, "send_warning_message") as send_warning,
+        ):
             result.export_model_npy(tmp_dir, group_by_config_type=False)
 
         self.assertTrue((Path(tmp_dir) / "export_good_model").is_dir())
-        self.assertFalse(stale_removed.exists())
+        self.assertEqual((stale_removed / "stale.txt").read_text(encoding="utf8"), "old")
+        self.assertIn(str(stale_removed), send_warning.call_args.args[0])
         send_info.assert_called_once_with(f"File exported to: {tmp_dir}")
 
     def _make_nep_workdir(self) -> str:
@@ -157,9 +150,10 @@ class TestNepTrainResultData( unittest.TestCase):
             _choose_export_format=lambda: ("deepmd/npy/mixed", True, 16),
             nep_result_data=SimpleNamespace(
                 structure=SimpleNamespace(now_data=np.empty(1, dtype=object)),
-                export_active_npy=export_method,
+                prepare_export=MagicMock(return_value=export_method),
             ),
         )
+        widget._export_structures = MethodType(show_nep_module.ShowNepWidget._export_structures, widget)
         worker = MagicMock()
         with (
             patch.object(show_nep_module, "BackgroundTask", return_value=worker),
@@ -167,6 +161,7 @@ class TestNepTrainResultData( unittest.TestCase):
         ):
             show_nep_module.ShowNepWidget.export_active_structures(widget)
 
+        widget.nep_result_data.prepare_export.assert_called_once_with("active", npy=True)
         worker.start_work.assert_called_once_with(
             export_method,
             "/tmp/export",
@@ -1514,9 +1509,7 @@ class TestShowNepWidgetArrowCapability(unittest.TestCase):
         np.testing.assert_allclose(structure.atomic_properties[show_nep_module._ARROW_ML_MFORCE], rows[:, 3:])
         np.testing.assert_allclose(structure.atomic_properties[show_nep_module._ARROW_MFORCE_ERROR], rows[:, 3:] - rows[:, :3])
 
-    def test_sparse_mforce_arrow_error_uses_force_mag_mask(self):
-        widget = show_nep_module.ShowNepWidget.__new__(show_nep_module.ShowNepWidget)
-        widget._arrow_vector_lookup_cache = {}
+    def test_sparse_mforce_arrow_error_uses_magnetic_force_mask(self):
         rows = np.array(
             [
                 [10.0, 20.0, 30.0, 1.0, 2.0, 3.0],
@@ -1524,22 +1517,26 @@ class TestShowNepWidgetArrowCapability(unittest.TestCase):
             ],
             dtype=np.float32,
         )
-        widget.nep_result_data = SimpleNamespace(mforce=DPPlotData(rows, group_list=np.array([2]), title="mforce"))
-        structure = self._FakeStructure(natoms=3)
-        structure.atomic_properties["force_mag"] = np.array(
-            [
-                [0.0, 0.0, 0.0],
-                [1.0, 0.0, 0.0],
-                [0.0, 1.0, 0.0],
-            ],
-            dtype=np.float32,
-        )
+        for label in ("force_mag", "mforce"):
+            with self.subTest(label=label):
+                widget = show_nep_module.ShowNepWidget.__new__(show_nep_module.ShowNepWidget)
+                widget._arrow_vector_lookup_cache = {}
+                widget.nep_result_data = SimpleNamespace(mforce=DPPlotData(rows, group_list=np.array([2]), title="mforce"))
+                structure = self._FakeStructure(natoms=3)
+                structure.atomic_properties[label] = np.array(
+                    [
+                        [0.0, 0.0, 0.0],
+                        [1.0, 0.0, 0.0],
+                        [0.0, 1.0, 0.0],
+                    ],
+                    dtype=np.float32,
+                )
 
-        show_nep_module.ShowNepWidget._inject_ml_arrow_vectors(widget, structure, 0)
+                show_nep_module.ShowNepWidget._inject_ml_arrow_vectors(widget, structure, 0)
 
-        expected_error = np.zeros((3, 3), dtype=np.float32)
-        expected_error[1:] = rows[:, 3:] - rows[:, :3]
-        np.testing.assert_allclose(structure.atomic_properties[show_nep_module._ARROW_MFORCE_ERROR], expected_error)
+                expected_error = np.zeros((3, 3), dtype=np.float32)
+                expected_error[1:] = rows[:, 3:] - rows[:, :3]
+                np.testing.assert_allclose(structure.atomic_properties[show_nep_module._ARROW_MFORCE_ERROR], expected_error)
 
     def test_arrow_display_names_hide_internal_ml_force_keys(self):
         labels, label_to_prop = show_nep_module.ShowNepWidget._arrow_display_names(
@@ -1968,115 +1965,66 @@ class TestStructurePlotWidgetInteraction(unittest.TestCase):
             app.processEvents()
 
 
-class TestNepPolarizabilityResultData( unittest.TestCase):
-    def setUp(self):
+# Polarizability and dipole share the whole select/export flow; only the
+# dataset attribute and the fixture directory differ. One parametrized test
+# covers both instead of a copy per class.
+PARALLEL_RESULT_CASES = [
+    pytest.param(
+        NepPolarizabilityResultData,
+        "polarizability",
+        ("polarizability_diagonal", "polarizability_no_diagonal"),
+        5768,
+        id="polarizability",
+    ),
+    pytest.param(NepDipoleResultData, "dipole", ("dipole",), 5768, id="dipole"),
+]
 
 
-        self.test_dir = Path(__file__).parent
-        self.data_dir=os.path.join(self.test_dir,"data/polarizability")
-        self.train_path=os.path.join(self.data_dir,"train.xyz")
+@pytest.mark.parametrize("result_cls, fixture, datasets, total", PARALLEL_RESULT_CASES)
+def test_parallel_dataset_result_loads_selects_deletes_and_exports(
+    tmp_path, result_cls, fixture, datasets, total
+):
+    """Structure loading, selection bookkeeping, delete and xyz export."""
+    data_dir = tmp_path / fixture
+    shutil.copytree(Path(__file__).parent / "data" / fixture, data_dir)
+    result = result_cls.from_path(str(data_dir / "train.xyz"))
+    result.load()
 
-    def tearDown(self):
-        pass
-    def test_load_train(self):
+    for name in datasets:
+        assert getattr(result, name).num == total
 
+    result.select([0, 1, 3])
+    assert result.select_index == {0, 1, 3}
+    result.uncheck(0)
+    assert result.select_index == {1, 3}
 
-        """测试结构加载功能"""
-        result = NepPolarizabilityResultData.from_path(self.train_path)
-        result.load()
-        self.assertEqual(result.polarizability_diagonal.num, 5768)
-        self.assertEqual(result.polarizability_no_diagonal.num, 5768)
+    result.delete_selected()
+    assert result.select_index == set()
+    for name in datasets:
+        assert getattr(result, name).num == total - 2
 
-        result.select([0,1,3])
-        self.assertEqual(len(result.select_index),3)
-        result.uncheck(0)
-        self.assertEqual(len(result.select_index),2)
-
-        self.assertEqual(result.select_index , {1,3})
-        result.delete_selected()
-        self.assertEqual(len(result.select_index) , 0)
-        self.assertEqual(result.polarizability_diagonal.num, 5766)
-        self.assertEqual(result.polarizability_no_diagonal.num, 5766)
-
-        result.export_model_xyz(self.data_dir)
-        export_good_model = Structure.read_multiple(os.path.join(self.data_dir,"export_good_model.xyz"))
-        export_remove_model = Structure.read_multiple(os.path.join(self.data_dir,"export_remove_model.xyz"))
-
-        self.assertEqual(len(export_good_model), 5766)
-        self.assertEqual(len(export_remove_model), 2)
-        os.remove(os.path.join(self.data_dir,"export_good_model.xyz"))
-        os.remove(os.path.join(self.data_dir,"export_remove_model.xyz"))
-
-    def test_load_train2(self):
+    result.export_model_xyz(str(data_dir))
+    good = Structure.read_multiple(str(data_dir / "export_good_model.xyz"))
+    removed = Structure.read_multiple(str(data_dir / "export_remove_model.xyz"))
+    assert len(good) == total - 2
+    assert len(removed) == 2
 
 
-        result = NepPolarizabilityResultData.from_path(self.train_path)
-        result.load()
-        os.remove(os.path.join(self.data_dir,"polarizability_train.out"))
-        os.remove(os.path.join(self.data_dir,"descriptor.out"))
+@pytest.mark.parametrize("result_cls, fixture, datasets, total", PARALLEL_RESULT_CASES)
+def test_parallel_dataset_result_inverse_select(tmp_path, result_cls, fixture, datasets, total):
+    """Inverse select keeps everything except the two unchecked indices."""
+    data_dir = tmp_path / fixture
+    shutil.copytree(Path(__file__).parent / "data" / fixture, data_dir)
+    result = result_cls.from_path(str(data_dir / "train.xyz"))
+    result.load()
 
-    def test_inverse_select(self):
+    result.select([0, 1, 3])
+    result.uncheck(0)
+    result.inverse_select()
 
-        result = NepPolarizabilityResultData.from_path(self.train_path)
-        result.load()
-        result.select([0,1,3])
-        result.uncheck(0)
-        result.inverse_select()
-        self.assertEqual(len(result.select_index), result.num-2)
-        self.assertNotIn(1, result.select_index)
-        self.assertNotIn(3, result.select_index)
-
-class TestNepDipoleResultData(unittest.TestCase):
-    def setUp(self):
-
-
-        self.test_dir = Path(__file__).parent
-        self.data_dir=os.path.join(self.test_dir,"data/dipole")
-        self.train_path=os.path.join(self.data_dir,"train.xyz")
-
-    def tearDown(self):
-        pass
-    def test_load_train(self):
-        """测试结构加载功能"""
-        result = NepDipoleResultData.from_path(self.train_path)
-        result.load()
-        self.assertEqual(result.dipole.num, 5768)
-
-        result.select([0,1,3])
-        self.assertEqual(len(result.select_index),3)
-        result.uncheck(0)
-        self.assertEqual(len(result.select_index),2)
-
-        self.assertEqual(result.select_index , {1,3})
-        result.delete_selected()
-        self.assertEqual(len(result.select_index) , 0)
-        self.assertEqual(result.dipole.num, 5766)
-
-
-        result.export_model_xyz(self.data_dir)
-        export_good_model = Structure.read_multiple(os.path.join(self.data_dir,"export_good_model.xyz"))
-        export_remove_model = Structure.read_multiple(os.path.join(self.data_dir,"export_remove_model.xyz"))
-
-        self.assertEqual(len(export_good_model), 5766)
-        self.assertEqual(len(export_remove_model), 2)
-        os.remove(os.path.join(self.data_dir,"export_good_model.xyz"))
-        os.remove(os.path.join(self.data_dir,"export_remove_model.xyz"))
-
-    def test_load_train2(self):
-        result = NepDipoleResultData.from_path(self.train_path)
-        result.load()
-        os.remove(os.path.join(self.data_dir,"dipole_train.out"))
-        os.remove(os.path.join(self.data_dir,"descriptor.out"))
-
-    def test_inverse_select(self):
-        result = NepDipoleResultData.from_path(self.train_path)
-        result.load()
-        result.select([0,1,3])
-        result.uncheck(0)
-        result.inverse_select()
-        self.assertEqual(len(result.select_index), result.num-2)
-        self.assertNotIn(1, result.select_index)
-        self.assertNotIn(3, result.select_index)
+    assert len(result.select_index) == result.num - 2
+    assert 1 not in result.select_index
+    assert 3 not in result.select_index
 
 
 if __name__ == "__main__":

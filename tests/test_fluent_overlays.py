@@ -3,8 +3,8 @@
 import pytest
 import shiboken6
 from PySide6.QtCore import QCoreApplication, QEvent, QPoint
-from PySide6.QtGui import QHelpEvent
-from PySide6.QtWidgets import QApplication, QListWidget, QListWidgetItem, QWidget
+from PySide6.QtGui import QHelpEvent, QStandardItem, QStandardItemModel
+from PySide6.QtWidgets import QApplication, QListWidget, QListWidgetItem, QTableView, QTreeView, QWidget
 from qfluentwidgets import ToolTipFilter, ToolTipPosition
 from qfluentwidgets.components.widgets.tool_tip import ItemViewToolTip
 
@@ -136,6 +136,26 @@ def test_router_ignores_tooltip_less_widgets(router, qapp):
         _drop(widget)
 
 
+@pytest.mark.parametrize("view_type", [QTreeView, QTableView])
+def test_hover_moves_tooltip_between_cells_with_headers(router, qapp, view_type):
+    view = view_type()
+    model = QStandardItemModel(view)
+    items = [QStandardItem(name) for name in ("model", "score")]
+    for item in items:
+        item.setToolTip(item.text())
+    model.appendRow(items)
+    view.setModel(model)
+    view.resize(420, 180)
+    view.show()
+    try:
+        for item in items:
+            _hover(view.viewport(), view.visualRect(item.index()).center())
+            assert router._tooltip.isVisible()
+            assert router._tooltip.text() == item.text()
+    finally:
+        _drop(view)
+
+
 def test_router_rebuilds_its_tooltip_when_its_window_dies(router, qapp):
     """The tooltip is a child window of the window it points at."""
     dead_window = _hoverable_widget("first hint")
@@ -206,3 +226,167 @@ def test_configure_app_answers_the_tooltips_of_the_whole_application(qapp, monke
     finally:
         _drop(widget)
         _remove_router(qapp)
+
+
+def _navigation_tip(window, delay=1000):
+    from qfluentwidgets.components.navigation.navigation_panel import NavigationToolTipFilter
+    owner = QWidget(window)
+    owner.setGeometry(8, 80, 40, 40)
+    owner.setToolTip('Training Set Audit')
+    owner.isCompacted = True
+    tooltip_filter = NavigationToolTipFilter(owner, delay)
+    owner.installEventFilter(tooltip_filter)
+    owner.show()
+    return owner, tooltip_filter
+
+
+def _enter(owner):
+    QApplication.sendEvent(owner, QEvent(QEvent.Type.Enter))
+
+
+@pytest.mark.parametrize('event_type', [
+    QEvent.Type.WindowDeactivate, QEvent.Type.Move, QEvent.Type.Hide,
+    QEvent.Type.WindowStateChange, QEvent.Type.ApplicationDeactivate,
+])
+@pytest.mark.parametrize('pending', [False, True])
+def test_navigation_tips_cancel_on_window_and_app_changes(router, qapp, event_type, pending):
+    from PySide6.QtTest import QTest
+    window = QWidget()
+    window.resize(300, 200)
+    window.show()
+    owner, tooltip_filter = _navigation_tip(window, 40)
+    qapp.processEvents()
+    try:
+        _enter(owner)
+        if not pending:
+            tooltip_filter.timer.stop()
+            tooltip_filter.showToolTip()
+            assert tooltip_filter._tooltip.isVisible()
+        else:
+            assert tooltip_filter.timer.isActive()
+        qapp.setActiveWindow(window)
+        target = qapp if event_type == QEvent.Type.ApplicationDeactivate else window
+        QApplication.sendEvent(target, QEvent(event_type))
+        assert not tooltip_filter.timer.isActive()
+        assert not tooltip_filter._tooltip.isVisible()
+        QTest.qWait(80)
+        assert not tooltip_filter._tooltip.isVisible()  # A delayed tip must not reappear.
+        _enter(owner)
+        QTest.qWait(80)
+        assert tooltip_filter._tooltip.isVisible()  # The next hover still works.
+    finally:
+        tooltip_filter.hideToolTip()
+        _drop(window)
+
+
+@pytest.mark.parametrize('kind', ['plain', 'item', 'navigation', 'custom'])
+def test_all_tooltip_sources_expire(router, qapp, monkeypatch, kind):
+    from PySide6.QtTest import QTest
+    # Keep the same production timer/animation path with a shorter test deadline.
+    monkeypatch.setattr(fluent_overlays, '_TOOLTIP_DURATION', 40)
+    window = QWidget()
+    window.resize(300, 200)
+    window.show()
+    if kind == 'item':
+        owner = QListWidget(window)
+        item = QListWidgetItem('row', owner)
+        item.setToolTip('row tip')
+        owner.show()
+    elif kind == 'navigation':
+        owner, tooltip_filter = _navigation_tip(window)
+    else:
+        owner = QWidget(window)
+        owner.setToolTip('hint')
+        owner.show()
+        if kind == 'custom':
+            install_fluent_tooltip(owner)
+            tooltip_filter = owner.findChild(ToolTipFilter)
+    qapp.processEvents()
+    try:
+        if kind in ('navigation', 'custom'):
+            _enter(owner)
+            tooltip_filter.timer.stop()
+            tooltip_filter.showToolTip()
+            tip = tooltip_filter._tooltip
+        elif kind == 'item':
+            _hover(owner.viewport(), owner.visualItemRect(item).center())
+            tip = router._tooltip
+        else:
+            _hover(owner)
+            tip = router._tooltip
+        assert tip.isVisible() and 0 < tip.duration() <= 40
+        QTest.qWait(250)  # Fluent adds 150 ms for the fade-in animation.
+        assert not tip.isVisible()
+    finally:
+        _drop(window)
+
+
+def test_window_cancellation_is_scoped_and_survives_deleted_owners(router, qapp):
+    first, second = QWidget(), QWidget()
+    first.show()
+    second.show()
+    owner, tooltip_filter = _navigation_tip(first)
+    qapp.processEvents()
+    try:
+        _enter(owner)
+        tooltip_filter.timer.stop()
+        tooltip_filter.showToolTip()
+        QApplication.sendEvent(second, QEvent(QEvent.Type.Move))
+        assert tooltip_filter._tooltip.isVisible()
+        tip = tooltip_filter._tooltip
+        qapp.setActiveWindow(first)
+        _drop(owner)
+        QApplication.sendEvent(first, QEvent(QEvent.Type.WindowDeactivate))
+        assert not tip.isVisible()
+        # A fresh plain tip follows the same window lifecycle policy.
+        first.setToolTip('plain')
+        _hover(first)
+        assert router._tooltip.isVisible()
+        qapp.setActiveWindow(first)
+        QApplication.sendEvent(first, QEvent(QEvent.Type.WindowDeactivate))
+        assert not router._tooltip.isVisible()
+    finally:
+        _drop(first)
+        _drop(second)
+
+
+def test_item_delegate_delay_is_cancelled_before_it_can_show(router, qapp):
+    from PySide6.QtTest import QTest
+    from PySide6.QtWidgets import QStyleOptionViewItem
+    from qfluentwidgets.components.widgets.tool_tip import ItemViewToolTipDelegate
+    view = QListWidget()
+    item = QListWidgetItem('row', view)
+    item.setToolTip('delayed row hint')
+    delegate = ItemViewToolTipDelegate(view, showDelay=40)
+    view.show()
+    qapp.processEvents()
+    try:
+        _enter(view.viewport())
+        position = view.visualItemRect(item).center()
+        event = QHelpEvent(QEvent.Type.ToolTip, position, view.viewport().mapToGlobal(position))
+        delegate.helpEvent(event, view, QStyleOptionViewItem(), view.indexFromItem(item))
+        assert delegate.timer.isActive()
+        QApplication.sendEvent(view, QEvent(QEvent.Type.WindowDeactivate))
+        assert not delegate.timer.isActive()
+        QTest.qWait(80)
+        assert not delegate._tooltip.isVisible()
+    finally:
+        _drop(view)
+
+
+def test_hiding_owner_page_cancels_local_tooltip(router, qapp):
+    window = QWidget()
+    page = QWidget(window)
+    owner, tooltip_filter = _navigation_tip(page)
+    window.show()
+    qapp.processEvents()
+    try:
+        _enter(owner)
+        tooltip_filter.timer.stop()
+        tooltip_filter.showToolTip()
+        assert tooltip_filter._tooltip.isVisible()
+        page.hide()
+        assert not tooltip_filter._tooltip.isVisible()
+        assert not tooltip_filter.timer.isActive()
+    finally:
+        _drop(window)

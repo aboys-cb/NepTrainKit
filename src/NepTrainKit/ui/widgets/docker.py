@@ -694,6 +694,7 @@ class MakeWorkflowArea(QWidget):
     """Single-canvas vertical accordion with optional permanent fork nodes."""
 
     workflowChanged = Signal()
+    selectedCardChanged = Signal(object)
 
     _CARD_MAX_WIDTH = 520
     _FORK_MAX_WIDTH = 920
@@ -878,7 +879,7 @@ class MakeWorkflowArea(QWidget):
             if group.add_card(card):
                 for nested in self._iter_nested_cards(card):
                     self._configure_node_presentation(nested)
-                    self._connect_guidance_refresh(nested)
+                    self._connect_card_inspector(nested)
                     self._connect_close_cleanup(nested)
                     self._connect_drag_lifecycle(nested)
                 self.select_card(card, expand=True, ensure_visible=False)
@@ -890,7 +891,7 @@ class MakeWorkflowArea(QWidget):
             if fork.add_card(card, branch, index):
                 for nested in self._iter_nested_cards(card):
                     self._configure_node_presentation(nested)
-                    self._connect_guidance_refresh(nested)
+                    self._connect_card_inspector(nested)
                     self._connect_close_cleanup(nested)
                     self._connect_drag_lifecycle(nested)
                 self.select_card(card, expand=True, ensure_visible=False)
@@ -966,7 +967,7 @@ class MakeWorkflowArea(QWidget):
         )
         for nested in self._iter_nested_cards(card):
             self._configure_node_presentation(nested)
-            self._connect_guidance_refresh(nested)
+            self._connect_card_inspector(nested)
             self._connect_close_cleanup(nested)
             self._connect_drag_lifecycle(nested)
         card.headerView.installEventFilter(self)
@@ -976,10 +977,6 @@ class MakeWorkflowArea(QWidget):
             card.cardSelected.connect(lambda selected: self.select_card(selected))
             card.branchSelected.connect(
                 lambda branch, fork=card: self._activate_branch(fork, branch)
-            )
-        if self._is_card_group(card):
-            card.cardSelected.connect(
-                lambda selected: self.select_card(selected, expand=True)
             )
         structure_changed = getattr(card, "structureChanged", None)
         if structure_changed is not None:
@@ -1158,13 +1155,15 @@ class MakeWorkflowArea(QWidget):
         self.canvas_layout.invalidate()
         self.canvas_layout.activate()
 
-    def _connect_guidance_refresh(self, card: MakeDataCardWidget) -> None:
-        if bool(card.property("workflowGuidanceConnected")):
+    def _connect_card_inspector(self, card: MakeDataCardWidget) -> None:
+        if bool(card.property("workflowInspectorConnected")):
             return
         card.runFinishedSignal.connect(
             lambda _index, selected=card: self._refresh_guidance_for(selected)
         )
-        card.setProperty("workflowGuidanceConnected", True)
+        if self._is_card_group(card):
+            card.cardSelected.connect(lambda selected: self.select_card(selected, expand=True))
+        card.setProperty("workflowInspectorConnected", True)
 
     def _refresh_guidance_for(self, card: MakeDataCardWidget) -> None:
         if card is self._selected_card:
@@ -1190,8 +1189,9 @@ class MakeWorkflowArea(QWidget):
                 for branch in root.branches:
                     branch.set_selected(False)
         self._configure_node_presentation(card)
-        self._connect_guidance_refresh(card)
+        self._connect_card_inspector(card)
         self._selected_card = card
+        self.selectedCardChanged.emit(card)
         self._update_selection_style(card)
         if not expand:
             self.guidance_panel.set_card(card)

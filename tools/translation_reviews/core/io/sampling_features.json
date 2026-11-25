@@ -1,0 +1,84 @@
+{
+  "items": [
+    {
+      "path": "src/NepTrainKit/core/io/sampling_features.py",
+      "source": "structure descriptors must align with structures",
+      "id": 314,
+      "review": "fix",
+      "review_note": "采样使用的原始/已有训练集描述符存在不匹配或非有限值时，这些校验错误可向采样任务传播；应在用户可见失败说明中完整本地化。",
+      "evidence": [
+        "src/NepTrainKit/core/io/sampling_features.py:48",
+        "src/NepTrainKit/core/io/sampler.py",
+        "src/NepTrainKit/ui/views/nep.py:507",
+        "src/NepTrainKit/ui/threads.py:117"
+      ],
+      "resolution": "whole_message",
+      "template": "structure descriptors must align with structures",
+      "context": "RuntimeMessage"
+    },
+    {
+      "path": "src/NepTrainKit/core/io/sampling_features.py",
+      "source": "structure descriptors must be finite",
+      "id": 315,
+      "review": "fix",
+      "review_note": "采样使用的原始/已有训练集描述符存在不匹配或非有限值时，这些校验错误可向采样任务传播；应在用户可见失败说明中完整本地化。",
+      "evidence": [
+        "src/NepTrainKit/core/io/sampling_features.py:48",
+        "src/NepTrainKit/core/io/sampler.py",
+        "src/NepTrainKit/ui/views/nep.py:507",
+        "src/NepTrainKit/ui/threads.py:117"
+      ],
+      "resolution": "whole_message",
+      "template": "structure descriptors must be finite",
+      "context": "RuntimeMessage"
+    },
+    {
+      "path": "src/NepTrainKit/core/io/sampling_features.py",
+      "source": "atomic descriptors must match the model descriptor dimension",
+      "id": 316,
+      "review": "fix",
+      "review_note": "采样使用的原始/已有训练集描述符存在不匹配或非有限值时，这些校验错误可向采样任务传播；应在用户可见失败说明中完整本地化。",
+      "evidence": [
+        "src/NepTrainKit/core/io/sampling_features.py:48",
+        "src/NepTrainKit/core/io/sampler.py",
+        "src/NepTrainKit/ui/views/nep.py:507",
+        "src/NepTrainKit/ui/threads.py:117"
+      ],
+      "resolution": "whole_message",
+      "template": "atomic descriptors must match the model descriptor dimension",
+      "context": "RuntimeMessage"
+    },
+    {
+      "path": "src/NepTrainKit/core/io/sampling_features.py",
+      "source": "atomic descriptors must align with structure atom counts",
+      "id": 317,
+      "review": "fix",
+      "review_note": "采样使用的原始/已有训练集描述符存在不匹配或非有限值时，这些校验错误可向采样任务传播；应在用户可见失败说明中完整本地化。",
+      "evidence": [
+        "src/NepTrainKit/core/io/sampling_features.py:48",
+        "src/NepTrainKit/core/io/sampler.py",
+        "src/NepTrainKit/ui/views/nep.py:507",
+        "src/NepTrainKit/ui/threads.py:117"
+      ],
+      "resolution": "whole_message",
+      "template": "atomic descriptors must align with structure atom counts",
+      "context": "RuntimeMessage"
+    },
+    {
+      "path": "src/NepTrainKit/core/io/sampling_features.py",
+      "source": "atomic descriptors must be finite",
+      "id": 318,
+      "review": "fix",
+      "review_note": "采样使用的原始/已有训练集描述符存在不匹配或非有限值时，这些校验错误可向采样任务传播；应在用户可见失败说明中完整本地化。",
+      "evidence": [
+        "src/NepTrainKit/core/io/sampling_features.py:48",
+        "src/NepTrainKit/core/io/sampler.py",
+        "src/NepTrainKit/ui/views/nep.py:507",
+        "src/NepTrainKit/ui/threads.py:117"
+      ],
+      "resolution": "whole_message",
+      "template": "atomic descriptors must be finite",
+      "context": "RuntimeMessage"
+    }
+  ]
+}

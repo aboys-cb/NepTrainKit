@@ -17,6 +17,7 @@ from loguru import logger
 
 from NepTrainKit import module_path
 from NepTrainKit.config import Config
+from NepTrainKit.translation_catalog import ensure_source_catalog
 from NepTrainKit.version import DOCS_ROOT_URL
 
 SUPPORTED_LANGUAGES: Final[tuple[str, ...]] = ("auto", "en_US", "zh_CN")
@@ -162,6 +163,11 @@ def install_translator(app: QApplication, language: object | None = None) -> str
     path = translation_path(resolved)
     if path is None:
         return resolved
+
+    try:
+        ensure_source_catalog(path)
+    except (OSError, subprocess.SubprocessError) as exc:
+        logger.warning("Failed to compile development translations: {}", exc)
 
     # Built-in qfluentwidgets strings (switch On/Off, dialog buttons, ...).
     fluent_translator = QTranslator(app)

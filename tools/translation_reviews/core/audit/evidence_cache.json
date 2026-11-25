@@ -1,0 +1,25 @@
+{
+  "items": [
+    {
+      "path": "src/NepTrainKit/core/audit/evidence_cache.py",
+      "source": "An evidence cache record must be a JSON object.",
+      "id": 27,
+      "review": "hidden",
+      "review_note": "缓存读取器捕获该错误、记录日志并返回 None；页面不会原样显示该异常。",
+      "evidence": [
+        "src/NepTrainKit/core/audit/evidence_cache.py:387",
+        "src/NepTrainKit/core/audit/evidence_cache.py:438"
+      ]
+    }
+  ],
+  "retained_candidates": [
+    {
+      "path": "src/NepTrainKit/core/audit/evidence_cache.py",
+      "source": "An evidence cache record must be a JSON object.",
+      "context": null,
+      "rendered": "An evidence cache record must be a JSON object.",
+      "review": "hidden",
+      "reason": "缓存读取器捕获该错误、记录日志并返回 None；页面不会原样显示该异常。"
+    }
+  ]
+}

@@ -431,17 +431,18 @@ class Structure:
         return [atomic_numbers[element] for element in self.elements]
     @property
     def spin_num(self)->int:
-        """Number of atoms with non-zero magnetic moment.
+        """Number of atoms with a non-zero magnetic-force label.
 
         Returns
         -------
         int
-            Count of atoms whose ``force_mag`` entry is **not** [0, 0, 0].
-            Returns 0 if ``force_mag`` is absent.
+            Count of atoms whose ``force_mag`` or ``mforce`` entry is **not** [0, 0, 0].
+            Returns 0 if both fields are absent.
         """
-        if  "force_mag" not in self.atomic_properties :
+        key = "force_mag" if "force_mag" in self.atomic_properties else "mforce"
+        if key not in self.atomic_properties:
             return 0
-        mag=self.atomic_properties["force_mag"]
+        mag=self.atomic_properties[key]
         count = np.sum(~np.all(mag == 0, axis=1))
         return count
     @cached_property

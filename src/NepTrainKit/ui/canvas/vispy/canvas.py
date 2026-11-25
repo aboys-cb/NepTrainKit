@@ -14,6 +14,7 @@ from PySide6.QtCore import QPointF, Qt
 from PySide6.QtGui import QBrush, QColor, QPainter, QPen
 from PySide6.QtWidgets import QWidget
 from loguru import logger
+from scipy.ndimage import maximum_filter
 from vispy import scene
 
 from vispy.visuals.filters import MarkerPickingFilter
@@ -30,6 +31,8 @@ from NepTrainKit.core.types import Brushes, Pens
 
 VISPY_PREVIEW_WIDTH = 640
 VISPY_PREVIEW_HEIGHT = 240
+# The wide texture is compressed horizontally in narrow thumbnail axes.
+VISPY_PREVIEW_POINT_FOOTPRINT = (7, 11)
 if sys.platform == "darwin":
     _CJK_FONT_FACE = "PingFang SC"
 elif sys.platform.startswith("win"):
@@ -238,9 +241,14 @@ class DatasetGpuCache:
         x_range = [float(np.min(x[mask])), float(np.max(x[mask]))]
         y_range = [float(np.min(y[mask])), float(np.max(y[mask]))]
         if parity_mode:
-            real_range = [min(x_range[0], y_range[0]), max(x_range[1], y_range[1])]
-            return real_range, real_range
-        return x_range, y_range
+            x_range = y_range = [min(x_range[0], y_range[0]), max(x_range[1], y_range[1])]
+
+        def padded(bounds):
+            lower, upper = bounds
+            padding = (upper - lower) * 0.015 or 0.5
+            return [lower - padding, upper + padding]
+
+        return padded(x_range), padded(y_range)
 
     def preview(self, dataset, color, parity_mode, active_indices=None):
         color_arr = np.asarray(color, dtype=np.float32).reshape(-1)
@@ -265,8 +273,14 @@ class DatasetGpuCache:
             y = y[active_indices]
 
         x_range, y_range = self.data_range(x, y, parity_mode)
-        image = self._rasterize_preview(x, y, x_range, y_range, color_arr)
-        cached = (image, x_range, y_range)
+        pixels = self.preview_pixels(x, y, x_range, y_range)
+        counts = np.bincount(pixels, minlength=VISPY_PREVIEW_WIDTH * VISPY_PREVIEW_HEIGHT)
+        counts = counts.reshape(VISPY_PREVIEW_HEIGHT, VISPY_PREVIEW_WIDTH).astype(np.int32)
+        image = np.zeros((*counts.shape, 4), dtype=np.uint8)
+        image[..., :3] = np.clip(color_arr[:3] * 255, 0, 255).astype(np.uint8)
+        opacity = max(0.85, float(color_arr[3])) if color_arr.size >= 4 else 1.0
+        image[..., 3] = self.preview_alpha(counts, opacity)
+        cached = (image, x_range, y_range, counts)
         dataset_id = id(dataset)
         for key in list(self._previews):
             if key[0][0] == dataset_id and key != preview_signature:
@@ -282,43 +296,24 @@ class DatasetGpuCache:
         )
         return cached
 
-    def _rasterize_preview(self, x, y, x_range, y_range, color):
-        width = VISPY_PREVIEW_WIDTH
-        height = VISPY_PREVIEW_HEIGHT
-        image = np.zeros((height, width, 4), dtype=np.uint8)
-        x = np.asarray(x)
-        y = np.asarray(y)
+    @staticmethod
+    def preview_pixels(x, y, x_range, y_range):
+        """Map finite points to the shared preview histogram."""
         mask = (x > -10000) & np.isfinite(x) & np.isfinite(y)
-        if not np.any(mask):
-            return image
-
         x_min, x_max = x_range
         y_min, y_max = y_range
-        if x_min == x_max:
-            x_max = x_min + 1.0
-        if y_min == y_max:
-            y_max = y_min + 1.0
+        px = ((x[mask] - x_min) / (x_max - x_min) * (VISPY_PREVIEW_WIDTH - 1)).astype(np.int64)
+        py = ((y[mask] - y_min) / (y_max - y_min) * (VISPY_PREVIEW_HEIGHT - 1)).astype(np.int64)
+        valid = (px >= 0) & (px < VISPY_PREVIEW_WIDTH) & (py >= 0) & (py < VISPY_PREVIEW_HEIGHT)
+        return py[valid] * VISPY_PREVIEW_WIDTH + px[valid]
 
-        px = ((x[mask] - x_min) / (x_max - x_min) * (width - 1)).astype(np.int64)
-        py = ((y[mask] - y_min) / (y_max - y_min) * (height - 1)).astype(np.int64)
-        valid = (px >= 0) & (px < width) & (py >= 0) & (py < height)
-        if not np.any(valid):
-            return image
-
-        px = px[valid]
-        py = py[valid]
-        counts = np.zeros((height, width), dtype=np.uint16)
-        np.add.at(counts, (py, px), 1)
+    @staticmethod
+    def preview_alpha(counts, opacity):
+        """Keep isolated samples visible while retaining logarithmic density contrast."""
         occupied = counts > 0
-        rgb = np.clip(color[:3] * 255, 0, 255).astype(np.uint8)
-        alpha_base = float(color[3]) if color.size >= 4 else 1.0
-        alpha_base = max(alpha_base, 0.85)
-        alpha = np.clip((80 + np.log1p(counts.astype(np.float32)) * 45) * alpha_base, 0, 255).astype(np.uint8)
-        image[occupied, :3] = rgb
-        image[occupied, 3] = alpha[occupied]
-        image[1:, :, :] = np.maximum(image[1:, :, :], image[:-1, :, :])
-        image[:, 1:, :] = np.maximum(image[:, 1:, :], image[:, :-1, :])
-        return image
+        alpha = np.zeros(counts.shape, dtype=np.uint8)
+        alpha[occupied] = np.minimum(255, (160 + np.log1p(counts[occupied]) * 36) * opacity)
+        return maximum_filter(alpha, size=VISPY_PREVIEW_POINT_FOOTPRINT, mode="constant")
 
 
 class MainPlotView:
@@ -359,8 +354,10 @@ class PreviewPlotView:
         else:
             color = face_color
         active_indices = self.cache.active_indices(dataset)
-        image, x_range, y_range = self.cache.preview(dataset, color, plot.parity_mode, active_indices=active_indices)
-        plot.set_preview_image(image, x_range, y_range)
+        image, x_range, y_range, counts = self.cache.preview(
+            dataset, color, plot.parity_mode, active_indices=active_indices
+        )
+        plot.set_preview_image(image, x_range, y_range, counts)
         return plot._preview_image
 
 
@@ -431,6 +428,7 @@ class ViewBoxWidget(scene.Widget):
         self._preview_image = None
         self._preview_image_source = None
         self._preview_image_range = None
+        self._preview_counts = None
         # Overlay marker layers by name (e.g., 'selected', 'show')
         self._overlays = {}
         self._overlay_images = {}
@@ -497,7 +495,8 @@ class ViewBoxWidget(scene.Widget):
         for layer in self._scatter_layers.values():
             layer.visible = not visible and layer is self._scatter
 
-    def set_preview_image(self, image, x_range, y_range):
+    def set_preview_image(self, image, x_range, y_range, counts):
+        self._preview_counts = counts
         preview_range = (tuple(float(v) for v in x_range), tuple(float(v) for v in y_range))
         if self._preview_image is not None and self._preview_image_source is image and self._preview_image_range == preview_range:
             self._preview_image.visible = True
@@ -1758,17 +1757,6 @@ class VispyCanvas(VispyCanvasLayoutBase, scene.SceneCanvas, metaclass=CombinedMe
             total_ms=f"{_elapsed_ms(total_t0):.3f}",
         )
 
-    def _refresh_plot_detail(self, plot):
-        if plot is None or self.nep_result_data is None or plot not in self.axes_list:
-            return
-        dataset = self.get_axes_dataset(plot)
-        if dataset is None:
-            return
-        full_detail = plot is self.current_axes
-        if plot._plot_full_detail == full_detail:
-            return
-        self._plot_dataset_on_axes(plot, dataset, full_detail)
-
     def auto_range(self):
         """Delegate auto-ranging to the currently active axes.
         """
@@ -2084,7 +2072,7 @@ class VispyCanvas(VispyCanvasLayoutBase, scene.SceneCanvas, metaclass=CombinedMe
             total_ms=f"{_elapsed_ms(total_t0):.3f}",
         )
 
-    def _overlay_positions_for_indices(self, dataset, indices:set[int]):
+    def _overlay_positions_for_indices(self, dataset, indices: set[int], dtype=np.float32):
         if not indices:
             return np.empty((0, 2), dtype=np.float32)
 
@@ -2115,7 +2103,9 @@ class VispyCanvas(VispyCanvasLayoutBase, scene.SceneCanvas, metaclass=CombinedMe
                 point_starts = starts[missing] * scale
                 for start, count in zip(point_starts, point_counts[missing]):
                     point_mask[int(start):int(start + count)] = False
-            pos = np.column_stack([lookup["x"][point_mask], lookup["y"][point_mask]]).astype(np.float32, copy=False)
+            pos = np.column_stack([lookup["x"][point_mask], lookup["y"][point_mask]])
+            if dtype is not None:
+                pos = pos.astype(dtype, copy=False)
             _vispy_perf_log(
                 "overlay.positions",
                 requested=indices_arr.size,
@@ -2170,7 +2160,9 @@ class VispyCanvas(VispyCanvasLayoutBase, scene.SceneCanvas, metaclass=CombinedMe
             else:
                 result_indices = row_indices
 
-        pos = np.column_stack([lookup["x"][result_indices], lookup["y"][result_indices]]).astype(np.float32, copy=False)
+        pos = np.column_stack([lookup["x"][result_indices], lookup["y"][result_indices]])
+        if dtype is not None:
+            pos = pos.astype(dtype, copy=False)
         _vispy_perf_log(
             "overlay.positions",
             requested=indices_arr.size,
@@ -2219,31 +2211,15 @@ class VispyCanvas(VispyCanvasLayoutBase, scene.SceneCanvas, metaclass=CombinedMe
 
         missing = unique[~selected_mask]
         if missing.size:
-            pos = self._overlay_positions_for_indices(dataset, set(int(v) for v in missing.tolist()))
-            if pos.size:
-                (x_range, y_range) = preview_range
-                x_min, x_max = x_range
-                y_min, y_max = y_range
-                if x_max != x_min and y_max != y_min:
-                    height, width = image.shape[:2]
-                    x = pos[:, 0]
-                    y = pos[:, 1]
-                    mask = (x > -10000) & np.isfinite(x) & np.isfinite(y)
-                    px = ((x[mask] - x_min) / (x_max - x_min) * (width - 1)).astype(np.int64)
-                    py = ((y[mask] - y_min) / (y_max - y_min) * (height - 1)).astype(np.int64)
-                    valid_px = (px >= 0) & (px < width) & (py >= 0) & (py < height)
-                    px = px[valid_px]
-                    py = py[valid_px]
-                    for dy in (0, 1):
-                        yy = py + dy
-                        y_ok = yy < height
-                        if not np.any(y_ok):
-                            continue
-                        for dx in (0, 1):
-                            xx = px[y_ok] + dx
-                            x_ok = xx < width
-                            if np.any(x_ok):
-                                image[yy[y_ok][x_ok], xx[x_ok], 3] = 0
+            counts = getattr(plot, "_preview_counts", None)
+            if counts is None:
+                return None
+            pos = self._overlay_positions_for_indices(dataset, set(missing.tolist()), dtype=None)
+            pixels = self._dataset_cache.preview_pixels(pos[:, 0], pos[:, 1], *preview_range)
+            # Remove unselected samples before expanding the marker footprint.
+            remaining = counts.copy()
+            np.subtract.at(remaining.ravel(), pixels, 1)
+            image[..., 3] = self._dataset_cache.preview_alpha(remaining, max(0.35, alpha_factor))
 
         _vispy_perf_log(
             "overlay.preview_image",

@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 import numpy as np
-from PySide6.QtCore import Qt
+from PySide6.QtCore import QCoreApplication, Qt
 from PySide6.QtGui import QFont
 from PySide6.QtWidgets import QGridLayout, QHBoxLayout, QSizePolicy, QVBoxLayout, QWidget
 
@@ -57,11 +57,13 @@ class StructureInfoWidget(QWidget):
 
         self.card = SimpleCardWidget(self)
         self.card.setObjectName("structureInspectorCard")
+        if hasattr(self.card, "setBorderRadius"):
+            self.card.setBorderRadius(8)
         outer.addWidget(self.card)
 
         card_layout = QVBoxLayout(self.card)
-        card_layout.setContentsMargins(12, 8, 12, 8)
-        card_layout.setSpacing(3)
+        card_layout.setContentsMargins(14, 10, 18, 12)
+        card_layout.setSpacing(5)
 
         header_layout = QHBoxLayout()
         header_layout.setContentsMargins(0, 0, 0, 0)
@@ -104,7 +106,7 @@ class StructureInfoWidget(QWidget):
         card_layout.addWidget(self.phase_summary_label)
 
         config_layout = QHBoxLayout()
-        config_layout.setContentsMargins(0, 1, 0, 1)
+        config_layout.setContentsMargins(0, 2, 0, 2)
         config_layout.setSpacing(8)
         self.config_label = CaptionLabel(self.tr("Config type"), self.card)
         self.config_text = StrongBodyLabel("—", self.card)
@@ -116,8 +118,8 @@ class StructureInfoWidget(QWidget):
 
         summary_grid = QGridLayout()
         summary_grid.setContentsMargins(0, 0, 0, 0)
-        summary_grid.setHorizontalSpacing(8)
-        summary_grid.setVerticalSpacing(1)
+        summary_grid.setHorizontalSpacing(10)
+        summary_grid.setVerticalSpacing(3)
         self.formula_text = self._add_metric(summary_grid, 0, 0, self.tr("Formula"), "formula")
         self.atom_num_text = self._add_metric(summary_grid, 0, 1, self.tr("Atoms"), "atoms")
         self.volume_text = self._add_metric(summary_grid, 1, 0, self.tr("Cell volume"), "volume")
@@ -130,7 +132,7 @@ class StructureInfoWidget(QWidget):
         card_layout.addWidget(CardSeparator(self.card))
 
         signal_header = QHBoxLayout()
-        signal_header.setContentsMargins(0, 1, 0, 0)
+        signal_header.setContentsMargins(0, 2, 0, 0)
         self.signal_title_label = StrongBodyLabel(self.tr("Frame signals"), self.card)
         setFont(self.signal_title_label, 13, QFont.Weight.Medium)
         self.contact_badge = InfoBadge(self.card, InfoLevel.ATTENTION)
@@ -142,8 +144,8 @@ class StructureInfoWidget(QWidget):
 
         signal_grid = QGridLayout()
         signal_grid.setContentsMargins(0, 0, 0, 0)
-        signal_grid.setHorizontalSpacing(8)
-        signal_grid.setVerticalSpacing(1)
+        signal_grid.setHorizontalSpacing(10)
+        signal_grid.setVerticalSpacing(3)
         self.shortest_text = self._add_metric(
             signal_grid, 0, 0, self.tr("Shortest contact"), "shortest"
         )
@@ -164,6 +166,9 @@ class StructureInfoWidget(QWidget):
         self.net_force_text = self._add_metric(
             signal_grid, 2, 1, self.tr("Net force |ΣF|"), "net_force"
         )
+        self.ward_text = self._add_wide_metric(signal_grid, 3, self.tr("Ward residual"), "ward")
+        self.ward_caption = signal_grid.itemAtPosition(3, 0).widget()
+        self._show_ward(None)
         signal_grid.setColumnStretch(1, 1)
         signal_grid.setColumnStretch(3, 1)
         card_layout.addLayout(signal_grid)
@@ -208,6 +213,22 @@ class StructureInfoWidget(QWidget):
         if not visible:
             self.magnetic_moment_text.setText("—")
             self.magnetic_moment_text.setToolTip("")
+
+    def _show_ward(self, ward) -> None:
+        self.ward_caption.setVisible(ward is not None)
+        self.ward_text.setVisible(ward is not None)
+        if ward is None:
+            self.ward_text.setText("—")
+            self.ward_text.setToolTip("")
+            return
+        norm = ward.norm
+        self.ward_text.setText(f"{norm:.4g} μeV/atom" if norm is not None else self.tr("Unavailable"))
+        details = [self.tr("Ward residual, antisymmetric virial A, and magnetic torque P (μeV/atom)")]
+        for symbol, vector in (("r", ward.residual), ("A", ward.virial), ("P", ward.magnetic)):
+            if vector is not None:
+                details.append(f"{symbol} = ({', '.join(f'{value:+.5g}' if value else '0' for value in vector)})")
+        details.extend(QCoreApplication.translate("WardLabels", issue) for issue in ward.issues)
+        self.ward_text.setToolTip("\n".join(details))
 
     @staticmethod
     def _number(value: float | None, unit: str, *, digits: int = 3) -> str:
@@ -255,6 +276,7 @@ class StructureInfoWidget(QWidget):
             self._metric_values[key].setText("—")
         # Hidden, not "—", so non-magnetic datasets show no dangling field.
         self._set_magnetic_moment_visible(False)
+        self._show_ward(None)
 
     def show_analysis(
         self,
@@ -276,6 +298,7 @@ class StructureInfoWidget(QWidget):
         )
         self.rms_force_text.setText(self._number(inspection.rms_force, "eV/Å"))
         self.net_force_text.setText(self._number(inspection.net_force, "eV/Å"))
+        self._show_ward(inspection.ward)
         self._set_magnetic_moment_visible(inspection.mean_magnetic_moment is not None)
         if inspection.mean_magnetic_moment is not None:
             self.magnetic_moment_text.setText(

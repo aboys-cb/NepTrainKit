@@ -35,6 +35,7 @@ class MyPlotItem(PlotItem):
         self._scatter = ScatterPlotItem()
         self.addItem(self._scatter)
 
+        self.showGrid(x=True, y=True, alpha=0.08)
         self.text = TextItem(color=palette.PLOT_TITLE)
         for name in ("bottom", "left"):
             axis = self.getAxis(name)
@@ -211,6 +212,7 @@ class PyqtgraphCanvas(CanvasLayoutBase, GraphicsLayoutWidget, metaclass=Combined
             Keyword arguments forwarded to :class:`pyqtgraph.GraphicsLayoutWidget`.
         """
         GraphicsLayoutWidget.__init__(self, *args, **kwargs)
+        self.setBackground(palette.SURFACE)
 
         CanvasLayoutBase.__init__(self)
         self.nep_result_data = None

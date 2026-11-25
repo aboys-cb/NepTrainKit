@@ -6,7 +6,7 @@ from PySide6.QtCore import QCoreApplication
 from qfluentwidgets import CaptionLabel, CheckBox
 
 from NepTrainKit.core import CardManager
-from NepTrainKit.core.cards.alloy import RandomDopingOperation, RandomDopingParams
+from NepTrainKit.core.cards.alloy import RandomDopingParams
 from NepTrainKit.core.cards.operation import params_to_dict
 from NepTrainKit.ui.messages import translate_runtime_message
 from NepTrainKit.ui.widgets import (
@@ -153,17 +153,6 @@ class RandomDopingCard(MakeDataCard):
         self.seed_field.setVisible(bool(checked))
         self._refresh_preview_and_presentation()
 
-    @staticmethod
-    def _first_structure(dataset):
-        if dataset is None:
-            return None
-        if hasattr(dataset, "arrays") and hasattr(dataset, "get_chemical_symbols"):
-            return dataset
-        try:
-            return next(iter(dataset))
-        except (StopIteration, TypeError):
-            return None
-
     def set_dataset(self, dataset) -> None:
         super().set_dataset(dataset)
         self._input_structure = self._first_structure(dataset)
@@ -272,10 +261,6 @@ class RandomDopingCard(MakeDataCard):
         return self.tr(
             "Preview uses the first input and exact integer bounds. {outputs}"
         ).format(outputs=output_text)
-
-    def create_operation(self):
-        """Return the UI-independent random doping operation."""
-        return RandomDopingOperation()
 
     def get_params(self) -> RandomDopingParams:
         """Read random doping parameters from UI controls."""

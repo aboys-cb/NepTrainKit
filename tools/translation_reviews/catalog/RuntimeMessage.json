@@ -1,0 +1,270 @@
+{
+  "items": [
+    {
+      "path": "src/NepTrainKit/translations/neptrainkit_zh_CN.ts",
+      "context": "RuntimeMessage",
+      "source": "Requires a finite cell and at least one periodic axis. Keeps the host and fills the whole cell.",
+      "id": 10,
+      "review": "fix",
+      "review_note": "卡片说明中的 cell 是普通名词，现有中文“填充整个 cell”应写作“填充整个晶胞”。",
+      "evidence": [
+        "src/NepTrainKit/ui/views/_card/solvent_box_fill_card.py",
+        "src/NepTrainKit/translations/neptrainkit_zh_CN.ts"
+      ],
+      "resolution": "whole_message",
+      "template": "Requires a finite cell and at least one periodic axis. Keeps the host and fills the whole cell."
+    }
+  ],
+  "retained_candidates": [
+    {
+      "path": "src/NepTrainKit/translations/neptrainkit_zh_CN.ts",
+      "source": "Field '{label}' requires an explicit component or '.norm'.",
+      "context": "RuntimeMessage",
+      "rendered": [
+        "字段“{label}”需要指定分量或使用 .norm。"
+      ],
+      "review": "technical",
+      "reason": "已核对完整中文结果；余下为技术字段、格式标记、枚举值或 HTML 标签。"
+    },
+    {
+      "path": "src/NepTrainKit/translations/neptrainkit_zh_CN.ts",
+      "source": "Expression must be a condition. Add a comparison, for example: natoms > 100.",
+      "context": "RuntimeMessage",
+      "rendered": [
+        "表达式必须是条件。请添加比较，例如 natoms > 100。"
+      ],
+      "review": "technical",
+      "reason": "已核对完整中文结果；余下为技术字段、格式标记、枚举值或 HTML 标签。"
+    },
+    {
+      "path": "src/NepTrainKit/translations/neptrainkit_zh_CN.ts",
+      "source": "Atomic expression fields must use 'atomic.<name>'.",
+      "context": "RuntimeMessage",
+      "rendered": [
+        "原子表达式字段必须使用 atomic.<name> 格式。"
+      ],
+      "review": "technical",
+      "reason": "已核对完整中文结果；余下为技术字段、格式标记、枚举值或 HTML 标签。"
+    },
+    {
+      "path": "src/NepTrainKit/translations/neptrainkit_zh_CN.ts",
+      "source": "Atomic field 'atomic.{alias}' does not support value views.",
+      "context": "RuntimeMessage",
+      "rendered": [
+        "原子字段“atomic.{alias}”不支持数值视图。"
+      ],
+      "review": "technical",
+      "reason": "已核对完整中文结果；余下为技术字段、格式标记、枚举值或 HTML 标签。"
+    },
+    {
+      "path": "src/NepTrainKit/translations/neptrainkit_zh_CN.ts",
+      "source": "Unsupported suffix for atomic field 'atomic.{alias}'.",
+      "context": "RuntimeMessage",
+      "rendered": [
+        "原子字段“atomic.{alias}”的后缀不受支持。"
+      ],
+      "review": "technical",
+      "reason": "已核对完整中文结果；余下为技术字段、格式标记、枚举值或 HTML 标签。"
+    },
+    {
+      "path": "src/NepTrainKit/translations/neptrainkit_zh_CN.ts",
+      "source": "n2p2 block {block_idx} is missing its closing 'end'.",
+      "context": "RuntimeMessage",
+      "rendered": [
+        "n2p2 数据块 {block_idx} 缺少结束标记 end。"
+      ],
+      "review": "technical",
+      "reason": "已核对完整中文结果；余下为技术字段、格式标记、枚举值或 HTML 标签。"
+    },
+    {
+      "path": "src/NepTrainKit/translations/neptrainkit_zh_CN.ts",
+      "source": "LAMMPS frame {timestep} must contain one complete coordinate triplet: xs/ys/zs, x/y/z, or xu/yu/zu",
+      "context": "RuntimeMessage",
+      "rendered": [
+        "LAMMPS 第 {timestep} 帧必须包含一组完整的坐标列：xs/ys/zs、x/y/z 或 xu/yu/zu。"
+      ],
+      "review": "technical",
+      "reason": "已核对完整中文结果；余下为技术字段、格式标记、枚举值或 HTML 标签。"
+    },
+    {
+      "path": "src/NepTrainKit/translations/neptrainkit_zh_CN.ts",
+      "source": "Unsupported {value0} schema. Move the manifest aside to treat the .out files as external results.",
+      "context": "RuntimeMessage",
+      "rendered": [
+        "不支持的 {value0} 数据模式。请移开清单文件，以将 .out 文件视为外部结果。"
+      ],
+      "review": "technical",
+      "reason": "已核对完整中文结果；余下为技术字段、格式标记、枚举值或 HTML 标签。"
+    },
+    {
+      "path": "src/NepTrainKit/translations/neptrainkit_zh_CN.ts",
+      "source": "Cannot validate {value0}: {reason}. Move the manifest aside to treat the .out files as external results.",
+      "context": "RuntimeMessage",
+      "rendered": [
+        "无法验证 {value0}：{reason}。请移开清单文件，以将 .out 文件视为外部结果。"
+      ],
+      "review": "technical",
+      "reason": "已核对完整中文结果；余下为技术字段、格式标记、枚举值或 HTML 标签。"
+    },
+    {
+      "path": "src/NepTrainKit/translations/neptrainkit_zh_CN.ts",
+      "source": "'species' not found in atomic_properties and no usable 'species_id'/'type_map'",
+      "context": "RuntimeMessage",
+      "rendered": [
+        "原子属性中缺少 species，且没有可用的 species_id/type_map。"
+      ],
+      "review": "technical",
+      "reason": "已核对完整中文结果；余下为技术字段、格式标记、枚举值或 HTML 标签。"
+    },
+    {
+      "path": "src/NepTrainKit/translations/neptrainkit_zh_CN.ts",
+      "source": "DeepMD dataset {folder_path} is missing type_map.raw; chemical species cannot be reconstructed safely.",
+      "context": "RuntimeMessage",
+      "rendered": [
+        "DeepMD 数据集 {folder_path} 缺少 type_map.raw，无法安全还原元素种类。"
+      ],
+      "review": "technical",
+      "reason": "已核对完整中文结果；余下为技术字段、格式标记、枚举值或 HTML 标签。"
+    },
+    {
+      "path": "src/NepTrainKit/translations/neptrainkit_zh_CN.ts",
+      "source": "EXTXYZ Properties must include species and pos.",
+      "context": "RuntimeMessage",
+      "rendered": [
+        "EXTXYZ 的 Properties 必须包含 species 和 pos。"
+      ],
+      "review": "technical",
+      "reason": "已核对完整中文结果；余下为技术字段、格式标记、枚举值或 HTML 标签。"
+    },
+    {
+      "path": "src/NepTrainKit/translations/neptrainkit_zh_CN.ts",
+      "source": "EXTXYZ species must use species:S:1.",
+      "context": "RuntimeMessage",
+      "rendered": [
+        "EXTXYZ 的 species 必须使用 species:S:1 格式。"
+      ],
+      "review": "technical",
+      "reason": "已核对完整中文结果；余下为技术字段、格式标记、枚举值或 HTML 标签。"
+    },
+    {
+      "path": "src/NepTrainKit/translations/neptrainkit_zh_CN.ts",
+      "source": "EXTXYZ pos must use pos:R:3.",
+      "context": "RuntimeMessage",
+      "rendered": [
+        "EXTXYZ 的 pos 必须使用 pos:R:3 格式。"
+      ],
+      "review": "technical",
+      "reason": "已核对完整中文结果；余下为技术字段、格式标记、枚举值或 HTML 标签。"
+    },
+    {
+      "path": "src/NepTrainKit/translations/neptrainkit_zh_CN.ts",
+      "source": "EXTXYZ pos must be a finite N x 3 array.",
+      "context": "RuntimeMessage",
+      "rendered": [
+        "EXTXYZ 的 pos 必须是有限的 N×3 数组。"
+      ],
+      "review": "technical",
+      "reason": "已核对完整中文结果；余下为技术字段、格式标记、枚举值或 HTML 标签。"
+    },
+    {
+      "path": "src/NepTrainKit/translations/neptrainkit_zh_CN.ts",
+      "source": "TorsionGuard: pbc_mode must be auto, yes, or no.",
+      "context": "RuntimeMessage",
+      "rendered": [
+        "扭转保护：周期边界模式必须是 auto、yes 或 no。"
+      ],
+      "review": "technical",
+      "reason": "已核对完整中文结果；余下为技术字段、格式标记、枚举值或 HTML 标签。"
+    },
+    {
+      "path": "src/NepTrainKit/translations/neptrainkit_zh_CN.ts",
+      "source": "'all' cannot be combined with explicit sublattice labels.",
+      "context": "RuntimeMessage",
+      "rendered": [
+        "all 不能与显式子晶格标签同时使用。"
+      ],
+      "review": "technical",
+      "reason": "已核对完整中文结果；余下为技术字段、格式标记、枚举值或 HTML 标签。"
+    },
+    {
+      "path": "src/NepTrainKit/translations/neptrainkit_zh_CN.ts",
+      "source": "Failed to load dataset: {reason}. If official NEP .out files already exist, keep a complete set of energy, force, virial, and stress or mforce outputs in the dataset directory.",
+      "context": "RuntimeMessage",
+      "rendered": [
+        "加载数据集失败：{reason}。如果已有官方 NEP .out 文件，请在数据集目录中保留完整的能量、力、维里，以及应力或磁力输出。"
+      ],
+      "review": "technical",
+      "reason": "已核对完整中文结果；余下为技术字段、格式标记、枚举值或 HTML 标签。"
+    },
+    {
+      "path": "src/NepTrainKit/translations/neptrainkit_zh_CN.ts",
+      "source": "Loading existing official NEP .out files without opening the model. descriptor.out is missing, so descriptor plots and FPS are unavailable. Install a nep-adapters version that supports this model to generate descriptors.",
+      "context": "RuntimeMessage",
+      "rendered": [
+        "已直接加载现有的官方 NEP .out 文件，无需打开模型。缺少 descriptor.out，因此描述符图和 FPS 暂不可用。如需生成描述符，请安装支持该模型的 nep-adapters 版本。"
+      ],
+      "review": "technical",
+      "reason": "已核对完整中文结果；余下为技术字段、格式标记、枚举值或 HTML 标签。"
+    },
+    {
+      "path": "src/NepTrainKit/translations/neptrainkit_zh_CN.ts",
+      "source": "any/all requires at least one atomic field.",
+      "context": "RuntimeMessage",
+      "rendered": [
+        "any/all 条件中必须包含至少一个原子字段。"
+      ],
+      "review": "technical",
+      "reason": "中文说明已完整；any/all、atomic.element、==、!= 和 Fe 是筛选表达式语法、字段名或元素符号，须保持原样。已验证实际错误的中英文切换。"
+    },
+    {
+      "path": "src/NepTrainKit/translations/neptrainkit_zh_CN.ts",
+      "source": "atomic.element requires == or != with a quoted element symbol inside any/all.",
+      "context": "RuntimeMessage",
+      "rendered": [
+        "atomic.element 只能在 any/all 条件内使用 == 或 != 与带引号的元素符号比较。"
+      ],
+      "review": "technical",
+      "reason": "中文说明已完整；any/all、atomic.element、==、!= 和 Fe 是筛选表达式语法、字段名或元素符号，须保持原样。已验证实际错误的中英文切换。"
+    },
+    {
+      "path": "src/NepTrainKit/translations/neptrainkit_zh_CN.ts",
+      "source": "Atomic fields in any/all must refer to the same atoms; row counts do not align.",
+      "context": "RuntimeMessage",
+      "rendered": [
+        "any/all 中的原子字段必须对应相同的原子；当前字段行数不一致。"
+      ],
+      "review": "technical",
+      "reason": "中文说明已完整；any/all、atomic.element、==、!= 和 Fe 是筛选表达式语法、字段名或元素符号，须保持原样。已验证实际错误的中英文切换。"
+    },
+    {
+      "path": "src/NepTrainKit/translations/neptrainkit_zh_CN.ts",
+      "source": "atomic.element is only available inside any/all and does not support suffixes.",
+      "context": "RuntimeMessage",
+      "rendered": [
+        "atomic.element 只能在 any/all 条件内使用，且不支持后缀。"
+      ],
+      "review": "technical",
+      "reason": "中文说明已完整；any/all、atomic.element、==、!= 和 Fe 是筛选表达式语法、字段名或元素符号，须保持原样。已验证实际错误的中英文切换。"
+    },
+    {
+      "path": "src/NepTrainKit/translations/neptrainkit_zh_CN.ts",
+      "source": "atomic.element must be compared with a quoted element symbol, for example 'Fe'.",
+      "context": "RuntimeMessage",
+      "rendered": [
+        "atomic.element 必须与带引号的元素符号比较，例如 'Fe'。"
+      ],
+      "review": "technical",
+      "reason": "中文说明已完整；any/all、atomic.element、==、!= 和 Fe 是筛选表达式语法、字段名或元素符号，须保持原样。已验证实际错误的中英文切换。"
+    },
+    {
+      "path": "src/NepTrainKit/translations/neptrainkit_zh_CN.ts",
+      "source": "LAMMPS frame {timestep} must contain one complete coordinate triplet: xs/ys/zs, x/y/z, xu/yu/zu, or xsu/ysu/zsu",
+      "context": "RuntimeMessage",
+      "rendered": [
+        "LAMMPS 第 {timestep} 帧必须包含一组完整的坐标列：xs/ys/zs、x/y/z、xu/yu/zu 或 xsu/ysu/zsu。"
+      ],
+      "review": "technical",
+      "reason": "已核对完整中文结果；余下为技术字段、格式标记、枚举值或 HTML 标签。"
+    }
+  ]
+}

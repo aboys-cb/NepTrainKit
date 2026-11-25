@@ -10,7 +10,7 @@ from qfluentwidgets import CaptionLabel, CheckBox, ComboBox
 
 from NepTrainKit.ui.messages import translate_runtime_error
 from NepTrainKit.core import CardManager
-from NepTrainKit.core.cards.lattice import SuperCellOperation, SuperCellParams
+from NepTrainKit.core.cards.lattice import SuperCellParams
 from NepTrainKit.core.cards.operation import params_to_dict
 from NepTrainKit.ui.views._card.i18n_utils import (
     add_translated_items,
@@ -313,9 +313,6 @@ class SuperCellCard(MakeDataCard):
     def set_dataset(self, dataset):
         super().set_dataset(dataset)
         self._update_output_preview()
-
-    def create_operation(self):
-        return SuperCellOperation()
 
     def get_summary_text(self) -> str:
         params = self.get_params()

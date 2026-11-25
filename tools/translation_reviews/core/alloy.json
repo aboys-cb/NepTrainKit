@@ -1,0 +1,174 @@
+{
+  "items": [
+    {
+      "path": "src/NepTrainKit/core/alloy.py",
+      "source": "Composition ratio for ⟦value⟧ must be finite.",
+      "id": 16,
+      "review": "fix",
+      "review_note": "成分输入或网格参数经合金卡片使用；原始异常或保留的 reason 会进入卡片错误显示。",
+      "evidence": [
+        "src/NepTrainKit/core/cards/alloy.py:339",
+        "src/NepTrainKit/ui/threads.py:180",
+        "src/NepTrainKit/ui/widgets/card_widget.py:1144"
+      ],
+      "resolution": "whole_message",
+      "template": "Composition ratio for {symbol} must be finite.",
+      "context": "RuntimeMessage"
+    },
+    {
+      "path": "src/NepTrainKit/core/alloy.py",
+      "source": "Composition ratio for ⟦value⟧ must be non-negative.",
+      "id": 17,
+      "review": "fix",
+      "review_note": "成分输入或网格参数经合金卡片使用；原始异常或保留的 reason 会进入卡片错误显示。",
+      "evidence": [
+        "src/NepTrainKit/core/cards/alloy.py:339",
+        "src/NepTrainKit/ui/threads.py:180",
+        "src/NepTrainKit/ui/widgets/card_widget.py:1144"
+      ],
+      "resolution": "whole_message",
+      "template": "Composition ratio for {symbol} must be non-negative.",
+      "context": "RuntimeMessage"
+    },
+    {
+      "path": "src/NepTrainKit/core/alloy.py",
+      "source": "Invalid element symbol: ⟦value⟧",
+      "id": 18,
+      "review": "fix",
+      "review_note": "成分输入或网格参数经合金卡片使用；原始异常或保留的 reason 会进入卡片错误显示。",
+      "evidence": [
+        "src/NepTrainKit/core/cards/alloy.py:339",
+        "src/NepTrainKit/ui/threads.py:180",
+        "src/NepTrainKit/ui/widgets/card_widget.py:1144"
+      ],
+      "resolution": "whole_message",
+      "template": "Invalid element symbol: {text}",
+      "context": "RuntimeMessage"
+    },
+    {
+      "path": "src/NepTrainKit/core/alloy.py",
+      "source": "order must be >= 2",
+      "id": 19,
+      "review": "technical",
+      "review_note": "余下英文仅为代码参数、枚举值、已使用的卡片标识或磁矩字段；没有未翻译的英文谓语/操作说明。可润色卡片名，但不按本次混排缺陷计。",
+      "evidence": [
+        "src/NepTrainKit/ui/messages.py:294"
+      ]
+    },
+    {
+      "path": "src/NepTrainKit/core/alloy.py",
+      "source": "step must be in (0, 1].",
+      "id": 20,
+      "review": "fix",
+      "review_note": "成分输入或网格参数经合金卡片使用；原始异常或保留的 reason 会进入卡片错误显示。",
+      "evidence": [
+        "src/NepTrainKit/core/cards/alloy.py:339",
+        "src/NepTrainKit/ui/threads.py:180",
+        "src/NepTrainKit/ui/widgets/card_widget.py:1144"
+      ],
+      "resolution": "whole_message",
+      "template": "step must be in (0, 1].",
+      "context": "RuntimeMessage"
+    },
+    {
+      "path": "src/NepTrainKit/core/alloy.py",
+      "source": "min_fraction must be in [0, 1].",
+      "id": 21,
+      "review": "fix",
+      "review_note": "成分输入或网格参数经合金卡片使用；原始异常或保留的 reason 会进入卡片错误显示。",
+      "evidence": [
+        "src/NepTrainKit/core/cards/alloy.py:339",
+        "src/NepTrainKit/ui/threads.py:180",
+        "src/NepTrainKit/ui/widgets/card_widget.py:1144"
+      ],
+      "resolution": "whole_message",
+      "template": "min_fraction must be in [0, 1].",
+      "context": "RuntimeMessage"
+    },
+    {
+      "path": "src/NepTrainKit/core/alloy.py",
+      "source": "Grid simplex points for order>=4 require step ~= 1/n.",
+      "id": 22,
+      "review": "fix",
+      "review_note": "成分输入或网格参数经合金卡片使用；原始异常或保留的 reason 会进入卡片错误显示。",
+      "evidence": [
+        "src/NepTrainKit/core/cards/alloy.py:339",
+        "src/NepTrainKit/ui/threads.py:180",
+        "src/NepTrainKit/ui/widgets/card_widget.py:1144"
+      ],
+      "resolution": "whole_message",
+      "template": "Grid simplex points for order>=4 require step ~= 1/n.",
+      "context": "RuntimeMessage"
+    },
+    {
+      "path": "src/NepTrainKit/core/alloy.py",
+      "source": "order must be >= 2",
+      "id": 23,
+      "review": "technical",
+      "review_note": "余下英文仅为代码参数、枚举值、已使用的卡片标识或磁矩字段；没有未翻译的英文谓语/操作说明。可润色卡片名，但不按本次混排缺陷计。",
+      "evidence": [
+        "src/NepTrainKit/ui/messages.py:294"
+      ]
+    },
+    {
+      "path": "src/NepTrainKit/core/alloy.py",
+      "source": "min_fraction must be finite and non-negative.",
+      "id": 24,
+      "review": "fix",
+      "review_note": "成分输入或网格参数经合金卡片使用；原始异常或保留的 reason 会进入卡片错误显示。",
+      "evidence": [
+        "src/NepTrainKit/core/cards/alloy.py:339",
+        "src/NepTrainKit/ui/threads.py:180",
+        "src/NepTrainKit/ui/widgets/card_widget.py:1144"
+      ],
+      "resolution": "whole_message",
+      "template": "min_fraction must be finite and non-negative.",
+      "context": "RuntimeMessage"
+    },
+    {
+      "path": "src/NepTrainKit/core/alloy.py",
+      "source": "Failed to allocate exact counts.",
+      "id": 25,
+      "review": "diagnostic",
+      "review_note": "数组形状、内部计数/匹配、序列化类型或已校验参数的不变量保护；不能把人为破坏内部调用契约等同于普通界面输入漏译。如触发应保留诊断并在外层给出中文说明。",
+      "evidence": [
+        "src/NepTrainKit/core/cards/alloy.py",
+        "src/NepTrainKit/core/cards/filter.py",
+        "src/NepTrainKit/core/cards/lattice.py",
+        "src/NepTrainKit/core/cards/operation.py"
+      ],
+      "resolution": "localized_diagnostic"
+    },
+    {
+      "path": "src/NepTrainKit/core/alloy.py",
+      "source": "Composition JSON must be an object mapping element->fraction.",
+      "id": 26,
+      "review": "fix",
+      "review_note": "成分输入或网格参数经合金卡片使用；原始异常或保留的 reason 会进入卡片错误显示。",
+      "evidence": [
+        "src/NepTrainKit/core/cards/alloy.py:339",
+        "src/NepTrainKit/ui/threads.py:180",
+        "src/NepTrainKit/ui/widgets/card_widget.py:1144"
+      ],
+      "resolution": "whole_message",
+      "template": "Composition JSON must be an object mapping element->fraction.",
+      "context": "RuntimeMessage"
+    }
+  ],
+  "followup_fixes": [
+    {
+      "path": "src/NepTrainKit/core/alloy.py",
+      "source": "order must be >= 2",
+      "id": 1000,
+      "template": "order must be >= 2",
+      "context": "RuntimeMessage"
+    },
+    {
+      "path": "src/NepTrainKit/core/alloy.py",
+      "source": "order must be >= 2",
+      "id": 1001,
+      "template": "order must be >= 2",
+      "context": "RuntimeMessage"
+    }
+  ]
+}

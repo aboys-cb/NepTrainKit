@@ -1,0 +1,10 @@
+{
+  "retained_candidates": [
+    {
+      "path": "src/NepTrainKit/ui/widgets/accuracy_comparison_plot.py",
+      "source": "<span style=\"color:⟦value⟧\">●</span> <b>⟦value⟧</b>",
+      "review": "technical",
+      "reason": "只包含颜色圆点、HTML 标记及用户模型名称；没有需要翻译的自然语言。模型名称已转义，须保留原文。"
+    }
+  ]
+}

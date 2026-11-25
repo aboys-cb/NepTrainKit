@@ -1350,3 +1350,11 @@ msgstr ""
 
 #~ msgid "应变、相变路径、原子或模态扰动"
 #~ msgstr "Strain, transition paths, atomic or mode perturbations"
+
+#: ../../source/module/make-dataset-cards/index.md:16 a88875bf7b4a4feda7f4e9863ae5381a:None
+msgid "卡片改变晶胞、坐标、元素、原子数或磁矩后，会清除不再适用的能量、力、virial、应力和磁力等参考标签。新结构需要重新计算这些标签后才能加入训练集；仅修改分组或追踪信息、物理状态未变的输出保留原标签。"
+msgstr "Cards remove reference labels such as energy, forces, virial, stress, and magnetic forces when the cell, positions, species, atom count, or magnetic moments change. Recalculate these labels before adding the new structures to a training set. Outputs that only change group or provenance metadata retain their labels when the physical state is unchanged."
+
+#: ../../source/module/make-dataset-cards/index.md:18 6d591173fc634be5aa99a31063aac82f:None
+msgid "导出保存的是点击导出时的结果快照。修改输入、卡片参数、启用状态或顺序后，旧结果会失效；执行中修改流程会停止旧执行链，需要重新运行。停止或失败产生的部分结构不会通过普通查看和导出入口输出。"
+msgstr "Export saves a snapshot of the results captured when you click Export. Changing the input, card parameters, enabled state, or order invalidates previous results. Editing a running workflow stops its current execution chain; run it again to obtain new results. Partial structures from stopped or failed runs are unavailable through the normal view and export actions."

@@ -8,7 +8,7 @@ from qfluentwidgets import CaptionLabel, CheckBox, ComboBox
 
 from NepTrainKit.core import CardManager
 from NepTrainKit.core.cards.operation import params_to_dict
-from NepTrainKit.core.cards.structure import RandomPackingOperation, RandomPackingParams
+from NepTrainKit.core.cards.structure import RandomPackingParams
 from NepTrainKit.ui.messages import translate_runtime_message
 from NepTrainKit.ui.views._card.i18n_utils import add_translated_items, combo_value, set_combo_value
 from NepTrainKit.ui.widgets import (
@@ -195,28 +195,6 @@ class RandomPackingCard(MakeDataCard):
         frame.set_input_value([value])
         return frame
 
-    @staticmethod
-    def _first_structure(dataset):
-        if dataset is None:
-            return None
-        if hasattr(dataset, "arrays") and hasattr(dataset, "get_chemical_symbols"):
-            return dataset
-        try:
-            return next(iter(dataset))
-        except (StopIteration, TypeError):
-            return None
-
-    @staticmethod
-    def _dataset_count(dataset) -> int:
-        if dataset is None:
-            return 0
-        if hasattr(dataset, "arrays") and hasattr(dataset, "get_chemical_symbols"):
-            return 1
-        try:
-            return len(dataset)
-        except TypeError:
-            return 0
-
     def set_dataset(self, dataset) -> None:
         super().set_dataset(dataset)
         self._input_structure = self._first_structure(dataset)
@@ -292,9 +270,6 @@ class RandomPackingCard(MakeDataCard):
         self.tab_order_widgets = [widget for widget in widgets if widget.isEnabled() and not widget.isHidden()]
         for previous, current in zip(self.tab_order_widgets, self.tab_order_widgets[1:]):
             QWidget.setTabOrder(previous, current)
-
-    def create_operation(self):
-        return RandomPackingOperation()
 
     def get_params(self) -> RandomPackingParams:
         composition_mode = combo_value(self.composition_mode_combo)

@@ -1,0 +1,161 @@
+{
+  "items": [
+    {
+      "path": "src/NepTrainKit/core/cards/filter.py",
+      "source": "Unsupported FPS strategy '⟦value⟧'. Expected one of ⟦value⟧.",
+      "id": 152,
+      "review": "fix",
+      "review_note": "属于卡片 operation 的输入校验或失败说明。已对照操作调用关系，异常由工作线程交给卡片状态及消息框；部分会先被结构化异常包装，但原始 reason 仍保留。",
+      "evidence": [
+        "src/NepTrainKit/ui/threads.py:159",
+        "src/NepTrainKit/ui/threads.py:222",
+        "src/NepTrainKit/ui/widgets/card_widget.py:1144"
+      ],
+      "resolution": "whole_message",
+      "template": "Unsupported FPS strategy '{value0}'. Expected one of {value1}.",
+      "context": "CardOperationError"
+    },
+    {
+      "path": "src/NepTrainKit/core/cards/filter.py",
+      "source": "NEP file does not exist: ⟦value⟧",
+      "id": 153,
+      "review": "fix",
+      "review_note": "属于卡片 operation 的输入校验或失败说明。已对照操作调用关系，异常由工作线程交给卡片状态及消息框；部分会先被结构化异常包装，但原始 reason 仍保留。",
+      "evidence": [
+        "src/NepTrainKit/ui/threads.py:159",
+        "src/NepTrainKit/ui/threads.py:222",
+        "src/NepTrainKit/ui/widgets/card_widget.py:1144"
+      ],
+      "resolution": "whole_message",
+      "template": "NEP file does not exist: {model_path}",
+      "context": "RuntimeMessage"
+    },
+    {
+      "path": "src/NepTrainKit/core/cards/filter.py",
+      "source": "Geometry Filter: ⟦value⟧ must be a finite non-negative number.",
+      "id": 154,
+      "review": "fix",
+      "review_note": "属于卡片 operation 的输入校验或失败说明。已对照操作调用关系，异常由工作线程交给卡片状态及消息框；部分会先被结构化异常包装，但原始 reason 仍保留。",
+      "evidence": [
+        "src/NepTrainKit/ui/threads.py:159",
+        "src/NepTrainKit/ui/threads.py:222",
+        "src/NepTrainKit/ui/widgets/card_widget.py:1144"
+      ],
+      "resolution": "whole_message",
+      "template": "Geometry Filter: {name} must be a finite non-negative number.",
+      "context": "CardOperationError"
+    },
+    {
+      "path": "src/NepTrainKit/core/cards/filter.py",
+      "source": "GeometryFilter mass_density requires positive volume.",
+      "id": 155,
+      "review": "diagnostic",
+      "review_note": "数组形状、内部计数/匹配、序列化类型或已校验参数的不变量保护；不能把人为破坏内部调用契约等同于普通界面输入漏译。如触发应保留诊断并在外层给出中文说明。",
+      "evidence": [
+        "src/NepTrainKit/core/cards/alloy.py",
+        "src/NepTrainKit/core/cards/filter.py",
+        "src/NepTrainKit/core/cards/lattice.py",
+        "src/NepTrainKit/core/cards/operation.py"
+      ],
+      "resolution": "localized_diagnostic"
+    },
+    {
+      "path": "src/NepTrainKit/core/cards/filter.py",
+      "source": "FPS Filter: backend must be auto, cpu, or cuda.",
+      "id": 156,
+      "review": "technical",
+      "review_note": "余下英文仅为代码参数、枚举值、已使用的卡片标识或磁矩字段；没有未翻译的英文谓语/操作说明。可润色卡片名，但不按本次混排缺陷计。",
+      "evidence": [
+        "src/NepTrainKit/ui/messages.py:294"
+      ]
+    },
+    {
+      "path": "src/NepTrainKit/core/cards/filter.py",
+      "source": "Existing training dataset does not exist: ⟦value⟧",
+      "id": 157,
+      "review": "fix",
+      "review_note": "属于卡片 operation 的输入校验或失败说明。已对照操作调用关系，异常由工作线程交给卡片状态及消息框；部分会先被结构化异常包装，但原始 reason 仍保留。",
+      "evidence": [
+        "src/NepTrainKit/ui/threads.py:159",
+        "src/NepTrainKit/ui/threads.py:222",
+        "src/NepTrainKit/ui/widgets/card_widget.py:1144"
+      ],
+      "resolution": "whole_message",
+      "template": "Existing training dataset does not exist: {existing_path}",
+      "context": "RuntimeMessage"
+    },
+    {
+      "path": "src/NepTrainKit/core/cards/filter.py",
+      "source": "Geometry Filter: ⟦value⟧ must be a finite non-negative number.",
+      "id": 158,
+      "review": "fix",
+      "review_note": "属于卡片 operation 的输入校验或失败说明。已对照操作调用关系，异常由工作线程交给卡片状态及消息框；部分会先被结构化异常包装，但原始 reason 仍保留。",
+      "evidence": [
+        "src/NepTrainKit/ui/threads.py:159",
+        "src/NepTrainKit/ui/threads.py:222",
+        "src/NepTrainKit/ui/widgets/card_widget.py:1144"
+      ],
+      "resolution": "whole_message",
+      "template": "Geometry Filter: {name} must be a finite non-negative number.",
+      "context": "CardOperationError"
+    }
+  ],
+  "followup_fixes": [
+    {
+      "path": "src/NepTrainKit/core/cards/filter.py",
+      "source": "FPS Filter: ⟦value⟧ must be an integer.",
+      "id": 1017,
+      "template": "FPS Filter: {name} must be an integer.",
+      "context": "CardOperationError"
+    },
+    {
+      "path": "src/NepTrainKit/core/cards/filter.py",
+      "source": "FPS Filter: ⟦value⟧ must be an integer.",
+      "id": 1018,
+      "template": "FPS Filter: {name} must be an integer.",
+      "context": "CardOperationError"
+    },
+    {
+      "path": "src/NepTrainKit/core/cards/filter.py",
+      "source": "FPS Filter: ⟦value⟧ must be >= ⟦value⟧.",
+      "id": 1019,
+      "template": "FPS Filter: {name} must be >= {minimum}.",
+      "context": "CardOperationError"
+    },
+    {
+      "path": "src/NepTrainKit/core/cards/filter.py",
+      "source": "FPS Filter: ⟦value⟧ must be a finite number.",
+      "id": 1020,
+      "template": "FPS Filter: {name} must be a finite number.",
+      "context": "CardOperationError"
+    },
+    {
+      "path": "src/NepTrainKit/core/cards/filter.py",
+      "source": "FPS Filter: ⟦value⟧ must be >= ⟦value⟧.",
+      "id": 1021,
+      "template": "FPS Filter: {name} must be >= {minimum}.",
+      "context": "CardOperationError"
+    },
+    {
+      "path": "src/NepTrainKit/core/cards/filter.py",
+      "source": "FPS Filter: ⟦value⟧ must be an integer.",
+      "id": 1022,
+      "template": "FPS Filter: {name} must be an integer.",
+      "context": "CardOperationError"
+    },
+    {
+      "path": "src/NepTrainKit/core/cards/filter.py",
+      "source": "FPS Filter: ⟦value⟧ must be a finite number.",
+      "id": 1023,
+      "template": "FPS Filter: {name} must be a finite number.",
+      "context": "CardOperationError"
+    },
+    {
+      "path": "src/NepTrainKit/core/cards/filter.py",
+      "source": "FPS Filter: backend must be auto, cpu, or cuda.",
+      "id": 1024,
+      "template": "FPS Filter: backend must be auto, cpu, or cuda.",
+      "context": "CardOperationError"
+    }
+  ]
+}

@@ -1,0 +1,66 @@
+{
+  "items": [
+    {
+      "path": "src/NepTrainKit/core/audit/prototype_registry.py",
+      "source": "prototype matching requires non-overlapping neighbors",
+      "id": 85,
+      "review": "hidden",
+      "review_note": "物相细分与参考匹配的异常在现行物相库存路径中被捕获，降级为 unresolved / 无确认有序相；不能按弹窗原文漏译计。",
+      "evidence": [
+        "src/NepTrainKit/core/audit/phase_inventory.py:253",
+        "src/NepTrainKit/core/audit/phase_inventory.py:263",
+        "src/NepTrainKit/core/audit/phase_inventory.py:274"
+      ]
+    },
+    {
+      "path": "src/NepTrainKit/core/audit/prototype_registry.py",
+      "source": "prototype matching requires non-overlapping neighbors",
+      "id": 86,
+      "review": "hidden",
+      "review_note": "物相细分与参考匹配的异常在现行物相库存路径中被捕获，降级为 unresolved / 无确认有序相；不能按弹窗原文漏译计。",
+      "evidence": [
+        "src/NepTrainKit/core/audit/phase_inventory.py:253",
+        "src/NepTrainKit/core/audit/phase_inventory.py:263",
+        "src/NepTrainKit/core/audit/phase_inventory.py:274"
+      ]
+    },
+    {
+      "path": "src/NepTrainKit/core/audit/prototype_registry.py",
+      "source": "positions must be a non-empty N x 3 array matching atom_types",
+      "id": 87,
+      "review": "hidden",
+      "review_note": "物相细分与参考匹配的异常在现行物相库存路径中被捕获，降级为 unresolved / 无确认有序相；不能按弹窗原文漏译计。",
+      "evidence": [
+        "src/NepTrainKit/core/audit/phase_inventory.py:253",
+        "src/NepTrainKit/core/audit/phase_inventory.py:263",
+        "src/NepTrainKit/core/audit/phase_inventory.py:274"
+      ]
+    }
+  ],
+  "retained_candidates": [
+    {
+      "path": "src/NepTrainKit/core/audit/prototype_registry.py",
+      "source": "prototype matching requires non-overlapping neighbors",
+      "context": null,
+      "rendered": "prototype matching requires non-overlapping neighbors",
+      "review": "hidden",
+      "reason": "物相细分与参考匹配的异常在现行物相库存路径中被捕获，降级为 unresolved / 无确认有序相；不能按弹窗原文漏译计。"
+    },
+    {
+      "path": "src/NepTrainKit/core/audit/prototype_registry.py",
+      "source": "prototype matching requires non-overlapping neighbors",
+      "context": null,
+      "rendered": "prototype matching requires non-overlapping neighbors",
+      "review": "hidden",
+      "reason": "物相细分与参考匹配的异常在现行物相库存路径中被捕获，降级为 unresolved / 无确认有序相；不能按弹窗原文漏译计。"
+    },
+    {
+      "path": "src/NepTrainKit/core/audit/prototype_registry.py",
+      "source": "positions must be a non-empty N x 3 array matching atom_types",
+      "context": null,
+      "rendered": "positions must be a non-empty N x 3 array matching atom_types",
+      "review": "hidden",
+      "reason": "物相细分与参考匹配的异常在现行物相库存路径中被捕获，降级为 unresolved / 无确认有序相；不能按弹窗原文漏译计。"
+    }
+  ]
+}

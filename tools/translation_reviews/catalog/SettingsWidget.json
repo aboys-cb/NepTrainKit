@@ -1,0 +1,29 @@
+{
+  "items": [
+    {
+      "path": "src/NepTrainKit/translations/neptrainkit_zh_CN.ts",
+      "context": "SettingsWidget",
+      "source": "Native helpers are incomplete ({missing}). Reinstall the NepTrainKit wheel for this Python version.",
+      "id": 8,
+      "review": "technical",
+      "review_note": "中文句子已完整；剩余为参数取值、数组字段、软件包名称、晶面记号、格式示例或 HTML 标记。动态异常插槽的内容不在本条结论内。",
+      "evidence": [
+        "src/NepTrainKit/translations/neptrainkit_zh_CN.ts",
+        "src/NepTrainKit/ui/pages/show_nep.py:1414",
+        "src/NepTrainKit/ui/widgets/card_metadata.py:1454"
+      ]
+    }
+  ],
+  "retained_candidates": [
+    {
+      "path": "src/NepTrainKit/translations/neptrainkit_zh_CN.ts",
+      "source": "Native helpers are incomplete ({missing}). Reinstall the NepTrainKit wheel for this Python version.",
+      "context": "SettingsWidget",
+      "rendered": [
+        "原生模块不完整（{missing}）。请重新安装适配当前 Python 版本的 NepTrainKit wheel。"
+      ],
+      "review": "technical",
+      "reason": "已核对完整中文结果；余下为技术字段、格式标记、枚举值或 HTML 标签。"
+    }
+  ]
+}

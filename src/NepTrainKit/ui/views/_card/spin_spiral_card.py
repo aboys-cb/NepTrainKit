@@ -6,7 +6,6 @@ from qfluentwidgets import BodyLabel, CheckBox, ComboBox, ToolTipFilter, ToolTip
 
 from NepTrainKit.core import CardManager
 from NepTrainKit.core.cards.magnetism import (
-    SpinSpiralOperation,
     SpinSpiralParams,
     coerce_scan_triplet,
     suggest_supercell_multipliers,
@@ -297,9 +296,6 @@ class SpinSpiralCard(MakeDataCard):
 
     def process_structure(self, structure):
         return self.create_operation().run_structure(structure, self.get_params())
-
-    def create_operation(self):
-        return SpinSpiralOperation()
 
     def get_params(self) -> SpinSpiralParams:
         return SpinSpiralParams(

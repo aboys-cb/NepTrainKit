@@ -9,7 +9,7 @@ from qfluentwidgets import (
 )
 
 from NepTrainKit.core import CardManager
-from NepTrainKit.core.cards.defect import RandomVacancyOperation, RandomVacancyParams
+from NepTrainKit.core.cards.defect import RandomVacancyParams
 from NepTrainKit.core.cards.operation import params_to_dict
 from NepTrainKit.ui.messages import translate_runtime_message
 from NepTrainKit.ui.widgets import (
@@ -122,17 +122,6 @@ class RandomVacancyCard(MakeDataCard):
         self.seed_field.setVisible(enabled)
         self._update_tab_order()
 
-    @staticmethod
-    def _first_structure(dataset):
-        if dataset is None:
-            return None
-        if hasattr(dataset, "arrays") and hasattr(dataset, "get_chemical_symbols"):
-            return dataset
-        try:
-            return next(iter(dataset))
-        except (StopIteration, TypeError):
-            return None
-
     def set_dataset(self, dataset) -> None:
         super().set_dataset(dataset)
         self._input_structure = self._first_structure(dataset)
@@ -228,10 +217,6 @@ class RandomVacancyCard(MakeDataCard):
         if self.seed_frame.isEnabled():
             widgets.append(self.seed_frame.object_list[0])
         self.tab_order_widgets = widgets
-
-    def create_operation(self):
-        """Return the UI-independent random vacancy operation."""
-        return RandomVacancyOperation()
 
     def get_params(self) -> RandomVacancyParams:
         """Read random vacancy parameters from UI controls."""

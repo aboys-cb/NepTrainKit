@@ -10,17 +10,52 @@ from __future__ import annotations
 # --- UI -------------------------------------------------------------------
 # qfluentwidgets' default theme colour; buttons, switches and links use it.
 ACCENT = "#009FAA"
+ACCENT_HOVER = "#008B94"
+ACCENT_PRESSED = "#00757D"
 ACCENT_SOFT = "#E0F4F5"
+ACCENT_BORDER = "#8AD8DE"
+
+# Marks state the user chose to keep, such as a starred model version.
+FAVOURITE = "#E03131"
+
+# Layered surfaces: App Canvas -> Card Surface -> Subtle Recessed/Header -> Hover
+CANVAS_BG = "#EEF2F6"
+SURFACE = "#F9FBFD"
+SURFACE_SUBTLE = "#F2F5F8"
+SURFACE_HOVER = "#E7EDF3"
+SURFACE_ACTIVE = "#E0F2F4"
 
 TEXT_PRIMARY = "#1B1F23"
 # Captions, helper text and collapsed summaries (4.9:1 on white).
-TEXT_SECONDARY = "#66737B"
-BORDER = "#D9E1E3"
-SURFACE = "#FFFFFF"
+TEXT_SECONDARY = "#5C6870"
+TEXT_MUTED = "#84919A"
+
+BORDER = "#E3E9EF"
+BORDER_SUBTLE = "#ECF0F4"
+BORDER_STRONG = "#CFD8E0"
+
+# Semantic status colours for badges, audit diagnostics, and validation cards.
+SUCCESS = "#2B8A3E"
+SUCCESS_SOFT = "#EBFBEE"
+SUCCESS_BORDER = "#8CE99A"
+
+WARNING = "#D97706"
+WARNING_STRONG = "#946100"
+WARNING_SOFT = "#FEF3C7"
+WARNING_BORDER = "#FCD34D"
+
+DANGER = "#E03131"
+DANGER_SOFT = "#FFF5F5"
+DANGER_BORDER = "#FFC9C9"
+
+INFO = "#1971C2"
+INFO_SOFT = "#E7F5FF"
+INFO_BORDER = "#A5D8FF"
 
 # --- Plots ------------------------------------------------------------------
 # Defaults for the ``plot`` config section.  Users can still override every
 # value from Settings; see ``migrate_plot_palette`` in ``core.types``.
+PLOT_BACKGROUND = "#FFFFFF"
 PLOT_MARKER_EDGE = "#2F6FA8"
 PLOT_MARKER_FACE = "#FFFFFF"
 PLOT_LINE = "#9AA5AD"

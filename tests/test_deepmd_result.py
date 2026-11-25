@@ -1,4 +1,5 @@
 from pathlib import Path
+from types import SimpleNamespace
 
 import numpy as np
 
@@ -203,32 +204,81 @@ def test_deepmd_alignment_uses_dp_x_columns_for_dft_values(tmp_path: Path):
     )
 
 
-def test_deepmd_alignment_mismatch_forces_recalculation(tmp_path: Path, monkeypatch):
+def test_deepmd_alignment_mismatch_recalculates_without_touching_imported_outputs(tmp_path: Path, monkeypatch):
     structures = [
         _labeled_structure(1.0, [[1.0, 2.0, 3.0]]),
         _labeled_structure(2.0, [[4.0, 5.0, 6.0]]),
     ]
-    result = DeepmdResultData(
-        tmp_path / "nep.txt",
-        tmp_path,
-        tmp_path / "test_result.e_peratom.out",
-        tmp_path / "test_result.fr.out",
-        tmp_path / "test_result.v_peratom.out",
-        tmp_path / "descriptor.out",
-        cached_outputs_only=True,
-    )
-    result.set_structures(structures)
-    result.load_structures()
-    result.energy_out_path.write_text("2 0\n1 0\n", encoding="utf-8")
-    result.force_out_path.write_text(
-        "1 2 3 0 0 0\n4 5 6 0 0 0\n", encoding="utf-8"
+    data = tmp_path / "data"
+    data.mkdir()
+    outputs = {
+        "test_result.e_peratom.out": b"2 91\n1 92\n",
+        "test_result.fr.out": b"1 2 3 0 0 0\n4 5 6 0 0 0\n",
+        "test_result.v_peratom.out": b"1 2 3 4 5 6 7 8 9 10 11 12\n" * 2,
+        "test_result.fm.out": b"1 2 3 4 5 6\n" * 2,
+        "descriptor.out": b"7 8\n" * 2,
+    }
+    for name, content in outputs.items():
+        (tmp_path / name).write_bytes(content)
+    result = DeepmdResultData.from_path(data, structures=structures)
+    result.set_cache_outputs_override(True)
+    result.calculator_factory = lambda _: SimpleNamespace(
+        descriptors=lambda frames, **kwargs: np.ones((len(frames), 2)),
+        predict=lambda _: SimpleNamespace(
+            energy=[1.2, 2.4], forces=np.zeros((2, 3)), structure_virials=np.zeros((2, 9))
+        ),
     )
     warnings: list[str] = []
     monkeypatch.setattr(MessageManager, "send_warning_message", warnings.append)
 
-    result._prepare_cached_output_alignment()
+    result.load()
 
-    assert result._force_recalculate_outputs is True
-    assert result._should_recalculate() is True
-    assert result._cached_descriptors_are_usable() is False
-    assert warnings and "will recalculate" in warnings[0]
+    assert result.load_flag
+    assert warnings and "will recalculate them in memory" in warnings[0]
+    assert {name: (tmp_path / name).read_bytes() for name in outputs} == outputs
+    assert result.mforce is None
+    np.testing.assert_allclose(result.energy.all_data, [[1, 1.2], [2, 2.4]])
+    np.testing.assert_allclose(result.descriptor.all_data, np.ones((2, 2)))
+
+
+def test_deepmd_explicit_model_uses_its_predictions_and_preserves_imported_evaluation(tmp_path: Path):
+    data = tmp_path / "data"
+    data.mkdir()
+    outputs = {
+        "evaluation.e_peratom.out": b"1 91\n",
+        "evaluation.fr.out": b"1 2 3 4 5 6\n",
+        "evaluation.v_peratom.out": b"0 0 0 0 0 0 0 0 0 0 0 0\n",
+        "evaluation.fm.out": b"1 2 3 4 5 6\n",
+        "descriptor.out": b"9 9\n",
+    }
+    for name, content in outputs.items():
+        (tmp_path / name).write_bytes(content)
+    frames = [_labeled_structure(1.0, [[1, 2, 3]])]
+    models = {tmp_path / "nep-a.txt": 10, tmp_path / "nep-b.txt": 20}
+    called = []
+
+    def calculator(model_path):
+        def predict(structures):
+            called.append(Path(model_path))
+            return SimpleNamespace(energy=[models[Path(model_path)]], forces=np.zeros((1, 3)),
+                                   structure_virials=np.zeros((1, 9)))
+        return SimpleNamespace(predict=predict, descriptors=lambda structures, **kwargs: np.ones((1, 2)))
+
+    imported = DeepmdResultData.from_path(data, structures=frames)
+    imported.calculator_factory = calculator
+    imported.load()
+    assert imported.load_flag and imported.uses_imported_predictions
+    assert imported.energy.y[0] == 91
+    assert not called
+
+    for model, expected in models.items():
+        result = DeepmdResultData.from_path(data, structures=frames, nep_txt_path=model)
+        result.calculator_factory = calculator
+        result.set_cache_outputs_override(True)
+        result.load()
+        assert result.load_flag and not result.uses_imported_predictions
+        assert result.energy.y[0] == expected
+        assert result.mforce is None
+        np.testing.assert_allclose(result.descriptor.all_data, [[1, 1]])
+    assert called == list(models)
+    assert {name: (tmp_path / name).read_bytes() for name in outputs} == outputs

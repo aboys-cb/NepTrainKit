@@ -1,0 +1,100 @@
+{
+  "items": [
+    {
+      "path": "src/NepTrainKit/core/io/sampling_plan.py",
+      "source": "source_indices must align with the structure sequence.",
+      "id": 319,
+      "review": "diagnostic",
+      "review_note": "采样计划/特征推荐层的维度、行映射和算法策略契约；不是直接的可编辑界面字段。需要保留技术细节并由外层提供中文失败说明。",
+      "evidence": [
+        "src/NepTrainKit/core/io/sampling_plan.py",
+        "src/NepTrainKit/core/io/sampling_recommendation.py"
+      ],
+      "resolution": "localized_diagnostic"
+    },
+    {
+      "path": "src/NepTrainKit/core/io/sampling_plan.py",
+      "source": "source_indices must align with the structure sequence.",
+      "id": 320,
+      "review": "diagnostic",
+      "review_note": "采样计划/特征推荐层的维度、行映射和算法策略契约；不是直接的可编辑界面字段。需要保留技术细节并由外层提供中文失败说明。",
+      "evidence": [
+        "src/NepTrainKit/core/io/sampling_plan.py",
+        "src/NepTrainKit/core/io/sampling_recommendation.py"
+      ],
+      "resolution": "localized_diagnostic"
+    },
+    {
+      "path": "src/NepTrainKit/core/io/sampling_plan.py",
+      "source": "Spin-aware physical partitions require magnetic evidence.",
+      "id": 321,
+      "review": "hidden",
+      "review_note": "读取缓存计划时捕获 ValueError 并重新生成计划；该原文不是当前缓存失效时展示给用户的消息。",
+      "evidence": [
+        "src/NepTrainKit/core/io/sampling_plan.py:586",
+        "src/NepTrainKit/core/io/sampling_plan.py:627"
+      ]
+    },
+    {
+      "path": "src/NepTrainKit/core/io/sampling_plan.py",
+      "source": "The cached physical partitions do not cover source structure ⟦value⟧.",
+      "id": 322,
+      "review": "diagnostic",
+      "review_note": "几何快照、接触汇总或内存计划的结构/数组不变量保护。部分调用端会降级处理，其他故障路径可能暴露诊断；不等同于常规文案，建议外层中文说明并保留原始细节。",
+      "evidence": [
+        "src/NepTrainKit/core/audit/engine.py:80",
+        "src/NepTrainKit/core/audit/pair_contacts.py:163",
+        "src/NepTrainKit/core/io/sampling_plan.py:559"
+      ],
+      "resolution": "localized_diagnostic"
+    },
+    {
+      "path": "src/NepTrainKit/core/io/sampling_plan.py",
+      "source": "The phase cache does not cover source structure ⟦value⟧.",
+      "id": 323,
+      "review": "hidden",
+      "review_note": "读取缓存计划时捕获 ValueError 并重新生成计划；该原文不是当前缓存失效时展示给用户的消息。",
+      "evidence": [
+        "src/NepTrainKit/core/io/sampling_plan.py:586",
+        "src/NepTrainKit/core/io/sampling_plan.py:627"
+      ]
+    },
+    {
+      "path": "src/NepTrainKit/core/io/sampling_plan.py",
+      "source": "The phase-sampling cache does not cover source structure ⟦value⟧.",
+      "id": 324,
+      "review": "hidden",
+      "review_note": "读取缓存计划时捕获 ValueError 并重新生成计划；该原文不是当前缓存失效时展示给用户的消息。",
+      "evidence": [
+        "src/NepTrainKit/core/io/sampling_plan.py:586",
+        "src/NepTrainKit/core/io/sampling_plan.py:627"
+      ]
+    }
+  ],
+  "retained_candidates": [
+    {
+      "path": "src/NepTrainKit/core/io/sampling_plan.py",
+      "source": "Spin-aware physical partitions require magnetic evidence.",
+      "context": null,
+      "rendered": "Spin-aware physical partitions require magnetic evidence.",
+      "review": "hidden",
+      "reason": "读取缓存计划时捕获 ValueError 并重新生成计划；该原文不是当前缓存失效时展示给用户的消息。"
+    },
+    {
+      "path": "src/NepTrainKit/core/io/sampling_plan.py",
+      "source": "The phase cache does not cover source structure ⟦value⟧.",
+      "context": null,
+      "rendered": "The phase cache does not cover source structure ⟦value⟧.",
+      "review": "hidden",
+      "reason": "读取缓存计划时捕获 ValueError 并重新生成计划；该原文不是当前缓存失效时展示给用户的消息。"
+    },
+    {
+      "path": "src/NepTrainKit/core/io/sampling_plan.py",
+      "source": "The phase-sampling cache does not cover source structure ⟦value⟧.",
+      "context": null,
+      "rendered": "The phase-sampling cache does not cover source structure ⟦value⟧.",
+      "review": "hidden",
+      "reason": "读取缓存计划时捕获 ValueError 并重新生成计划；该原文不是当前缓存失效时展示给用户的消息。"
+    }
+  ]
+}

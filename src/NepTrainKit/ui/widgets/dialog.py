@@ -95,6 +95,13 @@ from .distribution import DistributionExplorerWidget, DistributionInspectorMessa
 from .periodic_table import PeriodicTableDialog
 
 
+
+def _optional_float(text: str) -> float | None:
+    """Training metrics are optional for models captured from the viewer."""
+    text = text.strip()
+    return float(text) if text else None
+
+
 class GetIntMessageBox(MessageBoxBase):
     """Custom message box"""
 
@@ -1233,6 +1240,7 @@ class DFTD3MessageBox(MessageBoxBase):
 class ProjectInfoMessageBox(MessageBoxBase):
     def __init__(self, parent=None):
         super().__init__(parent)
+        self.existing_names = set()
 
         self._widget = QWidget(self)
 
@@ -1253,13 +1261,17 @@ class ProjectInfoMessageBox(MessageBoxBase):
         self.widget_layout.addWidget(self.project_name, 1, 1)
         self.widget_layout.addWidget(CaptionLabel(self.tr("Project notes"), self), 2, 0)
         self.widget_layout.addWidget(self.project_note, 2, 1)
+        self.name_error = CaptionLabel(self.tr("Project name already exists."), self)
+        self.widget_layout.addWidget(self.name_error, 3, 1)
+        self.name_error.hide()
+        self.project_name.textChanged.connect(self.name_error.hide)
         self.viewLayout.addWidget(self._widget)
 
     def validate(self):
         project_name = self.project_name.text().strip()
-        if len(project_name) == 0:
-            return False
-        return True
+        duplicate = project_name in self.existing_names
+        self.name_error.setVisible(duplicate)
+        return bool(project_name) and not duplicate
 
 
 class ModelInfoMessageBox(MessageBoxBase):
@@ -1305,7 +1317,7 @@ class ModelInfoMessageBox(MessageBoxBase):
         rmse.setHorizontalSpacing(5)
         rmse.setVerticalSpacing(2)
 
-        titleRmse = CaptionLabel(self.tr("RMSE (energy / force / virial)"), self)
+        titleRmse = CaptionLabel(self.tr("Historical RMSE (unverified)"), self)
         tf = titleRmse.font()
         tf.setBold(True)
         titleRmse.setFont(tf)
@@ -1313,9 +1325,6 @@ class ModelInfoMessageBox(MessageBoxBase):
         self.energy_spinBox = LineEdit(rmseCard)
         self.force_spinBox = LineEdit(rmseCard)
         self.virial_spinBox = LineEdit(rmseCard)
-        self.energy_spinBox.setText("0")
-        self.force_spinBox.setText("0")
-        self.virial_spinBox.setText("0")
 
         validator = QDoubleValidator(bottom=-1e12, top=1e12, decimals=2)
         for w in (self.energy_spinBox, self.force_spinBox, self.virial_spinBox):
@@ -1357,7 +1366,7 @@ class ModelInfoMessageBox(MessageBoxBase):
         h.setContentsMargins(0, 0, 0, 0)
         h.setSpacing(3)
         self.train_path_edit = LineEdit(structureRow)
-        self.train_path_edit.setPlaceholderText(self.tr("Model training path"))
+        self.train_path_edit.setPlaceholderText(self.tr("NEP model file or folder"))
         self.train_path_edit.editingFinished.connect(self.check_path)
         browse = TransparentToolButton(FluentIcon.FOLDER_ADD, structureRow)
         browse.setFixedHeight(self.train_path_edit.sizeHint().height())
@@ -1366,6 +1375,9 @@ class ModelInfoMessageBox(MessageBoxBase):
         h.addWidget(browse, 0)
 
         path.addRow(CaptionLabel(self.tr("Path"), self), structureRow)
+        version_hint = CaptionLabel("编辑已保存的势：相同内容只更新路径；内容变化会创建新版本，保留原版本及结果。", pathCard)
+        version_hint.setWordWrap(True)
+        path.addRow(version_hint)
 
         root.addWidget(pathCard)
 
@@ -1401,7 +1413,7 @@ class ModelInfoMessageBox(MessageBoxBase):
         root.addStretch(1)
 
     def _pick_file(self):
-        path = call_path_dialog(self, self.tr("Select the model folder path"), "directory")
+        path = call_path_dialog(self, self.tr("Select NEP model file"), "select", file_filter="NEP (*.txt);;All files (*)")
 
         if path:
             self.train_path_edit.setText(path)
@@ -1415,87 +1427,15 @@ class ModelInfoMessageBox(MessageBoxBase):
         self.tag_group.add_tag(tag)
 
     def check_path(self):
-        _path = self.train_path_edit.text()
-        path = Path(_path)
-        if not path.exists():
-            MessageManager.send_message_box(self.tr("{path} does not exist!").format(path=_path))
+        from NepTrainKit.core.validation.service import find_model_files
+
+        models = find_model_files(self.train_path_edit.text())
+        if len(models) != 1:
+            MessageManager.send_message_box(self.tr("Choose one valid NEP model file; accuracy data is selected separately."))
             return
-        if self.model_type_combox.currentText() == "NEP":
-            model_file = path.joinpath("nep.txt")
-            if not model_file.exists():
-                MessageManager.send_message_box(
-                    self.tr("No 'nep.txt' found in the specified path. Its presence is not strictly required, but please make sure you know what you are doing.")
-                )
-
-            data_file = path.joinpath("train.xyz")
-            if not data_file.exists():
-                MessageManager.send_message_box(
-                    self.tr("No 'train.xyz' training data file found in the specified path. This file is required to compute training error metrics; please make sure you know what you are doing.")
-                )
-                # data_size=0
-                energy = 0
-                force = 0
-                virial = 0
-            else:
-                metric_specs = (
-                    (
-                        self.tr("energy"),
-                        path.joinpath("energy_train.out"),
-                        2,
-                        lambda array: get_rmse(array[:, 0], array[:, 1]) * 1000,
-                        self.energy_spinBox,
-                    ),
-                    (
-                        self.tr("force"),
-                        path.joinpath("force_train.out"),
-                        6,
-                        lambda array: get_rmse(array[:, :3], array[:, 3:6]) * 1000,
-                        self.force_spinBox,
-                    ),
-                    (
-                        self.tr("virial"),
-                        path.joinpath("virial_train.out"),
-                        12,
-                        lambda array: get_rmse(array[:, :6], array[:, 6:12]) * 1000,
-                        self.virial_spinBox,
-                    ),
-                )
-                for metric, output_path, min_columns, calculate, target in metric_specs:
-                    try:
-                        values = np.atleast_2d(read_nep_out_file(output_path))
-                        if values.shape[1] < min_columns:
-                            raise ValueError(
-                                self.tr("expected at least {count} columns").format(
-                                    count=min_columns,
-                                )
-                            )
-                        result = float(calculate(values))
-                        if not np.isfinite(result):
-                            raise ValueError(self.tr("result is not finite"))
-                    except Exception as exc:  # noqa: BLE001 - keep manual values editable
-                        MessageManager.send_message_box(
-                            self.tr(
-                                "Cannot calculate {metric} RMSE from {file}: {error}. "
-                                "The current manual value is kept."
-                            ).format(
-                                metric=metric,
-                                file=output_path.name,
-                                error=exc,
-                            )
-                        )
-                    else:
-                        target.setText(str(round(result, 2)))
-
-                return
-
-            self.force_spinBox.setText(str(round(force, 2)))
-            self.energy_spinBox.setText(str(round(energy, 2)))
-            self.virial_spinBox.setText(str(round(virial, 2)))
+        self.train_path_edit.setText(str(models[0]))
 
     def get_dict(self):
-        path = Path(self.train_path_edit.text())
-        data_file = path.joinpath("train.xyz")
-        data_size = get_xyz_nframe(data_file)
         return dict(
             # project_id=self.,
             name=self.model_name_edit.text().strip(),
@@ -1503,10 +1443,10 @@ class ModelInfoMessageBox(MessageBoxBase):
             model_path=self.train_path_edit.text().strip(),
             # model_file=path.joinpath("nep.txt"),
             # data_file=data_file,
-            data_size=data_size,
-            energy=float(self.energy_spinBox.text().strip()),
-            force=float(self.force_spinBox.text().strip()),
-            virial=float(self.virial_spinBox.text().strip()),
+            data_size=None,
+            energy=_optional_float(self.energy_spinBox.text()),
+            force=_optional_float(self.force_spinBox.text()),
+            virial=_optional_float(self.virial_spinBox.text()),
             notes=self.model_note_edit.toPlainText(),
             tags=list(self.tag_group.tags.keys()),
             parent_id=self.parent_combox.currentData(),

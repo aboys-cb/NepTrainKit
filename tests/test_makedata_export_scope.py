@@ -6,6 +6,9 @@ from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import MagicMock, patch
 
+from ase import Atoms
+from ase.io import read
+
 from PySide6.QtCore import QTranslator
 from PySide6.QtWidgets import QApplication
 
@@ -27,6 +30,20 @@ def _card(name, *, enabled=True, output_count=1):
     return card
 
 
+def _page(*cards, sampling_attached=False, revision=0, run_revision=0):
+    """A stand-in for MakeDataWidget with the state export reads.
+
+    ``_sampling_attached`` and the revision pair are set in ``__init__``, so a
+    double that omits them is not a valid stand-in.
+    """
+    return SimpleNamespace(
+        workspace_card_widget=SimpleNamespace(cards=list(cards)),
+        _sampling_attached=sampling_attached,
+        _sampling_revision=revision,
+        _sampling_run_revision=run_revision,
+    )
+
+
 class TestMakeDataExportScope(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
@@ -36,9 +53,7 @@ class TestMakeDataExportScope(unittest.TestCase):
         first = _card("first")
         disabled = _card("disabled", enabled=False)
         final = _card("final")
-        page = SimpleNamespace(
-            workspace_card_widget=SimpleNamespace(cards=[first, disabled, final])
-        )
+        page = _page(first, disabled, final)
 
         cards = MakeDataWidget._cards_for_export(page, include_all=False)
 
@@ -49,11 +64,7 @@ class TestMakeDataExportScope(unittest.TestCase):
         unavailable = _card("unavailable", output_count=0)
         disabled = _card("disabled", enabled=False)
         final = _card("final")
-        page = SimpleNamespace(
-            workspace_card_widget=SimpleNamespace(
-                cards=[first, unavailable, disabled, final]
-            )
-        )
+        page = _page(first, unavailable, disabled, final)
 
         cards = MakeDataWidget._cards_for_export(page, include_all=True)
 
@@ -62,52 +73,41 @@ class TestMakeDataExportScope(unittest.TestCase):
     def test_final_scope_uses_last_output_completed_in_current_run(self):
         completed = _card("completed")
         stale = _card("stale")
-        page = SimpleNamespace(
-            workspace_card_widget=SimpleNamespace(cards=[completed, stale]),
-            _last_completed_card_index=0,
-        )
+        page = _page(completed, stale)
+        page._last_completed_card_index = 0
 
         cards = MakeDataWidget._cards_for_export(page, include_all=False)
 
         self.assertEqual(cards, [completed])
 
     def test_writer_preserves_explicit_card_order_and_append_mode(self):
-        first = _card("first")
-        final = _card("final")
         with tempfile.TemporaryDirectory() as tmp_dir:
             path = Path(tmp_dir) / "dataset.xyz"
-
-            MakeDataWidget._export_file(None, str(path), [first, final])
-
-            self.assertEqual(path.read_text(), "first:False\nfinal:True\n")
+            MakeDataWidget._export_file(None, str(path), [[Atoms("H")], [Atoms("He")]])
+            self.assertEqual([a.get_chemical_formula() for a in read(path, index=":")], ["H", "He"])
 
     def test_writer_replaces_existing_file_only_after_success(self):
-        first = _card("first")
         with tempfile.TemporaryDirectory() as tmp_dir:
             path = Path(tmp_dir) / "dataset.xyz"
             path.write_text("old dataset\n", encoding="utf-8")
 
-            MakeDataWidget._export_file(None, str(path), [first])
+            MakeDataWidget._export_file(None, str(path), [[Atoms("H")]])
 
-            self.assertEqual(path.read_text(encoding="utf-8"), "first:False\n")
+            self.assertEqual(read(path).get_chemical_formula(), "H")
             self.assertEqual(list(path.parent.glob(f".{path.name}.*.tmp")), [])
 
     def test_writer_preserves_existing_file_when_card_export_fails(self):
-        failing = _card("failing")
-
-        def fail_after_partial_write(file, *, append):
+        def fail_after_partial_write(file, dataset, *, append):
             file.write("partial dataset\n")
             raise RuntimeError("synthetic export failure")
 
-        failing.write_result_dataset.side_effect = fail_after_partial_write
         with tempfile.TemporaryDirectory() as tmp_dir:
             path = Path(tmp_dir) / "dataset.xyz"
             path.write_text("old dataset\n", encoding="utf-8")
 
-            with self.assertRaisesRegex(
-                RuntimeError, "synthetic export failure"
-            ):
-                MakeDataWidget._export_file(None, str(path), [failing])
+            with patch("NepTrainKit.ui.pages.makedata.write_card_dataset", side_effect=fail_after_partial_write):
+                with self.assertRaisesRegex(RuntimeError, "synthetic export failure"):
+                    MakeDataWidget._export_file(None, str(path), [[Atoms("H")]])
 
             self.assertEqual(path.read_text(encoding="utf-8"), "old dataset\n")
             self.assertEqual(list(path.parent.glob(f".{path.name}.*.tmp")), [])
@@ -132,10 +132,10 @@ class TestMakeDataExportScope(unittest.TestCase):
                 widget.export_all_outputs_action.text(), "导出全部可用卡片输出"
             )
             self.assertEqual(
-                widget.setting_group.view_output_button.text(), "查看输出"
+                widget.setting_group.view_output_button.text(), "查看全部输出"
             )
             self.assertEqual(
-                widget.setting_group.view_output_action.text(), "查看勾选输出"
+                widget.setting_group.view_output_action.text(), "查看全部输出"
             )
         finally:
             self._app.removeTranslator(translator)
@@ -160,6 +160,7 @@ class TestMakeDataExportScope(unittest.TestCase):
         card = MakeDataCard(widget)
         structures = [object(), object()]
         card.result_dataset = structures
+        card.run_outcome = "succeeded"
         card.set_output_available(True)
         widget._connect_card_output_actions(card)
         requested = []
@@ -175,10 +176,8 @@ class TestMakeDataExportScope(unittest.TestCase):
         self, info_message, path_dialog
     ):
         card = _card("final", output_count=0)
-        page = SimpleNamespace(
-            workspace_card_widget=SimpleNamespace(cards=[card]),
-            tr=lambda text: text,
-        )
+        page = _page(card)
+        page.tr = lambda text: text
         page._cards_for_export = lambda include_all: MakeDataWidget._cards_for_export(
             page, include_all
         )

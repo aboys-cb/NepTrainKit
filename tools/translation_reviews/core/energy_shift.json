@@ -1,0 +1,29 @@
+{
+  "items": [
+    {
+      "path": "src/NepTrainKit/core/energy_shift.py",
+      "source": "reference_structures is required for REF_GROUP_ALIGNMENT",
+      "id": 236,
+      "review": "fix",
+      "review_note": "REF_GROUP_ALIGNMENT 缺少参考结构由能量对齐后台任务抛出，后台失败状态保留原始消息。",
+      "evidence": [
+        "src/NepTrainKit/core/io/base.py:2754",
+        "src/NepTrainKit/ui/threads.py:117"
+      ],
+      "resolution": "whole_message",
+      "template": "reference_structures is required for REF_GROUP_ALIGNMENT",
+      "context": "RuntimeMessage"
+    },
+    {
+      "path": "src/NepTrainKit/core/energy_shift.py",
+      "source": "nep_energy_array is required for DFT_TO_NEP_ALIGNMENT",
+      "id": 237,
+      "review": "diagnostic",
+      "review_note": "NEP 预测能量数组由 ResultData 生成，None 属于调用契约/数据状态错误，而非用户填写的文字。",
+      "evidence": [
+        "src/NepTrainKit/core/io/base.py:2752"
+      ],
+      "resolution": "localized_diagnostic"
+    }
+  ]
+}

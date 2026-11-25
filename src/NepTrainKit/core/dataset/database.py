@@ -1,12 +1,217 @@
 """Database utilities for the data manager."""
 from __future__ import annotations
 
+import json
+import sqlite3
+from contextlib import contextmanager
+from itertools import groupby
 from pathlib import Path
 
 from sqlalchemy import create_engine,event
 from sqlalchemy.orm import sessionmaker
 
 from .models import Base
+
+# Bump together with a new entry in ``_MIGRATIONS``. Migrations are frozen SQL:
+# never edit one that has shipped, add a new step instead.
+SCHEMA_VERSION = 4
+
+
+def _columns(conn: sqlite3.Connection, table: str) -> set[str]:
+    return {row[1] for row in conn.execute(f"PRAGMA table_info({table})")}
+
+
+def _execute_all(conn: sqlite3.Connection, script: str) -> None:
+    """Run statements inside the caller's transaction (``executescript`` would commit)."""
+    for statement in script.split(";"):
+        if statement.strip():
+            conn.execute(statement)
+
+
+def _migrate_1_model_snapshots(conn: sqlite3.Connection) -> None:
+    """Make training metrics optional and add snapshot columns to model versions.
+
+    SQLite cannot relax NOT NULL in place, so the table is rebuilt following the
+    documented create-copy-drop-rename procedure (foreign keys are off).
+    """
+    columns = _columns(conn, "model_versions")
+    if not columns or "content_hash" in columns:
+        return
+    _execute_all(
+        conn,
+        """
+        CREATE TABLE model_versions_new (
+            id INTEGER NOT NULL,
+            name VARCHAR(80) NOT NULL,
+            project_id INTEGER NOT NULL,
+            model_type VARCHAR(20) NOT NULL,
+            data_size INTEGER,
+            energy FLOAT,
+            force FLOAT,
+            virial FLOAT,
+            model_path TEXT NOT NULL,
+            notes TEXT NOT NULL,
+            parent_id INTEGER,
+            created_at DATETIME NOT NULL,
+            content_hash VARCHAR(64),
+            model_kind VARCHAR(40) NOT NULL,
+            elements JSON NOT NULL,
+            source_path TEXT NOT NULL,
+            dataset_ref JSON NOT NULL,
+            starred BOOLEAN NOT NULL,
+            auto_captured BOOLEAN NOT NULL,
+            last_seen_at DATETIME NOT NULL,
+            PRIMARY KEY (id),
+            FOREIGN KEY(project_id) REFERENCES projects (id) ON DELETE CASCADE,
+            FOREIGN KEY(parent_id) REFERENCES model_versions (id) ON DELETE CASCADE
+        );
+        INSERT INTO model_versions_new (
+            id, name, project_id, model_type, data_size, energy, force, virial,
+            model_path, notes, parent_id, created_at, content_hash, model_kind,
+            elements, source_path, dataset_ref, starred, auto_captured, last_seen_at
+        )
+        SELECT id, name, project_id, model_type, data_size, energy, force, virial,
+               model_path, notes, parent_id, created_at, NULL, '',
+               '[]', '', '{}', 0, 0, created_at
+        FROM model_versions;
+        DROP TABLE model_versions;
+        ALTER TABLE model_versions_new RENAME TO model_versions;
+        CREATE INDEX ix_model_versions_project_id ON model_versions (project_id);
+        CREATE INDEX ix_model_versions_parent_id ON model_versions (parent_id);
+        CREATE INDEX ix_model_versions_content_hash ON model_versions (content_hash);
+        """
+    )
+
+
+def _migrate_2_temporary_models(conn: sqlite3.Connection) -> None:
+    """Allow validation snapshots without assigning a project; preserve all IDs."""
+    if not _columns(conn, "model_versions"):
+        return
+    _execute_all(conn, """
+        CREATE TABLE model_versions_new (
+            id INTEGER NOT NULL,
+            name VARCHAR(80) NOT NULL,
+            project_id INTEGER,
+            model_type VARCHAR(20) NOT NULL,
+            data_size INTEGER,
+            energy FLOAT,
+            force FLOAT,
+            virial FLOAT,
+            model_path TEXT NOT NULL,
+            notes TEXT NOT NULL,
+            parent_id INTEGER,
+            created_at DATETIME NOT NULL,
+            content_hash VARCHAR(64),
+            model_kind VARCHAR(40) NOT NULL,
+            elements JSON NOT NULL,
+            source_path TEXT NOT NULL,
+            dataset_ref JSON NOT NULL,
+            starred BOOLEAN NOT NULL,
+            auto_captured BOOLEAN NOT NULL,
+            last_seen_at DATETIME NOT NULL,
+            PRIMARY KEY (id),
+            FOREIGN KEY(project_id) REFERENCES projects (id) ON DELETE CASCADE,
+            FOREIGN KEY(parent_id) REFERENCES model_versions (id) ON DELETE CASCADE
+        );
+        INSERT INTO model_versions_new (
+            id, name, project_id, model_type, data_size, energy, force, virial,
+            model_path, notes, parent_id, created_at, content_hash, model_kind,
+            elements, source_path, dataset_ref, starred, auto_captured, last_seen_at
+        ) SELECT id, name, project_id, model_type, data_size, energy, force, virial,
+                 model_path, notes, parent_id, created_at, content_hash, model_kind,
+                 elements, source_path, dataset_ref, starred, auto_captured, last_seen_at
+          FROM model_versions;
+        DROP TABLE model_versions;
+        ALTER TABLE model_versions_new RENAME TO model_versions;
+        CREATE INDEX ix_model_versions_project_id ON model_versions (project_id);
+        CREATE INDEX ix_model_versions_parent_id ON model_versions (parent_id);
+        CREATE INDEX ix_model_versions_content_hash ON model_versions (content_hash);
+        """)
+
+
+def _migrate_3_validation_groups(conn: sqlite3.Connection) -> None:
+    _execute_all(conn, """
+        CREATE TABLE IF NOT EXISTS benchmark_suite_groups (
+            id INTEGER NOT NULL PRIMARY KEY,
+            suite_id INTEGER NOT NULL REFERENCES benchmark_suites(id) ON DELETE CASCADE,
+            name VARCHAR(200) NOT NULL,
+            position INTEGER NOT NULL
+        );
+        CREATE INDEX IF NOT EXISTS ix_benchmark_suite_groups_suite_id ON benchmark_suite_groups(suite_id);
+    """)
+    columns = _columns(conn, "benchmark_suite_sets")
+    if columns and "group_id" not in columns:
+        conn.execute("ALTER TABLE benchmark_suite_sets ADD COLUMN group_id INTEGER REFERENCES benchmark_suite_groups(id) ON DELETE SET NULL")
+        conn.execute("ALTER TABLE benchmark_suite_sets ADD COLUMN display_name TEXT NOT NULL DEFAULT ''")
+
+
+def _migrate_4_accuracy_source(conn: sqlite3.Connection) -> None:
+    columns = _columns(conn, "model_versions")
+    if not columns or "accuracy_source" in columns:
+        return
+    conn.execute("ALTER TABLE model_versions ADD COLUMN accuracy_source JSON")
+    if not _columns(conn, "events"):
+        return
+    events = conn.execute("""
+        SELECT m.id, m.energy, m.force, m.virial, e.id, e.payload_json
+        FROM events e JOIN model_versions m ON m.id = e.entity_id
+        WHERE e.entity_type = 'model_version' AND e.action = 'import_accuracy'
+          AND json_extract(e.payload_json, '$.model_sha256') = m.content_hash
+        ORDER BY m.id, e.id DESC
+    """)
+    for model_id, history in groupby(events, key=lambda row: row[0]):
+        latest = next(history)
+        summary = json.loads(latest[5])
+        keys = ("energy_rmse", "force_rmse", "virial_rmse")
+        if latest[1:4] != tuple(summary["metrics"].get(key) for key in keys):
+            continue  # Keep manually edited metrics and leave their source unspecified.
+        event_id = latest[4]
+        if summary["status"] != "verified":
+            for event in history:
+                candidate = json.loads(event[5])
+                if candidate["status"] == "verified":
+                    event_id, summary = event[4], candidate
+                    break
+        source = {"event_id": event_id, "group": summary.get("group"), "status": summary["status"]}
+        conn.execute("UPDATE model_versions SET energy=?, force=?, virial=?, accuracy_source=? WHERE id=?",
+                     (*[summary["metrics"].get(key) for key in keys], json.dumps(source), model_id))
+
+
+_MIGRATIONS = {1: _migrate_1_model_snapshots, 2: _migrate_2_temporary_models,
+               3: _migrate_3_validation_groups, 4: _migrate_4_accuracy_source}
+
+
+def migrate(path: str | Path) -> None:
+    """Upgrade an existing database file to ``SCHEMA_VERSION``.
+
+    A brand-new file is created directly at the latest schema by
+    ``create_all``, so only files that already exist are migrated.
+    """
+    path = Path(path)
+    if not path.exists():
+        return
+    conn = sqlite3.connect(path, isolation_level=None)
+    try:
+        version = conn.execute("PRAGMA user_version").fetchone()[0]
+        if version > SCHEMA_VERSION:
+            raise RuntimeError("Database schema is newer than this application.")
+        if version == SCHEMA_VERSION:
+            return
+        conn.execute("PRAGMA foreign_keys=OFF")
+        for step in range(version + 1, SCHEMA_VERSION + 1):
+            conn.execute("BEGIN")
+            try:
+                _MIGRATIONS[step](conn)
+                problems = conn.execute("PRAGMA foreign_key_check").fetchall()
+                if problems:
+                    raise RuntimeError(f"Database migration {step} broke foreign keys: {problems[:3]}")
+                conn.execute(f"PRAGMA user_version={step}")
+                conn.execute("COMMIT")
+            except Exception:
+                conn.execute("ROLLBACK")
+                raise
+    finally:
+        conn.close()
 
 
 class Database:
@@ -15,13 +220,31 @@ class Database:
     def __init__(self, path: str | Path = "mlpman.db") -> None:
         self.path = Path(path)
         self.first=not self.path.exists()
+        migrate(self.path)
         self.engine = create_engine(f"sqlite:///{self.path}", future=True)
         @event.listens_for(self.engine, "connect")
         def _fk_on(dbapi_conn, _):
             dbapi_conn.execute("PRAGMA foreign_keys=ON;")
+            # Let the GUI and the command line read while the other writes.
+            dbapi_conn.execute("PRAGMA busy_timeout=5000;")
         Base.metadata.create_all(self.engine)
+        if self.first:
+            with self.engine.begin() as conn:
+                conn.exec_driver_sql(f"PRAGMA user_version={SCHEMA_VERSION}")
         self.Session = sessionmaker(bind=self.engine, expire_on_commit=False, future=True)
 
     def session(self):
         """Create a new SQLAlchemy session."""
         return self.Session()
+
+    @contextmanager
+    def write_session(self):
+        """Serialize file publication/registration and garbage collection across processes."""
+        with self.Session() as session:
+            session.connection().exec_driver_sql("BEGIN IMMEDIATE")
+            try:
+                yield session
+                session.commit()
+            except BaseException:
+                session.rollback()
+                raise

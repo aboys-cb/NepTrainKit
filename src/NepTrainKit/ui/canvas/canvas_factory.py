@@ -28,9 +28,10 @@ def _create_pyqtgraph_result_canvas(parent: QWidget | None):
 
 
 def _create_vispy_result_canvas(parent: QWidget | None):
+    from NepTrainKit import palette
     from NepTrainKit.ui.canvas.vispy import VispyCanvas
 
-    return VispyCanvas(parent=parent, bgcolor="white")
+    return VispyCanvas(parent=parent, bgcolor=palette.SURFACE)
 
 
 def _create_pyqtgraph_structure_plot(parent: QWidget | None):

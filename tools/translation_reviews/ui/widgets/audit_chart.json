@@ -1,0 +1,44 @@
+{
+  "items": [
+    {
+      "path": "src/NepTrainKit/ui/widgets/audit_chart.py",
+      "source": "PNG export scale must be a positive finite number.",
+      "id": 448,
+      "review": "hidden",
+      "review_note": "图像导出使用固定 scale=2.0；保存异常只进日志，用户看到已有中文通用警告。",
+      "evidence": [
+        "src/NepTrainKit/ui/pages/training_set_audit.py:4836",
+        "src/NepTrainKit/ui/pages/training_set_audit.py:4837"
+      ]
+    },
+    {
+      "path": "src/NepTrainKit/ui/widgets/audit_chart.py",
+      "source": "Failed to save audit chart image to ⟦value⟧",
+      "id": 449,
+      "review": "hidden",
+      "review_note": "图像导出使用固定 scale=2.0；保存异常只进日志，用户看到已有中文通用警告。",
+      "evidence": [
+        "src/NepTrainKit/ui/pages/training_set_audit.py:4836",
+        "src/NepTrainKit/ui/pages/training_set_audit.py:4837"
+      ]
+    }
+  ],
+  "retained_candidates": [
+    {
+      "path": "src/NepTrainKit/ui/widgets/audit_chart.py",
+      "source": "PNG export scale must be a positive finite number.",
+      "context": null,
+      "rendered": "PNG export scale must be a positive finite number.",
+      "review": "hidden",
+      "reason": "图像导出使用固定 scale=2.0；保存异常只进日志，用户看到已有中文通用警告。"
+    },
+    {
+      "path": "src/NepTrainKit/ui/widgets/audit_chart.py",
+      "source": "Failed to save audit chart image to ⟦value⟧",
+      "context": null,
+      "rendered": "Failed to save audit chart image to ⟦value⟧",
+      "review": "hidden",
+      "reason": "图像导出使用固定 scale=2.0；保存异常只进日志，用户看到已有中文通用警告。"
+    }
+  ]
+}

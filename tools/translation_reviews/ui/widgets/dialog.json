@@ -1,0 +1,11 @@
+{
+  "followup_fixes": [
+    {
+      "path": "src/NepTrainKit/ui/widgets/dialog.py",
+      "source": "⟦value⟧ already exists, please delete it first",
+      "id": 1067,
+      "template": "{tag} already exists, please delete it first",
+      "context": "RuntimeMessage"
+    }
+  ]
+}

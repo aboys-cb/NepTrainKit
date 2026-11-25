@@ -15,9 +15,10 @@ from qfluentwidgets import (
 from NepTrainKit import module_path
 from NepTrainKit.config import Config
 from NepTrainKit.core import CardManager
-from NepTrainKit.core.cards.filter import FPSFilterOperation, FPSFilterParams
+from NepTrainKit.core.cards.filter import FPSFilterParams
 from NepTrainKit.core.cards.operation import params_to_dict
 from NepTrainKit.core.types import get_configured_nep_backend
+from NepTrainKit.paths import get_bundled_nep89_path, portable_model_path, resolve_model_path
 from NepTrainKit.ui.messages import translate_runtime_message, format_sampling_coverage
 from NepTrainKit.ui.dialogs import call_path_dialog
 from NepTrainKit.ui.widgets import (
@@ -289,10 +290,6 @@ class FPSFilterDataCard(FilterDataCard):
         self.strategy_hint.updateGeometry()
         self._refresh_preview()
 
-    def create_operation(self):
-        """Return the UI-independent FPS operation."""
-        return FPSFilterOperation()
-
     def get_summary_text(self) -> str:
         params = self.get_params()
         strategy_labels = {
@@ -329,7 +326,9 @@ class FPSFilterDataCard(FilterDataCard):
         """Read FPS parameters from UI controls."""
         strategy = str(self.strategy_combo.currentData() or "global")
         return FPSFilterParams(
-            nep_path=self.nep_path_lineedit.text(),
+            # Store the bundled model as a portable token so the exported JSON
+            # still resolves on another machine or install location.
+            nep_path=portable_model_path(self.nep_path_lineedit.text()),
             n_samples=int(self.num_condition_frame.get_input_value()[0]),
             min_distance=float(self.min_distance_condition_frame.get_input_value()[0]),
             backend=self._backend,
@@ -340,7 +339,8 @@ class FPSFilterDataCard(FilterDataCard):
 
     def set_params(self, params: FPSFilterParams) -> None:
         """Apply FPS parameters to UI controls."""
-        self.nep_path_lineedit.setText(params.nep_path)
+        # The line edit always shows a real path; the token only lives in data.
+        self.nep_path_lineedit.setText(str(resolve_model_path(params.nep_path)))
         self.num_condition_frame.set_input_value([int(params.n_samples)])
         self.min_distance_condition_frame.set_input_value([float(params.min_distance)])
         self._backend = params.backend

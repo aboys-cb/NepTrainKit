@@ -6,7 +6,7 @@ from PySide6.QtCore import Qt
 from qfluentwidgets import CaptionLabel, CheckBox, ComboBox
 
 from NepTrainKit.core import CardManager
-from NepTrainKit.core.cards.lattice import BainPathOperation, BainPathParams
+from NepTrainKit.core.cards.lattice import BainPathParams
 from NepTrainKit.core.cards.operation import params_to_dict
 from NepTrainKit.ui.messages import translate_runtime_message
 from NepTrainKit.ui.views._card.i18n_utils import combo_value, set_combo_value
@@ -155,17 +155,6 @@ class BainPathCard(MakeDataCard):
         self._on_coordinate_changed()
         self._on_mode_changed()
 
-    @staticmethod
-    def _dataset_count(dataset) -> int:
-        if dataset is None:
-            return 0
-        if hasattr(dataset, "arrays") and hasattr(dataset, "get_chemical_symbols"):
-            return 1
-        try:
-            return len(dataset)
-        except TypeError:
-            return 0
-
     def set_dataset(self, dataset) -> None:
         super().set_dataset(dataset)
         self._refresh_preview()
@@ -266,9 +255,6 @@ class BainPathCard(MakeDataCard):
             widgets.extend(self.volume_frame.object_list)
         widgets.append(self.scale_atoms_checkbox)
         self.tab_order_widgets = widgets
-
-    def create_operation(self):
-        return BainPathOperation()
 
     def get_params(self) -> BainPathParams:
         return BainPathParams(

@@ -459,9 +459,9 @@ class TestCardLibraryDialog(unittest.TestCase):
         console.viewOutputSignal.connect(lambda: requests.append(True))
 
         self.assertFalse(console.view_output_button.isEnabled())
-        self.assertEqual(console.view_output_button.text(), "View output")
+        self.assertEqual(console.view_output_button.text(), "View all outputs")
         self.assertEqual(
-            console.view_output_action.text(), "View selected outputs"
+            console.view_output_action.text(), "View all outputs"
         )
         console.set_output_available(True)
         console.view_output_button.click()
@@ -486,7 +486,7 @@ class TestCardLibraryDialog(unittest.TestCase):
             self._app.processEvents()
 
             self.assertTrue(console.view_output_button.isVisible())
-            self.assertEqual(console.view_output_button.text(), "查看输出")
+            self.assertEqual(console.view_output_button.text(), "查看全部输出")
             self.assertFalse(console.setting_command.moreButton.isVisible())
         finally:
             self._app.removeTranslator(translator)

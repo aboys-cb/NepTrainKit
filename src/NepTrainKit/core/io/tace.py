@@ -162,7 +162,7 @@ class TaceResultData(ResultData):
             [float(getattr(s, "additional_fields", {}).get("TACE_energy", np.nan)) for s in structures],
             dtype=np.float32,
         )
-        energy_array = concat_nep_dft_array(pred_energy, ref_energy, quantity="energies")
+        energy_array = concat_nep_dft_array(pred_energy, ref_energy)
         energy_array = (energy_array / self.atoms_num_list.reshape(-1, 1)).astype(np.float32, copy=False)
         self._energy_dataset = NepPlotData(energy_array, title="energy")
 
@@ -183,7 +183,7 @@ class TaceResultData(ResultData):
             dtype=np.float32,
         )
         pred_forces = np.vstack([_force_or_nan(s, "TACE_forces") for s in structures], dtype=np.float32)
-        force_array = concat_nep_dft_array(pred_forces, ref_forces, quantity="forces")
+        force_array = concat_nep_dft_array(pred_forces, ref_forces)
 
         default_forces = parse_forces_mode(Config.get("widget", "forces_data", ForcesMode.Raw))
         self._force_vector_dataset = (
@@ -215,7 +215,7 @@ class TaceResultData(ResultData):
                 v6 = np.full((6,), np.nan, dtype=np.float32)
             pred_v6_list.append(np.asarray(v6, dtype=np.float32).reshape(1, 6))
         pred_v6 = np.vstack(pred_v6_list, dtype=np.float32)
-        virial_array = concat_nep_dft_array(pred_v6, ref_v6, quantity="virials")
+        virial_array = concat_nep_dft_array(pred_v6, ref_v6)
         self._virial_dataset = NepPlotData(virial_array, title="virial")
 
         # ----- optional magnetic force (mforce) -----
@@ -235,7 +235,7 @@ class TaceResultData(ResultData):
         try:
             ref_mf = np.vstack([self._extract_dft_mforce(s) for s in structures], dtype=np.float32)  # type: ignore[arg-type]
             pred_mf = np.vstack([self._extract_tace_mforce(s) for s in structures], dtype=np.float32)  # type: ignore[arg-type]
-            mforce_array = concat_nep_dft_array(pred_mf, ref_mf, quantity="magnetic forces")
+            mforce_array = concat_nep_dft_array(pred_mf, ref_mf)
             self._mforce_vector_dataset = NepPlotData(mforce_array, group_list=self.atoms_num_list, title="mforce")
             if mforce_array.size != 0 and default_forces == ForcesMode.Norm:
                 mforce_array = aggregate_per_atom_to_structure(mforce_array, self.atoms_num_list, map_func=np.linalg.norm, axis=0)

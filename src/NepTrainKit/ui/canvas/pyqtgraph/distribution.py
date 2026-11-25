@@ -311,18 +311,4 @@ class PyqtgraphDistributionPlot(DistributionPlotBase):
         if not self._plot.sceneBoundingRect().contains(scene_pos):
             return
         point = vb.mapSceneToView(scene_pos)
-        x = float(point.x())
-        lo = float(self._metric.get("hist_left", 0.0) or 0.0)
-        hi = float(self._metric.get("hist_right", 0.0) or 0.0)
-        bins = int(self._metric.get("bins", 0) or 0)
-        if bins <= 0 or not np.isfinite(lo) or not np.isfinite(hi) or hi <= lo:
-            return
-        bin_w = float(hi - lo) / float(max(1, bins))
-        if x < (lo - 0.5 * bin_w) or x > (hi + 0.5 * bin_w):
-            return
-        x_clamped = float(np.clip(x, lo, hi))
-        edges = np.linspace(lo, hi, bins + 1, dtype=np.float64)
-        bin_idx = int(np.searchsorted(edges, x_clamped, side="right") - 1)
-        bin_idx = int(np.clip(bin_idx, 0, bins - 1))
-        if self._bin_click_callback is not None:
-            self._bin_click_callback(bin_idx)
+        self._emit_bin_click(self._metric, float(point.x()))

@@ -5,6 +5,8 @@
 from __future__ import annotations
 
 import importlib
+from collections.abc import Callable
+from pathlib import Path
 from typing import Protocol
 
 from loguru import logger
@@ -99,7 +101,11 @@ def matches_result_loader(path: PathLike) -> bool:
     return False
 
 
-def load_result_data(path: PathLike)->"ResultData"|None:
+def load_result_data(
+    path: PathLike,
+    *,
+    nep_model_options: Callable[[Path], dict[str, Path | bool]] | None = None,
+) -> ResultData | None:
     """
         Load result data for *path* via the first matching loader.
 
@@ -107,6 +113,9 @@ def load_result_data(path: PathLike)->"ResultData"|None:
         ----------
         path : PathLike
             File or directory to be loaded.
+        nep_model_options : callable, optional
+            Configure ordinary NEP input after specialized loaders have had a
+            chance to recognize the dataset.
 
         Returns
         -------
@@ -133,6 +142,11 @@ def load_result_data(path: PathLike)->"ResultData"|None:
             continue
         if not matched:
             continue
+        if nep_model_options is not None and (
+            isinstance(loader, OtherLoader)
+            or isinstance(loader, NepModelTypeLoader) and loader._factory is NepTrainResultData
+        ):
+            return loader.load(candidate, **nep_model_options(candidate))
         try:
             return loader.load(candidate)
         except Exception as error:  # pragma: no cover - defensive
@@ -223,12 +237,12 @@ class NepModelTypeLoader(ResultLoader):
         self.model_type = get_nep_type(dir_path / 'nep.txt')
         return self.model_type in self._types and candidate.suffix.lower() == '.xyz'
 
-    def load(self, path: PathLike,*args, **kwargs):
+    def load(self, path: PathLike, **nep_options):
         """Materialise the configured NEP result loader for ``path``."""
 
         candidate = as_path(path)
         if self._factory is  NepTrainResultData :
-            return self._factory.from_path(str(candidate), model_type=self.model_type)
+            return self._factory.from_path(str(candidate), model_type=self.model_type, **nep_options)
         return self._factory.from_path(str(candidate))
 
 
@@ -246,33 +260,78 @@ class OtherLoader(ResultLoader):
         except Exception:
             return False
 
-    def load(self, path: PathLike):
+    def load(self, path: PathLike, **nep_options):
         """Load NEP results for ``path`` and prompt for importer options if needed."""
         candidate = as_path(path)
 
-        inst = NepTrainResultData.from_path(str(candidate))
+        inst = NepTrainResultData.from_path(str(candidate), **nep_options)
 
         imp_mod = importlib.import_module('.importers', __package__)
         lmp_imp = getattr(imp_mod, 'LammpsDumpImporter', None)
         if lmp_imp is not None and lmp_imp().matches(candidate):
-            from PySide6.QtWidgets import QInputDialog
-
-            prompt = (
-                "Please enter a list of elements (corresponding to type 1..N), separated by commas or spaces. \\n"
-                "For example: Si O or Si,O"
+            from .lammps_dump import (
+                DumpImportCancelled,
+                ElementSuggestion,
+                LammpsDumpError,
+                remember_dump_settings,
+                remembered_dump_settings,
+                suggest_element_mapping,
             )
-            text, ok = QInputDialog.getText(None, "Element Mapping", prompt)
 
-            if ok and text:
-                raw = [t.strip() for t in str(text).replace(',', ' ').split() if t.strip()]
-                if raw:
-                    element_map = {i + 1: raw[i] for i in range(len(raw))}
+            try:
+                suggestion = suggest_element_mapping(candidate)
+            except (LammpsDumpError, OSError):
+                # Leave the detailed frame/IO error to the importer itself.
+                suggestion = None
+            if suggestion is not None:
+                types = tuple(int(value) for value in suggestion.probe.types)
+                signature = suggestion.probe.signatures[0] if suggestion.probe.signatures else ()
+                needs_prompt = bool(suggestion.missing)
+                overrides = None
+                saved = remembered_dump_settings(types, signature=signature)
+                if saved is not None and needs_prompt:
+                    overrides = saved.overrides
+                    merged = dict(suggestion.mapping)
+                    for type_id, symbol in saved.element_map.items():
+                        merged.setdefault(type_id, symbol)
+                    suggestion = ElementSuggestion(
+                        suggestion.probe,
+                        merged,
+                        tuple(type_id for type_id in types if type_id not in merged),
+                    )
+                mapping = dict(suggestion.mapping)
+                options = None
+                if needs_prompt:
+                    options = self._prompt_element_mapping(suggestion, overrides)
+                    if options is None:
+                        raise DumpImportCancelled("LAMMPS dump import cancelled by user")
+                    mapping.update(options.element_map)
+                    overrides = options.overrides
+                    if options.remember:
+                        remember_dump_settings(
+                            mapping, signature=signature, overrides=overrides
+                        )
+                if mapping or options is not None or overrides is not None:
+                    values = {"element_map": mapping}
+                    if overrides is not None:
+                        values["column_overrides"] = overrides
+                    if options is not None:
+                        values.update(
+                            unwrap=bool(options.unwrap),
+                            keep_extra=bool(options.keep_extra),
+                            strict=bool(options.strict),
+                        )
                     existing = getattr(inst, '_import_options', {})
-                    setattr(inst, '_import_options', {**existing, 'element_map': element_map})
-            else:
-                return None
+                    setattr(inst, '_import_options', {**existing, **values})
 
         return inst
+
+    @staticmethod
+    def _prompt_element_mapping(suggestion, overrides=None):
+        """Open the dump import dialog on the GUI thread for unresolved types."""
+        from NepTrainKit.ui.widgets.dump_import_dialog import DumpImportDialog
+
+        return DumpImportDialog.ask_on_gui_thread(suggestion, overrides)
 
 
 register_result_loader(DeepmdFolderLoader())

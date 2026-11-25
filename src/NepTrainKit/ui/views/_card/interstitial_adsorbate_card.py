@@ -9,7 +9,7 @@ from qfluentwidgets import CaptionLabel, CheckBox, ComboBox
 
 from NepTrainKit.ui.messages import translate_runtime_error
 from NepTrainKit.core import CardManager
-from NepTrainKit.core.cards.defect import InsertDefectOperation, InsertDefectParams
+from NepTrainKit.core.cards.defect import InsertDefectParams
 from NepTrainKit.core.cards.operation import params_to_dict
 from NepTrainKit.ui.widgets import (
     CompactField,
@@ -263,32 +263,10 @@ class InsertDefectCard(MakeDataCard):
         self.max_attempts_field.setVisible(self.advanced_checkbox.isChecked())
         self._update_tab_order()
 
-    @staticmethod
-    def _first_structure(dataset):
-        if dataset is None:
-            return None
-        if hasattr(dataset, "arrays") and hasattr(dataset, "get_chemical_symbols"):
-            return dataset
-        try:
-            return next(iter(dataset))
-        except (StopIteration, TypeError):
-            return None
-
     def set_dataset(self, dataset) -> None:
         super().set_dataset(dataset)
         self._input_structure = self._first_structure(dataset)
         self._refresh_preview()
-
-    @staticmethod
-    def _dataset_count(dataset) -> int:
-        if dataset is None:
-            return 0
-        if hasattr(dataset, "arrays") and hasattr(dataset, "get_chemical_symbols"):
-            return 1
-        try:
-            return len(dataset)
-        except TypeError:
-            return 0
 
     @staticmethod
     def _species_summary(species, weights) -> str:
@@ -377,10 +355,6 @@ class InsertDefectCard(MakeDataCard):
         if self.advanced_checkbox.isChecked():
             widgets.append(self.max_attempts_frame.object_list[0])
         self.tab_order_widgets = widgets
-
-    def create_operation(self):
-        """Return the UI-independent insertion operation."""
-        return InsertDefectOperation()
 
     def get_params(self) -> InsertDefectParams:
         """Read insertion parameters from UI controls."""

@@ -7,7 +7,6 @@ from qfluentwidgets import CaptionLabel, ComboBox
 from NepTrainKit.core import CardManager, MessageManager
 from NepTrainKit.core.cards.operation import params_to_dict
 from NepTrainKit.core.cards.structure import (
-    CrystalPrototypeBuilderOperation,
     CrystalPrototypeBuilderParams,
 )
 from NepTrainKit.ui.messages import translate_runtime_message
@@ -199,9 +198,6 @@ class CrystalPrototypeBuilderCard(MakeDataCard):
         except ValueError as exc:
             self.output_preview.setText(translate_runtime_message(exc))
         self.refresh_compact_presentation()
-
-    def create_operation(self):
-        return CrystalPrototypeBuilderOperation()
 
     def get_summary_text(self) -> str:
         params = self.get_params()

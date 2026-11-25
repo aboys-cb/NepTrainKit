@@ -1,0 +1,329 @@
+{
+  "items": [
+    {
+      "path": "src/NepTrainKit/core/audit/neighbor_scan.py",
+      "source": "Non-physical structure scanning requires the native audit extension.",
+      "id": 35,
+      "review": "fix",
+      "review_note": "非物理结构扫描或 NEP 计算失败会向上层传递；缺失模块、元素不受支持、CUDA 单结构超预算是用户可见的失败说明。",
+      "evidence": [
+        "src/NepTrainKit/core/io/base.py:2498",
+        "src/NepTrainKit/core/io/base.py:1963",
+        "src/NepTrainKit/ui/threads.py:117"
+      ],
+      "resolution": "whole_message",
+      "template": "Non-physical structure scanning requires the native audit extension.",
+      "context": "RuntimeMessage"
+    },
+    {
+      "path": "src/NepTrainKit/core/audit/neighbor_scan.py",
+      "source": "radius coefficient must be finite and non-negative",
+      "id": 36,
+      "review": "diagnostic",
+      "review_note": "直方图、几何批处理或预测合并的数组/计数/参数契约保护；正常上层代码负责构造这些参数。诊断本身建议保留，外层中文提示另行处理。",
+      "evidence": [
+        "src/NepTrainKit/core/audit/neighbor_scan.py",
+        "src/NepTrainKit/core/calculator.py:290"
+      ],
+      "resolution": "localized_diagnostic"
+    },
+    {
+      "path": "src/NepTrainKit/core/audit/neighbor_scan.py",
+      "source": "geometry contains an unsupported atomic number",
+      "id": 37,
+      "review": "fix",
+      "review_note": "非物理结构扫描或 NEP 计算失败会向上层传递；缺失模块、元素不受支持、CUDA 单结构超预算是用户可见的失败说明。",
+      "evidence": [
+        "src/NepTrainKit/core/io/base.py:2498",
+        "src/NepTrainKit/core/io/base.py:1963",
+        "src/NepTrainKit/ui/threads.py:117"
+      ],
+      "resolution": "whole_message",
+      "template": "geometry contains an unsupported atomic number",
+      "context": "RuntimeMessage"
+    },
+    {
+      "path": "src/NepTrainKit/core/audit/neighbor_scan.py",
+      "source": "native collision scanner returned an invalid result shape",
+      "id": 38,
+      "review": "diagnostic",
+      "review_note": "直方图、几何批处理或预测合并的数组/计数/参数契约保护；正常上层代码负责构造这些参数。诊断本身建议保留，外层中文提示另行处理。",
+      "evidence": [
+        "src/NepTrainKit/core/audit/neighbor_scan.py",
+        "src/NepTrainKit/core/calculator.py:290"
+      ],
+      "resolution": "localized_diagnostic"
+    },
+    {
+      "path": "src/NepTrainKit/core/audit/neighbor_scan.py",
+      "source": "Short-distance scanning requires the native audit extension.",
+      "id": 39,
+      "review": "hidden",
+      "review_note": "数据质量审计捕获扫描异常并标记 short_distance_unavailable，不将此 RuntimeError 原文显示给用户。",
+      "evidence": [
+        "src/NepTrainKit/core/audit/data_quality.py:369",
+        "src/NepTrainKit/core/audit/data_quality.py:388"
+      ]
+    },
+    {
+      "path": "src/NepTrainKit/core/audit/neighbor_scan.py",
+      "source": "cutoff must be finite and non-negative",
+      "id": 40,
+      "review": "diagnostic",
+      "review_note": "直方图、几何批处理或预测合并的数组/计数/参数契约保护；正常上层代码负责构造这些参数。诊断本身建议保留，外层中文提示另行处理。",
+      "evidence": [
+        "src/NepTrainKit/core/audit/neighbor_scan.py",
+        "src/NepTrainKit/core/calculator.py:290"
+      ],
+      "resolution": "localized_diagnostic"
+    },
+    {
+      "path": "src/NepTrainKit/core/audit/neighbor_scan.py",
+      "source": "native short-distance scanner returned an invalid result shape",
+      "id": 41,
+      "review": "diagnostic",
+      "review_note": "直方图、几何批处理或预测合并的数组/计数/参数契约保护；正常上层代码负责构造这些参数。诊断本身建议保留，外层中文提示另行处理。",
+      "evidence": [
+        "src/NepTrainKit/core/audit/neighbor_scan.py",
+        "src/NepTrainKit/core/calculator.py:290"
+      ],
+      "resolution": "localized_diagnostic"
+    },
+    {
+      "path": "src/NepTrainKit/core/audit/neighbor_scan.py",
+      "source": "cells and pbc must contain the same number of structures",
+      "id": 42,
+      "review": "diagnostic",
+      "review_note": "直方图、几何批处理或预测合并的数组/计数/参数契约保护；正常上层代码负责构造这些参数。诊断本身建议保留，外层中文提示另行处理。",
+      "evidence": [
+        "src/NepTrainKit/core/audit/neighbor_scan.py",
+        "src/NepTrainKit/core/calculator.py:290"
+      ],
+      "resolution": "localized_diagnostic"
+    },
+    {
+      "path": "src/NepTrainKit/core/audit/neighbor_scan.py",
+      "source": "positions, cells, and pbc must contain the same number of structures",
+      "id": 43,
+      "review": "diagnostic",
+      "review_note": "直方图、几何批处理或预测合并的数组/计数/参数契约保护；正常上层代码负责构造这些参数。诊断本身建议保留，外层中文提示另行处理。",
+      "evidence": [
+        "src/NepTrainKit/core/audit/neighbor_scan.py",
+        "src/NepTrainKit/core/calculator.py:290"
+      ],
+      "resolution": "localized_diagnostic"
+    },
+    {
+      "path": "src/NepTrainKit/core/audit/neighbor_scan.py",
+      "source": "cutoff must be finite and positive",
+      "id": 44,
+      "review": "diagnostic",
+      "review_note": "直方图、几何批处理或预测合并的数组/计数/参数契约保护；正常上层代码负责构造这些参数。诊断本身建议保留，外层中文提示另行处理。",
+      "evidence": [
+        "src/NepTrainKit/core/audit/neighbor_scan.py",
+        "src/NepTrainKit/core/calculator.py:290"
+      ],
+      "resolution": "localized_diagnostic"
+    },
+    {
+      "path": "src/NepTrainKit/core/audit/neighbor_scan.py",
+      "source": "Cutoff neighbor pairs require the native audit extension.",
+      "id": 45,
+      "review": "hidden",
+      "review_note": "cutoff_neighbor_pairs_batch 当前 src 中无调用；是底层接口，不是现有界面的直接文案。",
+      "evidence": [
+        "src/NepTrainKit/core/audit/neighbor_scan.py:175"
+      ]
+    },
+    {
+      "path": "src/NepTrainKit/core/audit/neighbor_scan.py",
+      "source": "Cutoff neighbor pairs require finite positions and a nonsingular periodic cell.",
+      "id": 46,
+      "review": "hidden",
+      "review_note": "cutoff_neighbor_pairs_batch 当前 src 中无调用；是底层接口，不是现有界面的直接文案。",
+      "evidence": [
+        "src/NepTrainKit/core/audit/neighbor_scan.py:175"
+      ]
+    },
+    {
+      "path": "src/NepTrainKit/core/audit/neighbor_scan.py",
+      "source": "Local Chemistry requires the native audit extension.",
+      "id": 47,
+      "review": "hidden",
+      "review_note": "缺失本地化学原生模块抛 RuntimeError；engine 捕获非 ValueError 异常后使用已有通用维度说明，页面已翻译该说明。",
+      "evidence": [
+        "src/NepTrainKit/core/audit/engine.py:271",
+        "src/NepTrainKit/ui/pages/training_set_audit.py:4197"
+      ]
+    },
+    {
+      "path": "src/NepTrainKit/core/audit/neighbor_scan.py",
+      "source": "positions, cells, and pbc must contain the same number of structures",
+      "id": 48,
+      "review": "diagnostic",
+      "review_note": "直方图、几何批处理或预测合并的数组/计数/参数契约保护；正常上层代码负责构造这些参数。诊断本身建议保留，外层中文提示另行处理。",
+      "evidence": [
+        "src/NepTrainKit/core/audit/neighbor_scan.py",
+        "src/NepTrainKit/core/calculator.py:290"
+      ],
+      "resolution": "localized_diagnostic"
+    },
+    {
+      "path": "src/NepTrainKit/core/audit/neighbor_scan.py",
+      "source": "Local Chemistry requires finite positions and a nonsingular periodic cell.",
+      "id": 49,
+      "review": "fix",
+      "review_note": "局部化学几何输入的 ValueError 会进入 AuditDimension.reason；页面的通用原因白名单没有这些句子，故原文可直接显示。",
+      "evidence": [
+        "src/NepTrainKit/core/audit/local_chemistry.py:299",
+        "src/NepTrainKit/core/audit/engine.py:251",
+        "src/NepTrainKit/ui/pages/training_set_audit.py:4216"
+      ],
+      "resolution": "whole_message",
+      "template": "Local Chemistry requires finite positions and a nonsingular periodic cell.",
+      "context": "RuntimeMessage"
+    },
+    {
+      "path": "src/NepTrainKit/core/audit/neighbor_scan.py",
+      "source": "positions, cells, and pbc must contain the same number of structures",
+      "id": 50,
+      "review": "diagnostic",
+      "review_note": "直方图、几何批处理或预测合并的数组/计数/参数契约保护；正常上层代码负责构造这些参数。诊断本身建议保留，外层中文提示另行处理。",
+      "evidence": [
+        "src/NepTrainKit/core/audit/neighbor_scan.py",
+        "src/NepTrainKit/core/calculator.py:290"
+      ],
+      "resolution": "localized_diagnostic"
+    },
+    {
+      "path": "src/NepTrainKit/core/audit/neighbor_scan.py",
+      "source": "cutoff must be finite and non-negative",
+      "id": 51,
+      "review": "diagnostic",
+      "review_note": "直方图、几何批处理或预测合并的数组/计数/参数契约保护；正常上层代码负责构造这些参数。诊断本身建议保留，外层中文提示另行处理。",
+      "evidence": [
+        "src/NepTrainKit/core/audit/neighbor_scan.py",
+        "src/NepTrainKit/core/calculator.py:290"
+      ],
+      "resolution": "localized_diagnostic"
+    },
+    {
+      "path": "src/NepTrainKit/core/audit/neighbor_scan.py",
+      "source": "native cell scanner returned an invalid result shape",
+      "id": 52,
+      "review": "diagnostic",
+      "review_note": "直方图、几何批处理或预测合并的数组/计数/参数契约保护；正常上层代码负责构造这些参数。诊断本身建议保留，外层中文提示另行处理。",
+      "evidence": [
+        "src/NepTrainKit/core/audit/neighbor_scan.py",
+        "src/NepTrainKit/core/calculator.py:290"
+      ],
+      "resolution": "localized_diagnostic"
+    },
+    {
+      "path": "src/NepTrainKit/core/audit/neighbor_scan.py",
+      "source": "each positions array must have shape (N, 3)",
+      "id": 53,
+      "review": "diagnostic",
+      "review_note": "直方图、几何批处理或预测合并的数组/计数/参数契约保护；正常上层代码负责构造这些参数。诊断本身建议保留，外层中文提示另行处理。",
+      "evidence": [
+        "src/NepTrainKit/core/audit/neighbor_scan.py",
+        "src/NepTrainKit/core/calculator.py:290"
+      ],
+      "resolution": "localized_diagnostic"
+    },
+    {
+      "path": "src/NepTrainKit/core/audit/neighbor_scan.py",
+      "source": "each cell and pbc value must have shape (3, 3) and (3,)",
+      "id": 54,
+      "review": "diagnostic",
+      "review_note": "直方图、几何批处理或预测合并的数组/计数/参数契约保护；正常上层代码负责构造这些参数。诊断本身建议保留，外层中文提示另行处理。",
+      "evidence": [
+        "src/NepTrainKit/core/audit/neighbor_scan.py",
+        "src/NepTrainKit/core/calculator.py:290"
+      ],
+      "resolution": "localized_diagnostic"
+    },
+    {
+      "path": "src/NepTrainKit/core/audit/neighbor_scan.py",
+      "source": "each positions array must have shape (N, 3)",
+      "id": 55,
+      "review": "diagnostic",
+      "review_note": "直方图、几何批处理或预测合并的数组/计数/参数契约保护；正常上层代码负责构造这些参数。诊断本身建议保留，外层中文提示另行处理。",
+      "evidence": [
+        "src/NepTrainKit/core/audit/neighbor_scan.py",
+        "src/NepTrainKit/core/calculator.py:290"
+      ],
+      "resolution": "localized_diagnostic"
+    },
+    {
+      "path": "src/NepTrainKit/core/audit/neighbor_scan.py",
+      "source": "each cell must have shape (3, 3)",
+      "id": 56,
+      "review": "diagnostic",
+      "review_note": "直方图、几何批处理或预测合并的数组/计数/参数契约保护；正常上层代码负责构造这些参数。诊断本身建议保留，外层中文提示另行处理。",
+      "evidence": [
+        "src/NepTrainKit/core/audit/neighbor_scan.py",
+        "src/NepTrainKit/core/calculator.py:290"
+      ],
+      "resolution": "localized_diagnostic"
+    },
+    {
+      "path": "src/NepTrainKit/core/audit/neighbor_scan.py",
+      "source": "each pbc value must have shape (3,)",
+      "id": 57,
+      "review": "diagnostic",
+      "review_note": "直方图、几何批处理或预测合并的数组/计数/参数契约保护；正常上层代码负责构造这些参数。诊断本身建议保留，外层中文提示另行处理。",
+      "evidence": [
+        "src/NepTrainKit/core/audit/neighbor_scan.py",
+        "src/NepTrainKit/core/calculator.py:290"
+      ],
+      "resolution": "localized_diagnostic"
+    },
+    {
+      "path": "src/NepTrainKit/core/audit/neighbor_scan.py",
+      "source": "native short-distance scanner returned an invalid result shape",
+      "id": 58,
+      "review": "diagnostic",
+      "review_note": "直方图、几何批处理或预测合并的数组/计数/参数契约保护；正常上层代码负责构造这些参数。诊断本身建议保留，外层中文提示另行处理。",
+      "evidence": [
+        "src/NepTrainKit/core/audit/neighbor_scan.py",
+        "src/NepTrainKit/core/calculator.py:290"
+      ],
+      "resolution": "localized_diagnostic"
+    }
+  ],
+  "retained_candidates": [
+    {
+      "path": "src/NepTrainKit/core/audit/neighbor_scan.py",
+      "source": "Short-distance scanning requires the native audit extension.",
+      "context": null,
+      "rendered": "Short-distance scanning requires the native audit extension.",
+      "review": "hidden",
+      "reason": "数据质量审计捕获扫描异常并标记 short_distance_unavailable，不将此 RuntimeError 原文显示给用户。"
+    },
+    {
+      "path": "src/NepTrainKit/core/audit/neighbor_scan.py",
+      "source": "Cutoff neighbor pairs require the native audit extension.",
+      "context": null,
+      "rendered": "Cutoff neighbor pairs require the native audit extension.",
+      "review": "hidden",
+      "reason": "cutoff_neighbor_pairs_batch 当前 src 中无调用；是底层接口，不是现有界面的直接文案。"
+    },
+    {
+      "path": "src/NepTrainKit/core/audit/neighbor_scan.py",
+      "source": "Cutoff neighbor pairs require finite positions and a nonsingular periodic cell.",
+      "context": null,
+      "rendered": "Cutoff neighbor pairs require finite positions and a nonsingular periodic cell.",
+      "review": "hidden",
+      "reason": "cutoff_neighbor_pairs_batch 当前 src 中无调用；是底层接口，不是现有界面的直接文案。"
+    },
+    {
+      "path": "src/NepTrainKit/core/audit/neighbor_scan.py",
+      "source": "Local Chemistry requires the native audit extension.",
+      "context": null,
+      "rendered": "Local Chemistry requires the native audit extension.",
+      "review": "hidden",
+      "reason": "缺失本地化学原生模块抛 RuntimeError；engine 捕获非 ValueError 异常后使用已有通用维度说明，页面已翻译该说明。"
+    }
+  ]
+}

@@ -35,7 +35,7 @@ TENCENT_PYPI_JSON_URL = (
 )
 HEALTH_CHECK_FLAG = "--neptrainkit-runtime-health-check"
 NATIVE_HEALTH_CHECK_FLAG = "--neptrainkit-native-health-check"
-NATIVE_HELPER_MODULES = ("_io", "_audit", "_phase", "_magnetism", "_sampling")
+NATIVE_HELPER_MODULES = ("_io", "_dump", "_audit", "_phase", "_magnetism", "_sampling")
 
 
 class RuntimePackageError(RuntimeError):

@@ -5,7 +5,6 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any
 
-from ase.io import write as ase_write
 from PySide6.QtCore import QEvent, QPointF, Qt, Signal
 from PySide6.QtGui import QColor, QPainter, QPainterPath, QPen, QPolygonF
 from PySide6.QtWidgets import (
@@ -24,10 +23,9 @@ from PySide6.QtWidgets import (
 from qfluentwidgets import CaptionLabel, StrongBodyLabel
 
 from NepTrainKit.core import CardManager, MessageManager
-from NepTrainKit.core.magnetism import prepare_magnetic_extxyz_export
 from NepTrainKit.ui.dialogs import call_path_dialog
 from NepTrainKit.ui.threads import BackgroundTask
-from NepTrainKit.ui.widgets.card_widget import MakeDataCardWidget
+from NepTrainKit.ui.widgets.card_widget import MakeDataCardWidget, snapshot_card_dataset, write_card_dataset
 from NepTrainKit import palette
 
 
@@ -416,13 +414,16 @@ class WorkflowBranchWidget(QFrame):
 
     def eventFilter(self, watched, event):
         if event.type() == QEvent.Type.MouseButtonPress:
+            # Card clicks can propagate to the lane after the inspector is updated.
             if watched in (
                 self.enabled_checkbox,
                 self.badge_label,
                 self.name_edit,
                 self.output_label,
                 self.empty_label,
-                self.cards_host,
+            ) or (
+                watched is self.cards_host
+                and self.cards_host.childAt(event.position().toPoint()) is None
             ):
                 self.branchSelected.emit(self)
             card = next(
@@ -645,17 +646,18 @@ class WorkflowFork(MakeDataCardWidget):
     @property
     def requires_input_dataset(self) -> bool:
         return any(
-            getattr(card, "requires_input_dataset", True)
+            getattr(next((card for card in branch.cards if card.check_state), None), "requires_input_dataset", False)
             for branch in self.branches
             if branch.spec.enabled
-            for card in branch.cards
-            if card.check_state
         )
 
     def _show_body(self) -> None:
         self.body_widget.setVisible(self.window_state == "expand")
         self.collapsed_summary.setText(self.get_summary_text())
         self.collapsed_summary.setVisible(self.window_state != "expand")
+        sync_body = getattr(self, "_sync_empty_body_visibility", None)
+        if callable(sync_body):
+            sync_body()
 
     def _set_merge_enabled(self, enabled: bool) -> None:
         self.merge_enabled = bool(enabled)
@@ -837,25 +839,26 @@ class WorkflowFork(MakeDataCardWidget):
         return terminals
 
     def available_output_cards(self) -> list[MakeDataCardWidget]:
+        if getattr(self, "_results_invalidated", False) or self.run_outcome not in {"succeeded", "partial_failed"}:
+            return []
         if self.merge_enabled and self.result_dataset:
             return [self]
         return [
             card
             for card in self.terminal_cards()
-            if getattr(card, "result_dataset", None)
+            if getattr(card, "result_dataset", None) and card.run_outcome == "succeeded"
+            and not getattr(card, "_results_invalidated", False)
         ]
 
     def write_result_dataset(self, file, **kwargs) -> None:
         if not self.merge_enabled:
             raise ValueError(self.tr("Merge branch outputs before exporting one combined file."))
-        export_dataset = [
-            prepare_magnetic_extxyz_export(atoms) for atoms in self.result_dataset
-        ]
-        ase_write(file, export_dataset, format="extxyz", **kwargs)
+        write_card_dataset(file, self.result_dataset, **kwargs)
 
     def export_data(self) -> None:
-        if not self.merge_enabled or not self.result_dataset:
+        if not self.merge_enabled or self.available_output_cards() != [self]:
             return
+        snapshot = snapshot_card_dataset(self.result_dataset)
         path = call_path_dialog(
             self,
             self.tr("Choose a file save location"),
@@ -866,7 +869,7 @@ class WorkflowFork(MakeDataCardWidget):
         if not path:
             return
         thread = BackgroundTask(self, show_tip=True, title=self.tr("Exporting data"))
-        thread.start_work(self.write_result_dataset, path)
+        thread.start_work(write_card_dataset, path, snapshot)
 
     def set_dataset(self, dataset) -> None:
         self.dataset = dataset or []
@@ -874,6 +877,7 @@ class WorkflowFork(MakeDataCardWidget):
         self.branch_results = {}
         self.branch_outcomes = {}
         self.run_outcome = "idle"
+        self._results_invalidated = False
         self.set_output_available(False)
         self._set_run_status("idle")
         for branch in self.branches:

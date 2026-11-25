@@ -164,7 +164,7 @@ def _run(
         0,
         lambda: worker.check(
             on_finished=finish,
-            manual=False,
+            manual=True,
         ),
     )
     app.exec()

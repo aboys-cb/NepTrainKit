@@ -26,7 +26,6 @@ from NepTrainKit.startup import load_config_class
 Config = load_config_class()
 
 import traceback
-from dataclasses import replace
 from pathlib import Path
 import warnings
 
@@ -35,6 +34,7 @@ from PySide6.QtGui import QIcon, QFontDatabase, QPalette, QColor
 from PySide6.QtWidgets import QApplication, QWidget, QGridLayout
 from qfluentwidgets import (
     setTheme,
+    setThemeColor,
     setFontFamilies,
     Theme,
     FluentWindow,
@@ -47,24 +47,9 @@ from qfluentwidgets import (
 )
 from loguru import logger
 
-from NepTrainKit.core.audit import (
-    build_magnetic_inventory,
-    build_phase_inventory,
-    build_training_set_audit,
-)
-from NepTrainKit.core.audit.evidence_cache import TrainingSetEvidenceCache
+from NepTrainKit.core.audit import build_training_set_audit
+from NepTrainKit.core.audit.engine import complete_structure_evidence
 from NepTrainKit.core.io.importers import ase_atoms_to_structure
-from NepTrainKit.core.audit.magnetic_inventory import (
-    MAGNETIC_ANALYSIS_STRATEGY,
-    MAGNETIC_METHOD_ID,
-    MAGNETIC_SCHEMA_VERSION,
-)
-from NepTrainKit.core.audit.phase_inventory import (
-    PHASE_ANALYSIS_STRATEGY,
-    PHASE_METHOD_ID,
-    PHASE_REFERENCE_BANK_ID,
-    PHASE_SCHEMA_VERSION,
-)
 from NepTrainKit.ui.pages import *
 from NepTrainKit.ui.messages import MessageManager
 from NepTrainKit.ui.threads import ThreadShutdownGuard, run_in_thread
@@ -136,10 +121,11 @@ class NepTrainKitMainWindow(FluentWindow):
     def init_menu(self) -> None:
         """Create the toolbar housing common open/save actions."""
         self.menu_widget = QWidget(self)
-        self.menu_widget.setStyleSheet("ButtonView{background: rgb(240, 244, 249)}")
+        self.menu_widget.setObjectName("titleBarActionCapsule")
         self.menu_gridLayout = QGridLayout(self.menu_widget)
-        self.menu_gridLayout.setContentsMargins(3, 0, 3, 0)
-        self.menu_gridLayout.setSpacing(1)
+        self.menu_gridLayout.setContentsMargins(4, 2, 4, 2)
+        self.menu_gridLayout.setHorizontalSpacing(4)
+        self.menu_gridLayout.setVerticalSpacing(0)
 
         self.open_dir_button = SplitToolButton(QIcon(':/images/src/images/open.svg'), self.menu_widget)
         self.open_dir_button.setAccessibleName(self.tr("Open"))
@@ -160,13 +146,13 @@ class NepTrainKitMainWindow(FluentWindow):
             2,
             self.menu_widget,
             0,
-            Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignCenter,
+            Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter,
         )
 
     def init_navigation(self) -> None:
         """Register the navigation items and default pages."""
         self.navigationInterface.setReturnButtonVisible(False)
-        self.navigationInterface.setExpandWidth(200)
+        self.navigationInterface.setExpandWidth(210)
         self.navigationInterface.addSeparator()
 
         self.addSubInterface(
@@ -180,14 +166,19 @@ class NepTrainKitMainWindow(FluentWindow):
             self.tr('Training Set Audit'),
         )
         self.addSubInterface(
-            self.make_data_interface,
+            self.make_data_workspace,
             QIcon(':/images/src/images/make.svg'),
             self.tr('Make Dataset'),
         )
         self.addSubInterface(
+            self.data_manager_interface.validation_page,
+            QIcon(":/images/src/images/validation.svg"),
+            self.tr('Model validation'),
+        )
+        self.addSubInterface(
             self.data_manager_interface,
             QIcon(':/images/src/images/dataset.svg'),
-            self.tr('Data Management'),
+            self.tr('Projects'),
         )
         self.addSubInterface(
             self.setting_interface,
@@ -206,24 +197,39 @@ class NepTrainKitMainWindow(FluentWindow):
         )
         self.training_set_audit_host.attach(self.training_set_audit_interface)
         self.training_set_audit_window = TrainingSetAuditWindow(self)
-        self.make_data_interface = MakeDataWidget(self)
+        from NepTrainKit.ui.pages.makedata_workspace import MakeDataWorkspace
+        self.make_data_workspace = MakeDataWorkspace(self)
+        self.make_data_interface = self.make_data_workspace.primary_editor
         self.setting_interface = SettingsWidget(self)
         self.setting_interface.canvasModeChanged.connect(
             self.show_nep_interface.graph_widget.apply_canvas_mode
         )
         self.data_manager_interface = DataManagerWidget(self)
+        self.setting_interface.canvasModeChanged.connect(self.data_manager_interface.library_widget.apply_canvas_mode)
+        self.show_nep_interface.modelRegistryChanged.connect(self.data_manager_interface._on_registry_changed)
+        self.data_manager_interface.navigateRequested.connect(self.switchTo)
+        self.data_manager_interface.validation_page.toolbarActionsChanged.connect(self._refresh_page_actions)
+        self.data_manager_interface.library_widget.samplingWorkflowRequested.connect(
+            self.open_eos_sampling_workflow
+        )
         self._audited_result_data = None
         self._audited_result_signature = None
         self._audited_result = None
+        self._training_set_audit_token = None
         self._training_set_phase_thread = None
         self._training_set_phase_result = None
         self._training_set_phase_token = None
         self._make_dataset_handoff_thread = None
         self._make_dataset_handoff_token = None
         self._connect_training_set_audit_signals()
-        self.make_data_interface.finalOutputRequestedSignal.connect(
+        self.make_data_workspace.finalOutputRequestedSignal.connect(
             self.open_make_dataset_output
         )
+
+    def open_eos_sampling_workflow(self, payload: dict) -> None:
+        """Open the sampling draft within the third module, preserving other tabs."""
+        self.make_data_workspace.open_sampling(payload)
+        self.switchTo(self.make_data_workspace)
 
     def _connect_training_set_audit_signals(self) -> None:
         """Wire Training Set Audit page actions back into the main window."""
@@ -317,12 +323,14 @@ class NepTrainKitMainWindow(FluentWindow):
 
     def initWindow(self) -> None:
         """Configure top-level window parameters such as size and title."""
-        self.resize(1200, 700)
+        desktop = self.screen().availableGeometry()
+        self.resize(min(1360, desktop.width() - 32), min(820, desktop.height() - 32))
         self.setWindowIcon(_application_icon())
         self.setWindowTitle('NepTrainKit')
-        desktop = QApplication.screens()[0].availableGeometry()
-        width, height = desktop.width(), desktop.height()
-        self.move(width // 2 - self.width() // 2, height // 2 - self.height() // 2)
+        self.move(
+            desktop.x() + (desktop.width() - self.width()) // 2,
+            desktop.y() + (desktop.height() - self.height()) // 2,
+        )
 
     def closeEvent(self, event) -> None:
         """Drain workers before destroying their Qt owners."""
@@ -337,6 +345,11 @@ class NepTrainKitMainWindow(FluentWindow):
     def open_file_dialog(self) -> None:
         """Delegate to the current widget's ``open_file`` handler when available."""
         widget = self.stackedWidget.currentWidget()
+        action = getattr(widget, "toolbar_actions", lambda: {})().get("open")
+        if action is not None:
+            if action.isEnabled():
+                action.trigger()
+            return
         handler = getattr(widget, "open_file", None)
         if callable(handler):
             handler()
@@ -344,6 +357,11 @@ class NepTrainKitMainWindow(FluentWindow):
     def export_file_dialog(self) -> None:
         """Delegate to the current widget's ``export_file`` handler when available."""
         widget = self.stackedWidget.currentWidget()
+        action = getattr(widget, "toolbar_actions", lambda: {})().get("save")
+        if action is not None:
+            if action.isEnabled():
+                action.trigger()
+            return
         handler = getattr(widget, "export_file", None)
         if callable(handler):
             handler()
@@ -369,19 +387,26 @@ class NepTrainKitMainWindow(FluentWindow):
     def _refresh_page_actions(self, *_args) -> None:
         """Enable global actions only when the active page implements them."""
         widget = self.stackedWidget.currentWidget()
-        can_open = callable(getattr(widget, "open_file", None))
-        can_save = callable(getattr(widget, "export_file", None))
+        actions = getattr(widget, "toolbar_actions", lambda: {})()
+        open_action, save_action = actions.get("open"), actions.get("save")
+        can_open = open_action.isEnabled() if open_action is not None else callable(getattr(widget, "open_file", None))
+        can_save = save_action.isEnabled() if save_action is not None else callable(getattr(widget, "export_file", None))
         self.open_dir_button.setEnabled(can_open)
-        self.save_dir_button.setEnabled(can_save)
+        menu_action = actions.get("save_menu")
+        can_save_menu = can_save or (menu_action is not None and menu_action.isEnabled())
+        self.save_dir_button.setEnabled(can_save_menu)
+        self.save_dir_button.button.setEnabled(can_save)
         self.open_dir_button.setToolTip(
-            self.tr("Open data for this page")
-            if can_open
-            else self.tr("Open is not available on this page")
+            open_action.toolTip() if open_action is not None else (
+                self.tr("Open data for this page") if can_open
+                else self.tr("Open is not available on this page")
+            )
         )
         self.save_dir_button.setToolTip(
-            self.tr("Save data from this page")
-            if can_save
-            else self.tr("Save is not available on this page")
+            save_action.toolTip() if save_action is not None else (
+                self.tr("Save data from this page") if can_save
+                else self.tr("Save is not available on this page")
+            )
         )
 
     def open_dataset_for_training_set_audit(self) -> None:
@@ -478,6 +503,10 @@ class NepTrainKitMainWindow(FluentWindow):
                 file_signatures.append(None)
         return tuple(versions), indices, tuple(file_signatures)
 
+    def open_model_scorecard(self, suite_id: int | None, model_id: int | None = None, *, draft=None) -> None:
+        """Show the validation scorecard requested by the viewer status chip."""
+        self.data_manager_interface.open_scorecard(suite_id, model_id, draft=draft)
+
     def open_training_set_audit(
         self,
         result_data=None,
@@ -496,6 +525,8 @@ class NepTrainKitMainWindow(FluentWindow):
             return
         dataset_id = str(getattr(data, "data_xyz_path", self.tr("current dataset")))
         signature = self._training_set_audit_signature(data)
+        token = object()
+        self._training_set_audit_token = token
         cached_result = getattr(self, "_audited_result", None)
         if (
             not force
@@ -503,6 +534,7 @@ class NepTrainKitMainWindow(FluentWindow):
             and getattr(self, "_audited_result_data", None) is data
             and getattr(self, "_audited_result_signature", None) == signature
         ):
+            self._training_set_audit_thread = None
             self.training_set_audit_interface.set_result(cached_result)
             if getattr(cached_result, "phase_inventory", None) is not None:
                 self.show_nep_interface.set_phase_inventory(
@@ -524,11 +556,16 @@ class NepTrainKitMainWindow(FluentWindow):
         self._show_training_set_audit_surface()
 
         def apply_result(result) -> None:
+            if token is not self._training_set_audit_token:
+                return
             self._training_set_audit_thread = None
             if getattr(self.show_nep_interface, "nep_result_data", None) is not data:
                 return
+            if self._training_set_audit_signature(data) != signature:
+                self.open_training_set_audit(data, initial_section=initial_section, force=True)
+                return
             self._audited_result_data = data
-            self._audited_result_signature = self._training_set_audit_signature(data)
+            self._audited_result_signature = signature
             self._audited_result = result
             self.training_set_audit_interface.set_result(result)
             self.training_set_audit_interface.set_distribution_context(
@@ -542,6 +579,8 @@ class NepTrainKitMainWindow(FluentWindow):
             self._schedule_training_set_structure_evidence()
 
         def report_error(message: str) -> None:
+            if token is not self._training_set_audit_token:
+                return
             self._training_set_audit_thread = None
             MessageManager.send_warning_message(
                 self.tr("Training Set Audit failed: {message}").format(message=message)
@@ -598,136 +637,23 @@ class NepTrainKitMainWindow(FluentWindow):
             result.inventory.structure_count
         )
 
-        def compute():
-            scope_indices = result.scope.indices if result.scope is not None else None
-            geometry = data.structure.geometry_snapshot(scope_indices)
-            evidence_cache = TrainingSetEvidenceCache.from_result_data(data, result)
+        def report_progress(completed, total):
+            if token is self._training_set_phase_token:
+                self.training_set_audit_interface.phaseAnalysisProgressSignal.emit(completed, total)
 
-            phase_inventory = (
-                evidence_cache.load_phase(
-                    schema_version=PHASE_SCHEMA_VERSION,
-                    method_id=PHASE_METHOD_ID,
-                    reference_bank_id=PHASE_REFERENCE_BANK_ID,
-                    analysis_strategy=PHASE_ANALYSIS_STRATEGY,
-                )
-                if evidence_cache is not None
-                else None
-            )
-            if phase_inventory is None:
-                phase_payload = build_phase_inventory(
-                    geometry,
-                    result.inventory,
-                    cache_owner=data.structure,
-                    progress=lambda completed, total: (
-                        self.training_set_audit_interface.phaseAnalysisProgressSignal.emit(
-                            completed, total * 2
-                        )
-                        if token is self._training_set_phase_token
-                        else None
-                    ),
-                )
-                if evidence_cache is not None:
-                    evidence_cache.save_phase(phase_payload[0])
-            else:
-                phase_payload = (phase_inventory, True)
-                if token is self._training_set_phase_token:
-                    self.training_set_audit_interface.phaseAnalysisProgressSignal.emit(
-                        phase_inventory.analyzed_structure_count,
-                        phase_inventory.source_structure_count * 2,
-                    )
-
-            magnetic_inventory = (
-                evidence_cache.load_magnetic(
-                    schema_version=MAGNETIC_SCHEMA_VERSION,
-                    method_id=MAGNETIC_METHOD_ID,
-                    analysis_strategy=MAGNETIC_ANALYSIS_STRATEGY,
-                )
-                if evidence_cache is not None
-                else None
-            )
-            if magnetic_inventory is None and hasattr(geometry, "source_indices"):
-                magnetic_payload = build_magnetic_inventory(
-                    geometry,
-                    result.inventory,
-                    getattr(data.structure, "all_data", ()),
-                    cache_owner=data.structure,
-                    progress=lambda completed, total: (
-                        self.training_set_audit_interface.phaseAnalysisProgressSignal.emit(
-                            total + completed, total * 2
-                        )
-                        if token is self._training_set_phase_token
-                        else None
-                    ),
-                )
-                if evidence_cache is not None:
-                    evidence_cache.save_magnetic(magnetic_payload[0])
-            elif magnetic_inventory is not None:
-                magnetic_payload = (magnetic_inventory, True)
-                if token is self._training_set_phase_token:
-                    self.training_set_audit_interface.phaseAnalysisProgressSignal.emit(
-                        magnetic_inventory.source_structure_count * 2,
-                        magnetic_inventory.source_structure_count * 2,
-                    )
-            else:
-                magnetic_payload = (None, False)
-            return phase_payload, magnetic_payload
-
-        def apply_completed(payload) -> None:
+        def apply_completed(updated_result) -> None:
             if token is not self._training_set_phase_token:
                 return
             self._training_set_phase_thread = None
             self._training_set_phase_result = None
-            (phase_inventory, phase_cache_hit), (
-                magnetic_inventory,
-                magnetic_cache_hit,
-            ) = payload
             if (
                 getattr(self.show_nep_interface, "nep_result_data", None) is not data
-                or self._training_set_audit_signature(data)
-                != self._audited_result_signature
+                or self._training_set_audit_signature(data) != self._audited_result_signature
                 or self._audited_result is not result
             ):
                 return
-            phase_meta = dict(result.overview_metrics.get("phase_inventory", {}))
-            phase_meta.update(
-                {
-                    "available": True,
-                    "status": "complete",
-                    "cache_hit": bool(phase_cache_hit),
-                    "analyzed_structures": phase_inventory.analyzed_structure_count,
-                }
-            )
-            overview = dict(result.overview_metrics)
-            overview["phase_inventory"] = phase_meta
-            overview["magnetic_inventory"] = {
-                "available": (
-                    magnetic_inventory is not None
-                    and magnetic_inventory.analyzed_structure_count > 0
-                ),
-                "status": (
-                    "complete"
-                    if magnetic_inventory is not None
-                    and magnetic_inventory.analyzed_structure_count > 0
-                    else "no-spin"
-                ),
-                "cache_hit": bool(magnetic_cache_hit),
-                "analyzed_structures": (
-                    magnetic_inventory.analyzed_structure_count
-                    if magnetic_inventory is not None else 0
-                ),
-                "missing_spin_structures": (
-                    magnetic_inventory.missing_spin_count
-                    if magnetic_inventory is not None else result.inventory.structure_count
-                ),
-            }
-            updated_result = replace(
-                result,
-                overview_metrics=overview,
-                phase_inventory=phase_inventory,
-                magnetic_inventory=magnetic_inventory,
-            )
             self._audited_result = updated_result
-            self.show_nep_interface.set_phase_inventory(phase_inventory, data)
+            self.show_nep_interface.set_phase_inventory(updated_result.phase_inventory, data)
             self.training_set_audit_interface.finish_phase_analysis(updated_result)
 
         def report_error(message: str) -> None:
@@ -744,7 +670,7 @@ class NepTrainKitMainWindow(FluentWindow):
 
         self._training_set_phase_thread = run_in_thread(
             self,
-            compute,
+            lambda: complete_structure_evidence(data, result, progress=report_progress),
             on_finished=apply_completed,
             on_error=report_error,
         )
@@ -790,23 +716,40 @@ def global_exception_handler(exc_type, exc_value, exc_traceback) -> None:
 def set_light_theme(app: QApplication) -> None:
     """Apply a light colour palette to ``app``."""
     palette = QPalette()
-    palette.setColor(QPalette.ColorRole.Window, QColor(240, 240, 240))
-    palette.setColor(QPalette.ColorRole.WindowText, Qt.GlobalColor.black)
-    palette.setColor(QPalette.ColorRole.Base, Qt.GlobalColor.white)
-    palette.setColor(QPalette.ColorRole.AlternateBase, QColor(245, 245, 245))
-    palette.setColor(QPalette.ColorRole.Text, Qt.GlobalColor.black)
-    palette.setColor(QPalette.ColorRole.Button, QColor(230, 230, 230))
-    palette.setColor(QPalette.ColorRole.ButtonText, Qt.GlobalColor.black)
+    palette.setColor(QPalette.ColorRole.Window, QColor(colors.CANVAS_BG))
+    palette.setColor(QPalette.ColorRole.WindowText, QColor(colors.TEXT_PRIMARY))
+    palette.setColor(QPalette.ColorRole.Base, QColor(colors.SURFACE))
+    palette.setColor(QPalette.ColorRole.AlternateBase, QColor(colors.SURFACE_SUBTLE))
+    palette.setColor(QPalette.ColorRole.Text, QColor(colors.TEXT_PRIMARY))
+    palette.setColor(QPalette.ColorRole.Button, QColor(colors.SURFACE_SUBTLE))
+    palette.setColor(QPalette.ColorRole.ButtonText, QColor(colors.TEXT_PRIMARY))
     palette.setColor(QPalette.ColorRole.Highlight, QColor(colors.ACCENT))
     palette.setColor(QPalette.ColorRole.HighlightedText, Qt.GlobalColor.white)
-    palette.setColor(QPalette.ColorRole.ToolTipBase, Qt.GlobalColor.white)
-    palette.setColor(QPalette.ColorRole.ToolTipText, Qt.GlobalColor.black)
+    palette.setColor(QPalette.ColorRole.ToolTipBase, QColor(colors.SURFACE))
+    palette.setColor(QPalette.ColorRole.ToolTipText, QColor(colors.TEXT_PRIMARY))
     app.setPalette(palette)
     app.setStyle("Fusion")
 
 
+def _load_theme_stylesheet() -> str:
+    """Load ``theme.qss`` from disk first for live styling updates, with resource fallback."""
+    disk_qss = Path(__file__).resolve().parent / "src" / "qss" / "theme.qss"
+    if disk_qss.is_file():
+        try:
+            return disk_qss.read_text(encoding="utf-8")
+        except Exception:
+            pass
+    theme_file = QFile(":/theme/src/qss/theme.qss")
+    if theme_file.open(QFile.OpenModeFlag.ReadOnly):
+        theme = theme_file.readAll().data().decode("utf-8")  # pyright: ignore[reportArgumentType]
+        theme_file.close()
+        return theme
+    return ""
+
+
 def configure_app(app: QApplication) -> None:
     """Apply the same theme, font, stylesheet, and translator used by the desktop app."""
+    setThemeColor(colors.ACCENT, save=False)
     set_light_theme(app)
     app.setApplicationName("NepTrainKit")
     install_translator(app)
@@ -827,21 +770,20 @@ def configure_app(app: QApplication) -> None:
     font.setFamilies(families)
     # Fluent controls set their own font, independently of QApplication.
     setFontFamilies(families, save=False)
-    font.setPointSize(12)
+    font.setPointSize(11)
     app.setFont(font)
     keep_created_styles_alive()
     ensure_fluent_tooltips(app)
 
-    theme_file = QFile(":/theme/src/qss/theme.qss")
-    if theme_file.open(QFile.OpenModeFlag.ReadOnly):
-        theme = theme_file.readAll().data().decode("utf-8")  # pyright: ignore[reportArgumentType]
-        theme_file.close()
+    theme = _load_theme_stylesheet()
+    if theme:
         app.setStyleSheet(theme)
 
 
 def create_app(argv: list[str] | None = None) -> QApplication:
     """Create or configure the shared Qt application instance."""
     setTheme(Theme.LIGHT)
+    setThemeColor(colors.ACCENT, save=False)
     app = QApplication.instance()
     if app is None:
         app = QApplication(sys.argv if argv is None else argv)

@@ -10,6 +10,24 @@ except ModuleNotFoundError:  # pragma: no cover - Python 3.10
 ROOT = Path(__file__).resolve().parents[1]
 
 
+def test_packaging_tests_declare_the_build_tools_they_import():
+    from packaging.requirements import Requirement
+
+    data = tomllib.loads((ROOT / "pyproject.toml").read_text(encoding="utf-8"))
+    test_requirements = {
+        Requirement(value).name: Requirement(value)
+        for value in data["project"]["optional-dependencies"]["test"]
+    }
+    build_requirements = {
+        Requirement(value).name: Requirement(value)
+        for value in data["build-system"]["requires"]
+    }
+    # Isolated PEP 517 build dependencies are not installed in the pytest env.
+    for name in ("setuptools", "pybind11"):
+        assert name in test_requirements
+        assert test_requirements[name].specifier == build_requirements[name].specifier
+
+
 def test_pyproject_declares_nep_adapters_runtime_dependency():
     data = tomllib.loads((ROOT / "pyproject.toml").read_text(encoding="utf-8"))
     dependencies = data["project"]["dependencies"]
@@ -71,15 +89,20 @@ def test_nuitka_build_compiles_and_verifies_native_helpers():
     assert "setuptools-scm pybind11 -U" in workflow
     assert "PYTHONPATH: ${{ github.workspace }}/src" in workflow
     assert "Building NepTrainKit native helpers failed" in workflow
-    for module in ("_io", "_audit", "_phase", "_magnetism", "_sampling"):
+    for module in ("_io", "_dump", "_audit", "_phase", "_magnetism", "_sampling"):
         assert f"NepTrainKit._native.{module}" in workflow
     assert "--neptrainkit-native-health-check" in workflow
 
 
-def test_nuitka_build_copies_and_verifies_chinese_translation_catalog():
+def test_nuitka_build_generates_qt_resources_and_copies_chinese_translation_catalog():
     workflow = (
         ROOT / ".github" / "workflows" / "Build-with-Nuitka.yml"
     ).read_text(encoding="utf-8")
+    assert workflow.index("pyside6-rcc src/NepTrainKit/src.qrc -o src/NepTrainKit/src_rc.py") < workflow.index(
+        "name: Build with Nuitka"
+    )
+    assert "QFile.exists(':/images/src/images/logo.png')" in workflow
+    assert workflow.index("python tools/update_translations.py --no-lupdate") < workflow.index("name: Build with Nuitka")
 
     assert "src/NepTrainKit/translations" in workflow
     assert '$dist/translations/neptrainkit_zh_CN.qm' in workflow

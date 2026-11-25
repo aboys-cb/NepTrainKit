@@ -472,9 +472,6 @@ class MagneticOrderCard(MakeDataCard):
         for previous, current in zip(self.tab_order_widgets, self.tab_order_widgets[1:]):
             QWidget.setTabOrder(previous, current)
 
-    def create_operation(self):
-        return MagneticOrderOperation()
-
     def get_summary_text(self) -> str:
         orders = []
         if self.fm_checkbox.isChecked():

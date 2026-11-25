@@ -3,7 +3,7 @@
 from qfluentwidgets import CheckBox
 
 from NepTrainKit.core import CardManager
-from NepTrainKit.core.cards.lattice import ShearAngleOperation, ShearAngleParams
+from NepTrainKit.core.cards.lattice import ShearAngleParams
 from NepTrainKit.core.cards.operation import params_to_dict
 from NepTrainKit.ui.messages import translate_runtime_message
 from NepTrainKit.ui.widgets import (
@@ -95,23 +95,9 @@ class ShearAngleCard(MakeDataCard):
         frame.set_input_value([-2.0, 2.0, 2.0])
         return frame
 
-    @staticmethod
-    def _dataset_count(dataset) -> int:
-        if dataset is None:
-            return 0
-        if hasattr(dataset, "arrays") and hasattr(dataset, "get_chemical_symbols"):
-            return 1
-        try:
-            return len(dataset)
-        except TypeError:
-            return 0
-
     def set_preview_input_count(self, count: int | None) -> None:
         self._preview_input_count = None if count is None else max(0, int(count))
         self.refresh_compact_presentation()
-
-    def create_operation(self):
-        return ShearAngleOperation()
 
     def get_summary_text(self) -> str:
         try:

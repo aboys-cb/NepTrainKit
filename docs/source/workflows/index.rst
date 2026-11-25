@@ -57,3 +57,4 @@
    候选结构清洗后再进入 DFT <clean-candidate-structures>
    从训练误差定位下一轮数据缺口 <review-training-results>
    组织多轮数据和模型版本 <manage-iterations>
+   命令行与脚本运行工作流 <run-workflow-from-cli>

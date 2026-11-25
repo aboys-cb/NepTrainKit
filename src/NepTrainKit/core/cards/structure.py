@@ -30,6 +30,7 @@ from NepTrainKit.core.torsion_guard_pbc import (
 
 from .geometry import scaled_positions, wrapped_positions as fast_wrapped_positions
 from .errors import CardOperationError
+from .labels import invalidate_changed_labels
 from .operation import GeneratorOperation, StructureOperation
 from .sampling import derived_structure_seed
 
@@ -462,6 +463,7 @@ class LayerCopyOperation(StructureOperation):
             "wrap": normalized.wrap,
         }
 
+    @invalidate_changed_labels
     def run_structure(self, structure, params: LayerCopyParams) -> list:
         settings = self._validated_settings(structure, params)
         normalized = settings["params"]
@@ -540,6 +542,8 @@ class VibrationModePerturbParams:
     exclude_near_zero: bool = True
     use_seed: bool = False
     seed: int = 0
+    sampling_mode: str = "Random"
+    coefficient_table: str = "[[-1], [0], [1]]"
 
 
 class VibrationModePerturbOperation(StructureOperation):
@@ -549,7 +553,70 @@ class VibrationModePerturbOperation(StructureOperation):
     def wrapped_positions(structure, positions: np.ndarray) -> np.ndarray:
         return fast_wrapped_positions(structure, positions)
 
+    @staticmethod
+    def parse_coefficient_table(text: str) -> np.ndarray:
+        """Read one explicit, finite coefficient vector per output structure."""
+        try:
+            rows = json.loads(text)
+            if not isinstance(rows, list) or not rows or any(
+                not isinstance(row, list) or not row
+                or any(isinstance(value, bool) or not isinstance(value, (int, float)) for value in row)
+                for row in rows
+            ):
+                raise ValueError
+            coefficients = np.asarray(rows, dtype=float)
+            if coefficients.ndim != 2 or not np.isfinite(coefficients).all():
+                raise ValueError
+        except (ValueError, TypeError, OverflowError) as exc:
+            raise CardOperationError(
+                "mode-coefficient-table-invalid",
+                "Coefficient table must be a non-empty rectangular JSON array of finite numbers.",
+            ) from exc
+        return coefficients
+
+    def _coefficient_scan(self, structure, params: VibrationModePerturbParams) -> list:
+        coefficients = self.parse_coefficient_table(params.coefficient_table)
+        _, modes = get_vibration_modes(structure, min_frequency=0.0)
+        if modes.size == 0 or not np.isfinite(modes).all():
+            raise CardOperationError(
+                "mode-scan-invalid-modes",
+                "Coefficient scans need finite displacement modes on every input structure.",
+            )
+        if coefficients.shape[1] != modes.shape[0]:
+            raise CardOperationError(
+                "mode-scan-column-count",
+                "Coefficient table has {actual} columns, but the input has {expected} modes.",
+                actual=coefficients.shape[1], expected=modes.shape[0],
+            )
+        if not np.isfinite(structure.positions).all():
+            raise CardOperationError(
+                "mode-scan-invalid-positions", "Atomic positions must be finite for a coefficient scan."
+            )
+        generated = []
+        for index, row in enumerate(coefficients):
+            positions = structure.positions + np.einsum("m,mnc->nc", row, modes)
+            if not np.isfinite(positions).all():
+                raise CardOperationError(
+                    "mode-scan-overflow",
+                    "The mode combination produced non-finite positions; reduce the coefficients.",
+                )
+            atoms = structure.copy()
+            # Keep the requested Cartesian path even across boundaries or ASE constraints.
+            atoms.set_positions(positions, apply_constraint=False)
+            append_config_tag(atoms, f"ModeScan(row={index},c={','.join(f'{value:.8g}' for value in row)})")
+            atoms.info["vibration_mode_perturb"] = json.dumps({
+                "sampling_mode": params.sampling_mode, "sample_index": index,
+                "coefficients": row.tolist(), "candidate_mode_count": int(modes.shape[0]),
+            }, separators=(",", ":"))
+            generated.append(atoms)
+        return generated
+
+    @invalidate_changed_labels
     def run_structure(self, structure, params: VibrationModePerturbParams) -> list:
+        if params.sampling_mode == "Coefficient table":
+            return self._coefficient_scan(structure, params)
+        if params.sampling_mode != "Random":
+            raise CardOperationError("mode-sampling-invalid", "Mode sampling must be Random or Coefficient table.")
         amplitude = float(params.amplitude)
         if not np.isfinite(amplitude) or amplitude <= 0.0:
             raise CardOperationError(
@@ -680,6 +747,7 @@ class GroupLabelParams:
 class GroupLabelOperation(StructureOperation):
     """Detect atomic planes normal to ``(hkl)`` and label them A/B in order."""
 
+    @invalidate_changed_labels
     def run_structure(self, structure, params: GroupLabelParams) -> list:
         a_label, b_label = self._validated_labels(params.group_a, params.group_b)
         if (not params.overwrite) and "group" in structure.arrays:
@@ -1177,6 +1245,7 @@ class OrganicMolConfigPBCOperation(StructureOperation):
             gaussian_sigma=settings["gaussian_sigma"],
         )
 
+    @invalidate_changed_labels
     def run_structure(self, structure, params: OrganicMolConfigPBCParams) -> list:
         settings = self._validated_settings(structure, params)
         tg_params = TorsionGuardParams(
@@ -1268,6 +1337,7 @@ class RandomPackingPlan:
 class RandomPackingOperation(StructureOperation):
     """Randomly repack atoms in the input cell under explicit distance constraints."""
 
+    @invalidate_changed_labels
     def run_structure(self, structure, params: RandomPackingParams) -> list:
         plan = self.plan(structure, params)
         n_structures = plan.structures

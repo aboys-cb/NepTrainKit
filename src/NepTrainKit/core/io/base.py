@@ -15,10 +15,9 @@ import os
 import json
 import threading
 import re
-import shutil
 import traceback
 from collections import Counter
-from functools import cached_property
+from functools import cached_property, partial
 from pathlib import Path
 from dataclasses import dataclass, replace
 import numpy as np
@@ -94,8 +93,11 @@ class DataBase:
 
     @property
     def version(self) -> int:
-        """Monotonically increasing mutation counter for mask changes."""
+        """Monotonically increasing mutation counter for masks and content."""
         return int(self._version)
+    def touch(self) -> None:
+        """Invalidate derived data after an in-place content edit."""
+        self._version += 1
     @property
     def mask_array(self) -> npt.NDArray[np.bool_]:
         """Boolean mask highlighting the active rows."""
@@ -276,13 +278,18 @@ class NepData:
         self.data.revoke()
         self.group_array.revoke()
     def get_rmse(self) -> float:
-        """Return the RMSE between NEP and reference columns."""
+        """Return the RMSE over finite NEP/reference pairs."""
         if not self.cols:
             return 0.0
-        return float(get_rmse(self.now_data[:, : self.cols], self.now_data[:, self.cols :]))
+        data = self.now_data
+        if not data.size:
+            return float("nan")
+        return get_rmse(data[:, : self.cols], data[:, self.cols :])
     def get_formart_rmse(self) -> str:  # noqa: D401 - keep legacy name
         """Return the formatted RMSE string with units inferred from ``title``."""
         rmse = self.get_rmse()
+        if not np.isfinite(rmse):
+            return "—"
         unit = ""
         scale = 1.0
         if self.title == "energy":
@@ -310,7 +317,8 @@ class NepData:
         nmax = int(nmax)
         if nmax <= 0:
             return []
-        data_version = int(getattr(self.data, "version", 0) or 0)
+        data_version = (int(getattr(self.data, "version", 0) or 0),
+                        int(getattr(self, "_plot_coord_version", 0) or 0))
         cache = getattr(self, "_max_error_cache", None)
         if cache is not None and cache[0] == data_version and cache[1] == self.cols:
             error = cache[2]
@@ -327,7 +335,7 @@ class NepData:
             else:
                 candidate_idx = np.argpartition(-error, k - 1)[:k]
                 sorted_idx = candidate_idx[np.argsort(-error[candidate_idx])]
-            structure_index = self.group_array.now_data[sorted_idx]
+            structure_index = self.group_array.now_data[sorted_idx[np.isfinite(error[sorted_idx])]]
             _, unique_indices = np.unique(structure_index, return_index=True)
             if unique_indices.size >= nmax or k >= total:
                 return structure_index[np.sort(unique_indices)][:nmax].tolist()
@@ -460,7 +468,7 @@ class StructureData(NepData):
         -----
         - Designed to run in a background thread (e.g. dataset load thread).
         - Results are stored as dict[SearchType, dict[str,int]] and can be fed
-          directly into ConfigTypeSearchLineEdit.setCompleterKeyWord(...).
+          directly into the structure filter's completion suggestions.
         """
         max_items = int(max_items or 0)
         with self._completer_cache_lock():
@@ -722,62 +730,6 @@ class StructureData(NepData):
             result_index = np.nonzero(mask)[0]
         return self.group_array[result_index].tolist()
 
-    def search_config_tags(self, filter_spec: dict, search_type: SearchType) -> list[int]:
-        """Return structure indices matching a tag/formula filter spec.
-
-        Uses simple substring matching (not regex) with group-based logic:
-        groups are AND'd, conditions within a group use AND/OR per group mode.
-
-        Parameters
-        ----------
-        filter_spec : dict
-            Dictionary with ``groups`` (list of group dicts, each having
-            ``conditions`` and ``mode`` keys).
-        search_type : SearchType
-            One of :attr:`SearchType.TAG` or :attr:`SearchType.FORMULA`.
-
-        Returns
-        -------
-        list[int]
-            Matching structure indices.
-        """
-        from NepTrainKit.core.types import TagFilterSpec
-
-        spec = TagFilterSpec.from_dict(filter_spec) if isinstance(filter_spec, dict) else filter_spec
-        if spec.is_empty():
-            return []
-
-        if search_type == SearchType.TAG:
-            values = [getattr(s, "tag", "") or "" for s in self.now_data]
-        elif search_type == SearchType.FORMULA:
-            values = [getattr(s, "formula", "") or "" for s in self.now_data]
-        else:
-            return []
-
-        active_count = len(values)
-        mask = np.ones(active_count, dtype=bool)
-
-        for group in spec.groups:
-            if group.is_empty():
-                continue
-            group_mask: np.ndarray | None = None
-            for cond in group.conditions:
-                text = str(cond.text)
-                if not text:
-                    continue
-                row_match = np.array([text in v for v in values], dtype=bool)
-                if cond.negate:
-                    row_match = ~row_match
-                if group.mode == "and":
-                    group_mask = row_match.copy() if group_mask is None else group_mask & row_match
-                else:
-                    group_mask = row_match if group_mask is None else group_mask | row_match
-            if group_mask is not None:
-                mask &= group_mask
-
-        result_index = np.nonzero(mask)[0]
-        return self.group_array[result_index].tolist()
-
 
 @dataclass(frozen=True)
 class StructureSyncRule:
@@ -794,25 +746,26 @@ class StructureSyncRule:
         if isinstance(self.target, str):
             return getattr(dataset, self.target)
         return self.target
-    def apply(self, result_data: "ResultData", structure_indices: Optional[np.ndarray] = None) -> None:
+    def apply(self, result_data: "ResultData", structure_indices: Optional[np.ndarray] = None) -> bool:
         """Execute the rule on ``result_data`` if the precondition passes."""
         dataset = getattr(result_data, self.dataset_attr, None)
         if dataset is None or getattr(dataset, "num", 0) == 0:
-            return
+            return False
         if not self.precondition(result_data):
-            return
+            return False
         row_idx, values = self.collector(result_data, dataset, structure_indices)
         if row_idx is None or values is None:
-            return
+            return False
         row_idx = np.asarray(row_idx, dtype=np.int64)
         if row_idx.size == 0:
-            return
+            return False
         values = np.asarray(values, dtype=self.dtype or get_storage_float_dtype())
         if values.size == 0:
-            return
+            return False
         target = self._resolve_target(dataset)
         dataset.all_data[row_idx, target] = values
         dataset._plot_coord_version = int(getattr(dataset, "_plot_coord_version", 0) or 0) + 1
+        return True
 
 
 def _sync_target_width(dataset: Any) -> int:
@@ -834,7 +787,7 @@ def collect_energy_sync(result_data: "ResultData", dataset: NepPlotData, structu
         return _empty_sync_result(target_width)
     storage_dtype = get_storage_float_dtype()
     structures = [result_data.structure.all_data[i] for i in indices]
-    values = np.array([s.per_atom_energy for s in structures], dtype=storage_dtype).reshape(-1, target_width)
+    values = np.array([s.per_atom_energy if s.has_energy else np.nan for s in structures], dtype=storage_dtype).reshape(-1, target_width)
     return indices, values
 
 
@@ -847,15 +800,15 @@ def collect_force_sync(result_data: "ResultData", dataset: NepPlotData, structur
     if indices.size == 0:
         return _empty_sync_result(target_width)
     storage_dtype = get_storage_float_dtype()
-    group_vals = dataset.group_array.all_data
-    per_atom = bool(group_vals.size and np.unique(group_vals).size != group_vals.size)
+    per_atom = dataset._has_atom_groups
     structures = [result_data.structure.all_data[i] for i in indices]
+    forces = [s.forces if s.has_forces else np.full((len(s), target_width), np.nan) for s in structures]
     if per_atom:
         row_idx = dataset.convert_index(indices)
-        values = np.vstack([s.forces for s in structures]).astype(storage_dtype, copy=False)
+        values = np.vstack(forces).astype(storage_dtype, copy=False)
     else:
         row_idx = indices
-        values = np.array([np.linalg.norm(s.forces, axis=0) for s in structures], dtype=storage_dtype)
+        values = np.array([np.linalg.norm(force, axis=0) for force in forces], dtype=storage_dtype)
     return row_idx, values
 
 
@@ -869,12 +822,8 @@ def collect_virial_sync(result_data: "ResultData", dataset: NepPlotData, structu
         return _empty_sync_result(target_width)
     storage_dtype = get_storage_float_dtype()
     structures = [result_data.structure.all_data[i] for i in indices]
-    mask = np.array([s.has_virial for s in structures], dtype=bool)
-    if not mask.any():
-        return _empty_sync_result(target_width)
-    selected_indices = indices[mask]
-    values = np.vstack([structures[i].nep_virial for i, flag in enumerate(mask) if flag]).astype(storage_dtype, copy=False)
-    return selected_indices, values
+    values = np.vstack([s.nep_virial if s.has_virial else np.full(target_width, np.nan) for s in structures]).astype(storage_dtype, copy=False)
+    return indices, values
 
 
 def collect_stress_sync(result_data: "ResultData", dataset: NepPlotData, structure_indices):
@@ -887,16 +836,12 @@ def collect_stress_sync(result_data: "ResultData", dataset: NepPlotData, structu
         return _empty_sync_result(target_width)
     storage_dtype = get_storage_float_dtype()
     structures = [result_data.structure.all_data[i] for i in indices]
-    mask = np.array([s.has_virial for s in structures], dtype=bool)
-    if not mask.any():
-        return _empty_sync_result(target_width)
-    selected_indices = indices[mask]
-    virial_values = np.vstack([structures[i].nep_virial for i, flag in enumerate(mask) if flag]).astype(storage_dtype, copy=False)
-    atoms = result_data.atoms_num_list[selected_indices].astype(storage_dtype)
-    volumes = np.array([structures[i].volume for i, flag in enumerate(mask) if flag], dtype=storage_dtype)
+    virial_values = np.vstack([s.nep_virial if s.has_virial else np.full(target_width, np.nan) for s in structures]).astype(storage_dtype, copy=False)
+    atoms = result_data.atoms_num_list[indices].astype(storage_dtype)
+    volumes = np.array([s.volume for s in structures], dtype=storage_dtype)
     coeff = np.divide(atoms, volumes, out=np.zeros_like(atoms, dtype=storage_dtype), where=volumes != 0)[:, np.newaxis]
     stress_values = virial_values * coeff * 160.21766208
-    return selected_indices, stress_values.astype(storage_dtype, copy=False)
+    return indices, stress_values.astype(storage_dtype, copy=False)
 
 
 class ResultData(DistributionAnalysisMixin, QObject):
@@ -915,7 +860,7 @@ class ResultData(DistributionAnalysisMixin, QObject):
     _abcs: npt.NDArray[np.float32]
     _angles: npt.NDArray[np.float32]
     def __init__(self,
-                 nep_txt_path: Path,
+                 nep_txt_path: Path | None,
                  data_xyz_path: Path,
                  descriptor_path: Path,
                  calculator_factory: Optional[Callable[[str], Any]] = None,
@@ -942,7 +887,7 @@ class ResultData(DistributionAnalysisMixin, QObject):
         self.cancel_event = threading.Event()
         self.descriptor_path=Path(descriptor_path)
         self.data_xyz_path=Path(data_xyz_path)
-        self.nep_txt_path=Path(nep_txt_path)
+        self.nep_txt_path=Path(nep_txt_path) if nep_txt_path is not None else None
         self._cache_outputs_override: bool | None = None
         self._force_recalculate_outputs = False
         self.select_index=set()
@@ -965,6 +910,8 @@ class ResultData(DistributionAnalysisMixin, QObject):
         self._distribution_bin_lookup: dict[tuple[int, str, str, int], list[int]] = {}
         self._distribution_analysis_id: int = 0
         self._load_origin_thread: QThread | None = None
+        self._content_revision = 0
+        self._modified_reference_fields: set[str] = set()
 
     def move_to_load_thread(self, thread: QThread) -> None:
         """Move this long-lived result object to a loader and remember its owner."""
@@ -1936,10 +1883,6 @@ class ResultData(DistributionAnalysisMixin, QObject):
             return self._search_expression(config)
         return self.structure.search_config(config, search_type)
 
-    def search_config_tags(self, filter_spec: dict, search_type: SearchType) -> list[int]:
-        """Return structure indices matching a tag/formula filter spec."""
-        return self.structure.search_config_tags(filter_spec, search_type)
-
     def search_structures(self, filter_spec):
         """Evaluate a typed composite structure filter without changing selection."""
         from NepTrainKit.core.search import StructureFilterEngine
@@ -1969,11 +1912,23 @@ class ResultData(DistributionAnalysisMixin, QObject):
             field_iter = list(self._structure_sync_rules.keys())
         else:
             field_iter = list(fields)
+        if "force" in field_iter and "force_vector" not in field_iter:
+            field_iter.append("force_vector")
+        changed = False
         for name in field_iter:
             rule = self._structure_sync_rules.get(name)
             if rule is None:
                 continue
-            rule.apply(self, indices)
+            if rule.apply(self, indices):
+                changed = True
+                self._modified_reference_fields.add(name)
+        if changed:
+            self._structure_content_changed()
+
+    def _structure_content_changed(self) -> None:
+        self.structure.data.touch()
+        self._content_revision += 1
+        self.updateInfoSignal.emit()
     def write_prediction(self):
         """Create a ``nep.in`` stub when large datasets require prediction mode.
         The GUI expects a ``nep.in`` file to mark prediction runs for large
@@ -2010,6 +1965,10 @@ class ResultData(DistributionAnalysisMixin, QObject):
             return NepBackend.CPU
         return get_configured_nep_backend()
 
+    def _prepare_load(self) -> bool:
+        """Resolve inputs that require reading structures before calculation."""
+        return False
+
     def load(self):
         """Load structures, descriptors, and dataset arrays in sequence.
         The routine instantiates a calculator (optionally via ``calculator_factory``),
@@ -2017,8 +1976,10 @@ class ResultData(DistributionAnalysisMixin, QObject):
         dataset-specific properties.
         """
         try:
-            load_from_outputs = self._can_load_without_calculator()
-            if load_from_outputs:
+            structures_loaded = self._prepare_load()
+            if self.cancel_event.is_set() or self.nep_txt_path is None:
+                self.nep_calc = None
+            elif self._can_load_without_calculator():
                 self.nep_calc = None
                 if self.descriptor_path.exists():
                     status = (
@@ -2076,8 +2037,8 @@ class ResultData(DistributionAnalysisMixin, QObject):
                             "To enable CUDA, install a Linux CPU+CUDA nep-adapters wheel "
                             "with a compatible NVIDIA driver."
                         )
-            # If subclass overrides load_structures, defer to it; otherwise do cancel-aware read
-            self.load_structures()
+            if not structures_loaded:
+                self.load_structures()
             # Pre-build completer caches so UI mode switching remains smooth for large datasets.
             if not self.cancel_event.is_set():
                 try:
@@ -2290,9 +2251,10 @@ class ResultData(DistributionAnalysisMixin, QObject):
             return []
         x_low, x_high = sorted((float(x_min), float(x_max)))
         y_low, y_high = sorted((float(y_min), float(y_max)))
-        mask_x = (dataset.x >= x_low) & (dataset.x <= x_high)
-        mask_y = (dataset.y >= y_low) & (dataset.y <= y_high)
-        mask = mask_x & mask_y if use_and else mask_x | mask_y
+        x, y = dataset.x, dataset.y
+        mask_x = (x >= x_low) & (x <= x_high)
+        mask_y = (y >= y_low) & (y <= y_high)
+        mask = np.isfinite(x) & np.isfinite(y) & (mask_x & mask_y if use_and else mask_x | mask_y)
         if not np.any(mask):
             return []
         return np.unique(dataset.structure_index[mask]).astype(int).tolist()
@@ -2339,282 +2301,233 @@ class ResultData(DistributionAnalysisMixin, QObject):
         indices = list(self.select_index)
         mapped = self.structure.convert_index(indices)
         return self.structure.all_data[mapped].tolist()
-    def export_selected_xyz(self, save_file_path: str | Path) -> None:
+    def prepare_export(self, scope: str, *, npy: bool = False, index: int | None = None):
+        """Freeze export contents before dispatching a background writer."""
+        type_map = self._export_type_map() if npy else None
+        if scope == "all":
+            groups = ([item.copy() for item in self.structure.now_data],
+                      [item.copy() for item in self.structure.remove_data])
+            writer = self.export_model_npy if npy else self.export_model_extxyz
+            options = {"_groups": groups}
+        else:
+            if scope == "selected":
+                structures = self.get_selected_structures()
+            elif scope == "active":
+                structures = self.structure.now_data
+            elif scope == "removed":
+                structures = self.structure.remove_data
+            elif scope == "current" and npy and index is not None:
+                structures = [self.get_atoms(index)]
+            else:
+                raise ValueError(f"Unsupported export scope: {scope}")
+            writer = getattr(self, f"export_{scope}_{'npy' if npy else 'xyz'}")
+            options = {"_structures": [item.copy() for item in structures]}
+            if scope == "current":
+                options["index"] = index
+        if npy:
+            options["_type_map"] = type_map
+        return partial(writer, **options)
+
+    def _export_type_map(self):
+        structures = self.structure.all_data.tolist()
+        return get_type_map(structures) if structures else None
+
+    @staticmethod
+    def _export_npy_subset(target, structures, type_map, npy_format, group_by_config_type, mixed_atom_numb_pad):
+        save_npy_structure(
+            str(target),
+            structures,
+            type_map=type_map,
+            format=npy_format,
+            group_by_config_type=group_by_config_type,
+            mixed_atom_numb_pad=mixed_atom_numb_pad,
+        )
+        MessageManager.send_info_message(f"File exported to: {target}")
+
+    def export_selected_xyz(self, save_file_path: str | Path, *, _structures=None) -> None:
         """Write the currently selected structures to ``save_file_path``."""
-        indices = list(self.select_index)
-        try:
-            atomic_float_digits = get_export_significant_digits()
-            mapped = self.structure.convert_index(indices)
-            write_structures_extxyz_atomic(
-                save_file_path,
-                self.structure.all_data[mapped],
-                atomic_float_digits=atomic_float_digits,
-            )
-            MessageManager.send_info_message(f"File exported to: {save_file_path}")
-        except Exception:
-            MessageManager.send_info_message("An unknown error occurred while saving. The error message has been output to the log!")
-            logger.error(traceback.format_exc())
+        atomic_float_digits = get_export_significant_digits()
+        structures = self.get_selected_structures() if _structures is None else _structures
+        write_structures_extxyz_atomic(
+            save_file_path,
+            structures,
+            atomic_float_digits=atomic_float_digits,
+        )
+        MessageManager.send_info_message(f"File exported to: {save_file_path}")
 
     def export_selected_npy(
         self,
         save_path: str | Path,
         *,
+        _structures=None,
+        _type_map=None,
         npy_format: str = "standard",
         group_by_config_type: bool = True,
         mixed_atom_numb_pad: int | None = None,
     ) -> None:
         """Export selected structures as a DeepMD-style ``deepmd/npy`` dataset."""
-        try:
-            selected = self.get_selected_structures()
-            if not selected:
-                MessageManager.send_info_message("Please select some structures first!")
-                return
-            target = Path(save_path).joinpath("export_selected_model")
-            all_structures = self.structure.all_data.tolist()
-            type_map = get_type_map(all_structures) if all_structures else None
-            save_npy_structure(
-                str(target),
-                selected,
-                type_map=type_map,
-                format=npy_format,
-                group_by_config_type=group_by_config_type,
-                mixed_atom_numb_pad=mixed_atom_numb_pad,
-            )
-            MessageManager.send_info_message(f"File exported to: {target}")
-        except Exception:
-            MessageManager.send_info_message(
-                "An unknown error occurred while saving. The error message has been output to the log!"
-            )
-            logger.error(traceback.format_exc())
+        selected = self.get_selected_structures() if _structures is None else _structures
+        if not selected:
+            MessageManager.send_info_message("Please select some structures first!")
+            return
+        type_map = self._export_type_map() if _structures is None else _type_map
+        self._export_npy_subset(
+            Path(save_path) / "export_selected_model", selected, type_map,
+            npy_format, group_by_config_type, mixed_atom_numb_pad,
+        )
 
-    def export_active_xyz(self, save_file_path: str | Path) -> None:
+    def export_active_xyz(self, save_file_path: str | Path, *, _structures=None) -> None:
         """Write active (non-removed) structures to ``save_file_path``."""
-        try:
-            atomic_float_digits = get_export_significant_digits()
-            active = self.structure.now_data
-            if getattr(active, "size", 0) == 0:
-                MessageManager.send_info_message("No active structures to export.")
-                return
-            write_structures_extxyz_atomic(
-                save_file_path,
-                active,
-                atomic_float_digits=atomic_float_digits,
-            )
-            MessageManager.send_info_message(f"File exported to: {save_file_path}")
-        except Exception:
-            MessageManager.send_info_message(
-                "An unknown error occurred while saving. The error message has been output to the log!"
-            )
-            logger.error(traceback.format_exc())
+        atomic_float_digits = get_export_significant_digits()
+        active = self.structure.now_data if _structures is None else _structures
+        if len(active) == 0:
+            MessageManager.send_info_message("No active structures to export.")
+            return
+        write_structures_extxyz_atomic(
+            save_file_path,
+            active,
+            atomic_float_digits=atomic_float_digits,
+        )
+        MessageManager.send_info_message(f"File exported to: {save_file_path}")
 
     def export_active_npy(
         self,
         save_path: str | Path,
         *,
+        _structures=None,
+        _type_map=None,
         npy_format: str = "standard",
         group_by_config_type: bool = True,
         mixed_atom_numb_pad: int | None = None,
     ) -> None:
         """Export active (non-removed) structures as a DeepMD-style ``deepmd/npy`` dataset."""
-        try:
-            active = self.structure.now_data.tolist()
-            if not active:
-                MessageManager.send_info_message("No active structures to export.")
-                return
-            target = Path(save_path).joinpath("export_active_model")
-            all_structures = self.structure.all_data.tolist()
-            type_map = get_type_map(all_structures) if all_structures else None
-            save_npy_structure(
-                str(target),
-                active,
-                type_map=type_map,
-                format=npy_format,
-                group_by_config_type=group_by_config_type,
-                mixed_atom_numb_pad=mixed_atom_numb_pad,
-            )
-            MessageManager.send_info_message(f"File exported to: {target}")
-        except Exception:
-            MessageManager.send_info_message(
-                "An unknown error occurred while saving. The error message has been output to the log!"
-            )
-            logger.error(traceback.format_exc())
+        active = self.structure.now_data.tolist() if _structures is None else _structures
+        if not active:
+            MessageManager.send_info_message("No active structures to export.")
+            return
+        type_map = self._export_type_map() if _structures is None else _type_map
+        self._export_npy_subset(
+            Path(save_path) / "export_active_model", active, type_map,
+            npy_format, group_by_config_type, mixed_atom_numb_pad,
+        )
 
-    def export_removed_xyz(self, save_file_path: str | Path) -> None:
+    def export_removed_xyz(self, save_file_path: str | Path, *, _structures=None) -> None:
         """Write removed structures (if any) to ``save_file_path``."""
-        try:
-            atomic_float_digits = get_export_significant_digits()
-            removed = self.structure.remove_data
-            if getattr(removed, "size", 0) == 0:
-                MessageManager.send_info_message("No removed structures to export.")
-                return
-            write_structures_extxyz_atomic(
-                save_file_path,
-                removed,
-                atomic_float_digits=atomic_float_digits,
-            )
-            MessageManager.send_info_message(f"File exported to: {save_file_path}")
-        except Exception:
-            MessageManager.send_info_message(
-                "An unknown error occurred while saving. The error message has been output to the log!"
-            )
-            logger.error(traceback.format_exc())
+        atomic_float_digits = get_export_significant_digits()
+        removed = self.structure.remove_data if _structures is None else _structures
+        if len(removed) == 0:
+            MessageManager.send_info_message("No removed structures to export.")
+            return
+        write_structures_extxyz_atomic(
+            save_file_path,
+            removed,
+            atomic_float_digits=atomic_float_digits,
+        )
+        MessageManager.send_info_message(f"File exported to: {save_file_path}")
 
     def export_removed_npy(
         self,
         save_path: str | Path,
         *,
+        _structures=None,
+        _type_map=None,
         npy_format: str = "standard",
         group_by_config_type: bool = True,
         mixed_atom_numb_pad: int | None = None,
     ) -> None:
         """Export removed structures as a DeepMD-style ``deepmd/npy`` dataset."""
-        try:
-            removed = self.structure.remove_data.tolist()
-            if not removed:
-                MessageManager.send_info_message("No removed structures to export.")
-                return
-            target = Path(save_path).joinpath("export_remove_model")
-            all_structures = self.structure.all_data.tolist()
-            type_map = get_type_map(all_structures) if all_structures else None
-            save_npy_structure(
-                str(target),
-                removed,
-                type_map=type_map,
-                format=npy_format,
-                group_by_config_type=group_by_config_type,
-                mixed_atom_numb_pad=mixed_atom_numb_pad,
-            )
-            MessageManager.send_info_message(f"File exported to: {target}")
-        except Exception:
-            MessageManager.send_info_message(
-                "An unknown error occurred while saving. The error message has been output to the log!"
-            )
-            logger.error(traceback.format_exc())
+        removed = self.structure.remove_data.tolist() if _structures is None else _structures
+        if not removed:
+            MessageManager.send_info_message("No removed structures to export.")
+            return
+        type_map = self._export_type_map() if _structures is None else _type_map
+        self._export_npy_subset(
+            Path(save_path) / "export_remove_model", removed, type_map,
+            npy_format, group_by_config_type, mixed_atom_numb_pad,
+        )
 
     def export_current_npy(
         self,
         save_path: str | Path,
         index: int,
         *,
+        _structures=None,
+        _type_map=None,
         npy_format: str = "standard",
         group_by_config_type: bool = True,
         mixed_atom_numb_pad: int | None = None,
     ) -> None:
         """Export a single structure as DeepMD-style ``deepmd/npy`` dataset."""
-        try:
-            mapped = self.structure.convert_index(index)
-            structure = self.structure.all_data[mapped][0]
-            target = Path(save_path).joinpath(f"structure_{int(index)}")
-            all_structures = self.structure.all_data.tolist()
-            type_map = get_type_map(all_structures) if all_structures else None
-            save_npy_structure(
-                str(target),
-                [structure],
-                type_map=type_map,
-                format=npy_format,
-                group_by_config_type=group_by_config_type,
-                mixed_atom_numb_pad=mixed_atom_numb_pad,
-            )
-            MessageManager.send_info_message(f"File exported to: {target}")
-        except Exception:
-            MessageManager.send_info_message(
-                "An unknown error occurred while saving. The error message has been output to the log!"
-            )
-            logger.error(traceback.format_exc())
+        structure = self.get_atoms(index) if _structures is None else _structures[0]
+        type_map = self._export_type_map() if _structures is None else _type_map
+        self._export_npy_subset(
+            Path(save_path) / f"structure_{int(index)}", [structure], type_map,
+            npy_format, group_by_config_type, mixed_atom_numb_pad,
+        )
 
-    def export_model_extxyz(self, save_path: str | Path) -> None:
+    def export_model_extxyz(self, save_path: str | Path, *, _groups=None) -> None:
         """Export active and removed structures into ``save_path`` folder as extxyz."""
-        try:
-            atomic_float_digits = get_export_significant_digits()
-            good_path = Path(save_path).joinpath("export_good_model.xyz")
-            write_structures_extxyz_atomic(
-                good_path,
-                self.structure.now_data,
-                atomic_float_digits=atomic_float_digits,
-            )
-            removed_path = Path(save_path).joinpath("export_remove_model.xyz")
-            write_structures_extxyz_atomic(
-                removed_path,
-                self.structure.remove_data,
-                atomic_float_digits=atomic_float_digits,
-            )
-            MessageManager.send_info_message(f"File exported to: {save_path}")
-        except Exception:
-            MessageManager.send_info_message(
-                "An unknown error occurred while saving. The error message has been output to the log!"
-            )
-            logger.error(traceback.format_exc())
+        active, removed = (self.structure.now_data, self.structure.remove_data) if _groups is None else _groups
+        atomic_float_digits = get_export_significant_digits()
+        good_path = Path(save_path).joinpath("export_good_model.xyz")
+        write_structures_extxyz_atomic(
+            good_path,
+            active,
+            atomic_float_digits=atomic_float_digits,
+        )
+        removed_path = Path(save_path).joinpath("export_remove_model.xyz")
+        write_structures_extxyz_atomic(
+            removed_path,
+            removed,
+            atomic_float_digits=atomic_float_digits,
+        )
+        MessageManager.send_info_message(f"File exported to: {save_path}")
 
     def export_model_npy(
         self,
         save_path: str | Path,
         *,
+        _groups=None,
+        _type_map=None,
         npy_format: str = "standard",
         group_by_config_type: bool = True,
         mixed_atom_numb_pad: int | None = None,
     ) -> None:
         """Export active and removed structures into ``save_path`` folder as deepmd/npy."""
-        try:
-            target = Path(save_path)
-            good_target = target / "export_good_model"
-            removed_target = target / "export_remove_model"
-            all_structures = self.structure.all_data.tolist()
-            active_structures = self.structure.now_data.tolist()
-            removed_structures = self.structure.remove_data.tolist()
-            if not active_structures and not removed_structures:
-                MessageManager.send_info_message("No structures to export.")
-                return
-            type_map = get_type_map(all_structures) if all_structures else None
-            exports = (
-                (good_target, active_structures),
-                (removed_target, removed_structures),
+        target = Path(save_path)
+        good_target = target / "export_good_model"
+        removed_target = target / "export_remove_model"
+        active_structures, removed_structures = (
+            (self.structure.now_data.tolist(), self.structure.remove_data.tolist()) if _groups is None else _groups
+        )
+        if not active_structures and not removed_structures:
+            MessageManager.send_info_message("No structures to export.")
+            return
+        type_map = self._export_type_map() if _groups is None else _type_map
+        exports = (
+            (good_target, active_structures),
+            (removed_target, removed_structures),
+        )
+        for export_target, structures in exports:
+            if not structures:
+                if export_target.exists() or export_target.is_symlink():
+                    MessageManager.send_warning_message(self.tr(
+                        "Skipped empty DeepMD export group. Existing files were kept: {path}"
+                    ).format(path=export_target))
+                continue
+            save_npy_structure(
+                str(export_target),
+                structures,
+                type_map=type_map,
+                format=npy_format,
+                group_by_config_type=group_by_config_type,
+                mixed_atom_numb_pad=mixed_atom_numb_pad,
             )
-            for export_target, structures in exports:
-                if not structures:
-                    continue
-                save_npy_structure(
-                    str(export_target),
-                    structures,
-                    type_map=type_map,
-                    format=npy_format,
-                    group_by_config_type=group_by_config_type,
-                    mixed_atom_numb_pad=mixed_atom_numb_pad,
-                )
-            for export_target, structures in exports:
-                if structures or not export_target.exists():
-                    continue
-                if export_target.is_symlink() or not export_target.is_dir():
-                    raise FileExistsError(
-                        "Empty DeepMD export target is not a removable directory: "
-                        f"{export_target}"
-                    )
-                shutil.rmtree(export_target)
-            MessageManager.send_info_message(f"File exported to: {target}")
-        except Exception:
-            MessageManager.send_info_message(
-                "An unknown error occurred while saving. The error message has been output to the log!"
-            )
-            logger.error(traceback.format_exc())
+        MessageManager.send_info_message(f"File exported to: {target}")
     def export_model_xyz(self, save_path: str | Path) -> None:
         """Export active and removed structures into ``save_path`` folder."""
-        try:
-            atomic_float_digits = get_export_significant_digits()
-            good_path = Path(save_path).joinpath("export_good_model.xyz")
-            write_structures_extxyz_atomic(
-                good_path,
-                self.structure.now_data,
-                atomic_float_digits=atomic_float_digits,
-            )
-            removed_path = Path(save_path).joinpath("export_remove_model.xyz")
-            write_structures_extxyz_atomic(
-                removed_path,
-                self.structure.remove_data,
-                atomic_float_digits=atomic_float_digits,
-            )
-            MessageManager.send_info_message(f"File exported to: {save_path}")
-        except Exception:
-            MessageManager.send_info_message("An unknown error occurred while saving. The error message has been output to the log!")
-            logger.error(traceback.format_exc())
+        self.export_model_extxyz(save_path)
+
     def get_atoms(self, index: int):
         """Return the ASE atoms object for the original ``index``."""
         mapped = self.structure.convert_index(index)
@@ -2835,6 +2748,8 @@ class ResultData(DistributionAnalysisMixin, QObject):
             MessageManager.send_info_message("No data selected!")
             return
 
+        remove_tags = tuple(remove_tags)
+
         for structure in selected_structures:
             for new_tag, value_text in new_tag_info.items():
                 if value_text is None:
@@ -2887,8 +2802,16 @@ class ResultData(DistributionAnalysisMixin, QObject):
                 elif remove_tag in structure.atomic_properties:
                     structure.remove_atomic_properties(remove_tag)
 
+        fields = set(remove_tags) | set(new_tag_info) | set((rename_map or {}).keys()) | set((rename_map or {}).values())
+        if "forces" in fields:
+            fields.add("force")
+        if "virial" in fields:
+            fields.add("stress")
+        revision = self._content_revision
+        self.sync_structures(fields.intersection(self._structure_sync_rules), list(self.select_index))
+        if self._content_revision == revision:
+            self._structure_content_changed()
         MessageManager.send_info_message("Edit completed")
-        self.updateInfoSignal.emit()
 
     def iter_shift_energy_baseline(
         self,
@@ -2993,9 +2916,6 @@ class ResultData(DistributionAnalysisMixin, QObject):
             elif desc_array.shape[0] == self.atoms_num_list.shape[0]:
                 pass
             else:
-                if self.cache_outputs_enabled():
-                    self.descriptor_path.unlink(True)
-                    return self._load_descriptors()
                 desc_array = np.array([])
 
         if desc_array.size == 0:
@@ -3062,21 +2982,12 @@ class ResultData(DistributionAnalysisMixin, QObject):
         )
 
     def _cached_single_output_alignment_error(self, output_array, expected, output_path):
-        """Validate a paired output whose DFT values are exposed through ``x``."""
-        values = np.asarray(output_array)
-        expected_values = np.asarray(expected)
-        if values.ndim != 2 or values.shape[0] != len(self.atoms_num_list):
-            return f"{output_path.name} has shape {values.shape}, expected one row per structure"
-        try:
-            dft_values = self._result_plot_data_class()(values, title="cached").x
-        except Exception as error:
-            return f"{output_path.name} has invalid paired columns: {error}"
-        if np.asarray(dft_values).size != expected_values.size:
-            return (
-                f"{output_path.name} DFT x columns have size "
-                f"{np.asarray(dft_values).size}, expected {expected_values.size}"
-            )
-        if not self._reference_columns_match(dft_values, expected_values):
+        """Validate the shape and reference half of a cached NEP response."""
+        rows, width = expected.shape
+        if output_array.shape != (rows, 2 * width):
+            return f"{output_path.name} has shape {output_array.shape}, expected ({rows}, {2 * width})"
+        dft_values = output_array[:, width:]
+        if not self._reference_columns_match(dft_values, expected):
             return self.tr(
                 "the DFT x columns in {file} do not match parsed structures"
             ).format(file=output_path.name)

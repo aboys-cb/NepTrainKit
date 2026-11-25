@@ -358,9 +358,6 @@ class GeometryFilterCard(FilterDataCard):
             self._active_preview_generation = None
         super().closeEvent(event)
 
-    def create_operation(self):
-        return GeometryFilterOperation()
-
     def get_params(self) -> GeometryFilterParams:
         return GeometryFilterParams(
             min_pair_distance=float(self.min_pair_frame.get_input_value()[0]),

@@ -101,7 +101,7 @@ class DeepmdResultData(ResultData):
         structures : list[Structure], optional
             Pre-loaded structures to attach instead of reading from disk.
         nep_txt_path : Path or str, optional
-            Override the NEP model text file used for (re)calculation.
+            Calculate with these weights in memory instead of using existing evaluation files.
         model_type : int, optional
             Ignored. Accepted for API compatibility with NEP loaders.
 
@@ -111,7 +111,7 @@ class DeepmdResultData(ResultData):
             Configured loader pointing at the resolved dataset.
         """
         dataset_path = as_path(path)
-        # file_name=dataset_path.name
+        explicit_model = nep_txt_path is not None
         if nep_txt_path is None:
             nep_txt_path = dataset_path.with_name("nep.txt")
             if not Path(nep_txt_path).exists():
@@ -137,8 +137,9 @@ class DeepmdResultData(ResultData):
             if nep_stem == "nep":
                 output_dir = dataset_path.parent
             else:
-                output_dir = dataset_path.parent / f"{dataset_path}_{nep_stem}"
-                output_dir.mkdir(exist_ok=True)
+                output_dir = dataset_path.with_name(f"{dataset_path.name}_{nep_stem}")
+                if not explicit_model:
+                    output_dir.mkdir(exist_ok=True)
             suffix = "detail"
         descriptor_path = output_dir / "descriptor.out"
         energy_out_path = output_dir / f"{suffix}.e_peratom.out"
@@ -160,6 +161,7 @@ class DeepmdResultData(ResultData):
             spin_out_path=spin_out_path,
             cached_outputs_only=cached_outputs_only,
         )
+        inst._force_recalculate_outputs = explicit_model
         if structures is not None:
             try:
                 inst.set_structures(structures)
@@ -189,7 +191,7 @@ class DeepmdResultData(ResultData):
     @property
     def datasets(self):
         """Return the datasets exposed to the UI in canonical order."""
-        if self.spin_out_path is None:
+        if self.mforce is None:
             return [self.energy, self.force,  self.virial, self.descriptor]
         else:
             return [self.energy, self.force, self.mforce, self.virial, self.descriptor]
@@ -217,6 +219,14 @@ class DeepmdResultData(ResultData):
     def _result_plot_data_class(self):
         """Use DeepMD's DFT-first column adapter for reference validation."""
         return DPPlotData
+
+    def cache_outputs_enabled(self) -> bool:
+        """Keep imported results and their descriptors read-only."""
+        return not (self._cached_outputs_only or self._force_recalculate_outputs) and super().cache_outputs_enabled()
+
+    @property
+    def uses_imported_predictions(self) -> bool:
+        return self._cached_outputs_only and not self._force_recalculate_outputs
 
     def _prepare_cached_output_alignment(self) -> None:
         """Validate DeepMD result rows before descriptors are attached."""
@@ -249,7 +259,7 @@ class DeepmdResultData(ResultData):
         MessageManager.send_warning_message(
             self.tr(
                 "Existing DeepMD outputs do not match the loaded structure order "
-                "({reason}). NepTrainKit will recalculate them."
+                "({reason}). NepTrainKit will recalculate them in memory."
             ).format(reason=alignment_error)
         )
 
@@ -264,9 +274,8 @@ class DeepmdResultData(ResultData):
 
     def _load_dataset(self) -> None:
         """Populate plot datasets from cached files or NEP recalculation."""
-        if self._should_recalculate( ):
-            energy_array, force_array, virial_array = self._recalculate_and_save( )
-        else:
+        recalculate = self._should_recalculate()
+        if not recalculate:
             storage_dtype = get_storage_float_dtype()
             energy_array = self._validated_energy_array
             if energy_array is None:
@@ -277,15 +286,10 @@ class DeepmdResultData(ResultData):
             self._validated_energy_array = None
             self._validated_force_array = None
             virial_array = read_nep_out_file(self.virial_out_path, dtype=storage_dtype, ndmin=2)
-            if energy_array.shape[0]!=self.atoms_num_list.shape[0] and not self._cached_outputs_only:
-                if self.cache_outputs_enabled():
-                    self.energy_out_path.unlink(True)
-                    self.force_out_path.unlink(True)
-                    if self.spin_out_path is not None:
-                        self.spin_out_path.unlink(True)
-                    self.virial_out_path.unlink(True)
-                    return self._load_dataset()
-                energy_array, force_array, virial_array = self._recalculate_and_save()
+            if energy_array.shape[0] != self.atoms_num_list.shape[0]:
+                self._force_recalculate_outputs = recalculate = True
+        if recalculate:
+            energy_array, force_array, virial_array = self._recalculate_and_save()
         self._energy_dataset = DPPlotData(energy_array, title="energy")
         default_forces = parse_forces_mode(Config.get("widget", "forces_data", ForcesMode.Raw))
         self._force_vector_dataset = (
@@ -298,7 +302,8 @@ class DeepmdResultData(ResultData):
             self._force_dataset = DPPlotData(force_array, title="force")
         else:
             self._force_dataset = DPPlotData(force_array, group_list=self.atoms_num_list, title="force")
-        if self.spin_out_path is not None:
+        self._mforce_vector_dataset = self._mforce_dataset = self._spin_dataset = None
+        if self.spin_out_path is not None and not recalculate:
             spin_array = read_nep_out_file(self.spin_out_path, dtype=get_storage_float_dtype(), ndmin=2)
             group_list = self._mforce_group_list(spin_array.shape[0])
             if spin_array.size != 0 and group_list is not None:
@@ -309,11 +314,6 @@ class DeepmdResultData(ResultData):
                 else:
                     self._mforce_dataset = DPPlotData(spin_array, group_list=group_list, title="mforce")
                 self._spin_dataset = self._mforce_dataset
-            else:
-                self.spin_out_path = None
-                self._mforce_vector_dataset = None
-                self._mforce_dataset = None
-                self._spin_dataset = None
         self._virial_dataset = DPPlotData(virial_array, title="virial")
     def _mforce_group_list(self, row_count: int) -> npt.NDArray[np.int64] | None:
         """Resolve magnetic-force rows to structures."""
@@ -359,7 +359,7 @@ class DeepmdResultData(ResultData):
         """
 
         ref_energies = np.array([s.energy if s.has_energy else np.nan for s in self.structure.now_data], dtype=np.float64)
-        energy_array = concat_nep_dft_array(np.asarray(potentials, dtype=np.float64), ref_energies, deepmd=True, quantity="energies")
+        energy_array = concat_nep_dft_array(np.asarray(potentials, dtype=np.float64), ref_energies, deepmd=True)
 
 
         energy_array=energy_array/ self.atoms_num_list.reshape(-1, 1)
@@ -385,7 +385,7 @@ class DeepmdResultData(ResultData):
             for s in self.structure.now_data
         ], dtype=np.float64)
 
-        forces_array = concat_nep_dft_array(np.asarray(forces, dtype=np.float64), ref_forces, deepmd=True, quantity="forces")
+        forces_array = concat_nep_dft_array(np.asarray(forces, dtype=np.float64), ref_forces, deepmd=True)
         forces_array = np.asarray(forces_array, dtype=get_storage_float_dtype())
         if forces_array.size != 0 and self.cache_outputs_enabled():
             np.savetxt(self.force_out_path, forces_array, fmt='%.17g')
@@ -407,36 +407,25 @@ class DeepmdResultData(ResultData):
             s.nep_virial if s.has_virial else np.full(6, np.nan, dtype=np.float64)
             for s in self.structure.now_data
         ], dtype=np.float64)
-        virials_array = concat_nep_dft_array(np.asarray(virials, dtype=np.float64), ref_virials, deepmd=True, quantity="virials")
+        virials_array = concat_nep_dft_array(np.asarray(virials, dtype=np.float64), ref_virials, deepmd=True)
         virials_array = np.asarray(virials_array, dtype=get_storage_float_dtype())
 
         if virials_array.size != 0 and self.cache_outputs_enabled():
             np.savetxt(self.virial_out_path, virials_array, fmt='%.17g')
         return virials_array
-    def _recalculate_and_save(self ):
-        """Recompute NEP predictions and persist freshly generated outputs.
-
-        Returns
-        -------
-        tuple[numpy.ndarray, numpy.ndarray, numpy.ndarray]
-            Energy, force, and virial arrays that were written to disk.
-        """
-        try:
-            prediction = self.nep_calc.predict(self.structure.now_data.tolist())
-            nep_potentials_array = np.asarray(prediction.energy, dtype=np.float64)
-            nep_forces_array = np.asarray(prediction.forces, dtype=np.float64)
-            nep_virials_array = np.asarray(prediction.structure_virials, dtype=np.float64)
-            if nep_potentials_array.size == 0:
-                MessageManager.send_warning_message("The nep calculator fails to calculate the potentials, use the original potentials instead.")
-            energy_array = self._save_energy_data(nep_potentials_array)
-            force_array = self._save_force_data(nep_forces_array)
-            virial_array = self._save_virial_and_data(nep_virials_array[:, [0, 4, 8, 1, 5, 6]])
-            self._force_recalculate_outputs = False
-            return energy_array,force_array,virial_array
-        except Exception as e:
-            # logger.debug(traceback.format_exc())
-            MessageManager.send_error_message(f"An error occurred while running NEP calculator: {e}")
-            return np.array([]), np.array([]), np.array([])
+    def _recalculate_and_save(self):
+        """Recompute NEP predictions and cache them when the paths are writable."""
+        prediction = self.nep_calc.predict(self.structure.now_data.tolist())
+        energy = np.asarray(prediction.energy, dtype=np.float64)
+        if not energy.size:
+            raise ValueError(self.tr("NEP returned no energy predictions."))
+        forces = np.asarray(prediction.forces, dtype=np.float64)
+        virials = np.asarray(prediction.structure_virials, dtype=np.float64)
+        return (
+            self._save_energy_data(energy),
+            self._save_force_data(forces),
+            self._save_virial_and_data(virials[:, [0, 4, 8, 1, 5, 6]]),
+        )
     def export_model_xyz(self, save_path: PathLike) -> None:
         """Export current and removed structures into dedicated directories.
 
@@ -447,12 +436,6 @@ class DeepmdResultData(ResultData):
             ``export_remove_model`` folders.
         """
         target = as_path(save_path)
-        try:
-            save_npy_structure(str(target / 'export_good_model'), self.structure.now_data)
-            save_npy_structure(str(target / 'export_remove_model'), self.structure.remove_data)
-            MessageManager.send_info_message(f'File exported to: {target}')
-        except Exception:
-            MessageManager.send_info_message(
-                'An unknown error occurred while saving. The error message has been output to the log!'
-            )
-            logger.error(traceback.format_exc())
+        save_npy_structure(str(target / 'export_good_model'), self.structure.now_data)
+        save_npy_structure(str(target / 'export_remove_model'), self.structure.remove_data)
+        MessageManager.send_info_message(f'File exported to: {target}')

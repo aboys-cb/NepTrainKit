@@ -151,6 +151,38 @@ def _structure(natoms: int) -> Structure:
     )
 
 
+def test_mforce_extxyz_label_populates_nep_reference_and_cached_plot(tmp_path: Path):
+    structure = Structure.parse_xyz(
+        '2\n'
+        'Lattice="1 0 0 0 1 0 0 0 1" Properties=species:S:1:pos:R:3:mforce:R:3\n'
+        'Fe 0 0 0 0.1 0.2 0.3\n'
+        'Fe 0 0 0 0 0 0\n'
+    )
+    result = NepTrainResultData(
+        tmp_path / "nep.txt",
+        tmp_path / "train.xyz",
+        tmp_path / "energy_train.out",
+        tmp_path / "force_train.out",
+        tmp_path / "stress_train.out",
+        tmp_path / "virial_train.out",
+        tmp_path / "descriptor.out",
+        spin_force_out_path=tmp_path / "mforce_train.out",
+        spin_model=True,
+    )
+    result.set_cache_outputs_override(False)
+    result.set_structures([structure])
+    result.load_structures()
+    predicted = np.ones((2, 3))
+    expected_reference = np.array([[0.1, 0.2, 0.3], [0, 0, 0]])
+
+    np.testing.assert_allclose(result._save_spin_force_data(predicted)[:, 3:], expected_reference)
+    stale = np.column_stack((predicted, predicted))
+    np.testing.assert_allclose(
+        result._restore_cached_spin_force_reference(stale)[:, 3:], expected_reference
+    )
+    assert structure.spin_num == 1
+
+
 def test_spin_cached_outputs_load_mforce_without_stress_while_generating_descriptor(tmp_path: Path):
     for name, text in {
         "energy_train.out": "1.0 10.0\n",

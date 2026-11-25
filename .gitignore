@@ -10,7 +10,10 @@
 .idea/
 /src/NepTrainKit/?.py
 /src/NepTrainKit/_version.py
+/src/NepTrainKit/src_rc.py
 /src/NepTrainKit/Log/*.log
+/src/NepTrainKit/translations/*.qm
+/src/NepTrainKit/translations/.qm-build-*/
 .pytest_cache/
 .superpowers/
 tests/_sandbox_tmp/
@@ -32,4 +35,10 @@ tests/pytest-cache-files-*/
 /tests/data/**/descriptor.pca2.npy
 /tests/data/**/nep.in
 /tests/data/nep/*.out
+/tests/data/dipole/*.out
+/tests/data/polarizability/*.out
 /tests/data/nep/prediction.meta.json
+
+# Coverage data written by local `pytest --cov` runs
+.coverage
+.coverage.*

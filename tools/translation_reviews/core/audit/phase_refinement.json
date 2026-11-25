@@ -1,0 +1,126 @@
+{
+  "items": [
+    {
+      "path": "src/NepTrainKit/core/audit/phase_refinement.py",
+      "source": "positions must be N x 3 and match atom_types",
+      "id": 69,
+      "review": "hidden",
+      "review_note": "物相细分与参考匹配的异常在现行物相库存路径中被捕获，降级为 unresolved / 无确认有序相；不能按弹窗原文漏译计。",
+      "evidence": [
+        "src/NepTrainKit/core/audit/phase_inventory.py:253",
+        "src/NepTrainKit/core/audit/phase_inventory.py:263",
+        "src/NepTrainKit/core/audit/phase_inventory.py:274"
+      ]
+    },
+    {
+      "path": "src/NepTrainKit/core/audit/phase_refinement.py",
+      "source": "phase refinement requires at least one atom",
+      "id": 70,
+      "review": "hidden",
+      "review_note": "物相细分与参考匹配的异常在现行物相库存路径中被捕获，降级为 unresolved / 无确认有序相；不能按弹窗原文漏译计。",
+      "evidence": [
+        "src/NepTrainKit/core/audit/phase_inventory.py:253",
+        "src/NepTrainKit/core/audit/phase_inventory.py:263",
+        "src/NepTrainKit/core/audit/phase_inventory.py:274"
+      ]
+    },
+    {
+      "path": "src/NepTrainKit/core/audit/phase_refinement.py",
+      "source": "a_types and b_types must be supplied together",
+      "id": 71,
+      "review": "hidden",
+      "review_note": "物相细分与参考匹配的异常在现行物相库存路径中被捕获，降级为 unresolved / 无确认有序相；不能按弹窗原文漏译计。",
+      "evidence": [
+        "src/NepTrainKit/core/audit/phase_inventory.py:253",
+        "src/NepTrainKit/core/audit/phase_inventory.py:263",
+        "src/NepTrainKit/core/audit/phase_inventory.py:274"
+      ]
+    },
+    {
+      "path": "src/NepTrainKit/core/audit/phase_refinement.py",
+      "source": "A/B type groups must be non-empty and disjoint",
+      "id": 72,
+      "review": "hidden",
+      "review_note": "物相细分与参考匹配的异常在现行物相库存路径中被捕获，降级为 unresolved / 无确认有序相；不能按弹窗原文漏译计。",
+      "evidence": [
+        "src/NepTrainKit/core/audit/phase_inventory.py:253",
+        "src/NepTrainKit/core/audit/phase_inventory.py:263",
+        "src/NepTrainKit/core/audit/phase_inventory.py:274"
+      ]
+    },
+    {
+      "path": "src/NepTrainKit/core/audit/phase_refinement.py",
+      "source": "A/B type groups must cover every atom type in the structure",
+      "id": 73,
+      "review": "hidden",
+      "review_note": "物相细分与参考匹配的异常在现行物相库存路径中被捕获，降级为 unresolved / 无确认有序相；不能按弹窗原文漏译计。",
+      "evidence": [
+        "src/NepTrainKit/core/audit/phase_inventory.py:253",
+        "src/NepTrainKit/core/audit/phase_inventory.py:263",
+        "src/NepTrainKit/core/audit/phase_inventory.py:274"
+      ]
+    },
+    {
+      "path": "src/NepTrainKit/core/audit/phase_refinement.py",
+      "source": "the Laves B-site CSP requires six B neighbors",
+      "id": 74,
+      "review": "hidden",
+      "review_note": "物相细分与参考匹配的异常在现行物相库存路径中被捕获，降级为 unresolved / 无确认有序相；不能按弹窗原文漏译计。",
+      "evidence": [
+        "src/NepTrainKit/core/audit/phase_inventory.py:253",
+        "src/NepTrainKit/core/audit/phase_inventory.py:263",
+        "src/NepTrainKit/core/audit/phase_inventory.py:274"
+      ]
+    }
+  ],
+  "retained_candidates": [
+    {
+      "path": "src/NepTrainKit/core/audit/phase_refinement.py",
+      "source": "positions must be N x 3 and match atom_types",
+      "context": null,
+      "rendered": "positions must be N x 3 and match atom_types",
+      "review": "hidden",
+      "reason": "物相细分与参考匹配的异常在现行物相库存路径中被捕获，降级为 unresolved / 无确认有序相；不能按弹窗原文漏译计。"
+    },
+    {
+      "path": "src/NepTrainKit/core/audit/phase_refinement.py",
+      "source": "phase refinement requires at least one atom",
+      "context": null,
+      "rendered": "phase refinement requires at least one atom",
+      "review": "hidden",
+      "reason": "物相细分与参考匹配的异常在现行物相库存路径中被捕获，降级为 unresolved / 无确认有序相；不能按弹窗原文漏译计。"
+    },
+    {
+      "path": "src/NepTrainKit/core/audit/phase_refinement.py",
+      "source": "a_types and b_types must be supplied together",
+      "context": null,
+      "rendered": "a_types and b_types must be supplied together",
+      "review": "hidden",
+      "reason": "物相细分与参考匹配的异常在现行物相库存路径中被捕获，降级为 unresolved / 无确认有序相；不能按弹窗原文漏译计。"
+    },
+    {
+      "path": "src/NepTrainKit/core/audit/phase_refinement.py",
+      "source": "A/B type groups must be non-empty and disjoint",
+      "context": null,
+      "rendered": "A/B type groups must be non-empty and disjoint",
+      "review": "hidden",
+      "reason": "物相细分与参考匹配的异常在现行物相库存路径中被捕获，降级为 unresolved / 无确认有序相；不能按弹窗原文漏译计。"
+    },
+    {
+      "path": "src/NepTrainKit/core/audit/phase_refinement.py",
+      "source": "A/B type groups must cover every atom type in the structure",
+      "context": null,
+      "rendered": "A/B type groups must cover every atom type in the structure",
+      "review": "hidden",
+      "reason": "物相细分与参考匹配的异常在现行物相库存路径中被捕获，降级为 unresolved / 无确认有序相；不能按弹窗原文漏译计。"
+    },
+    {
+      "path": "src/NepTrainKit/core/audit/phase_refinement.py",
+      "source": "the Laves B-site CSP requires six B neighbors",
+      "context": null,
+      "rendered": "the Laves B-site CSP requires six B neighbors",
+      "review": "hidden",
+      "reason": "物相细分与参考匹配的异常在现行物相库存路径中被捕获，降级为 unresolved / 无确认有序相；不能按弹窗原文漏译计。"
+    }
+  ]
+}

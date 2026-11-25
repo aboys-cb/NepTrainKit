@@ -16,8 +16,12 @@ from NepTrainKit.core import MessageManager
 
 
 def get_rmse(array1: npt.NDArray[np.floating], array2: npt.NDArray[np.floating]) -> float:
-    """Return the root mean squared error between two arrays."""
-    return float(np.sqrt(((array1 - array2) ** 2).mean()))
+    """Return the root mean squared error over finite pairs."""
+    diff = array1 - array2
+    finite = np.isfinite(diff)
+    if not finite.all():
+        diff = diff[finite]
+    return float(np.sqrt((diff ** 2).mean())) if diff.size else float("nan")
 
 
 def read_nep_in(file_name: str | Path) -> dict[str, str]:
@@ -111,21 +115,8 @@ def get_xyz_nframe(path: Path | str) -> int:
     nums = re.findall(r"^(\d+)$", content, re.MULTILINE)
     return len(nums)
 
-def concat_nep_dft_array(nep_array: npt.NDArray[Any], dft_array: npt.NDArray[Any], deepmd: bool = False, quantity: str = "values") -> npt.NDArray[Any]:
-    """Concatenate ``nep_array`` with ``dft_array``."""
-
+def concat_nep_dft_array(nep_array: npt.NDArray[Any], dft_array: npt.NDArray[Any], deepmd: bool = False) -> npt.NDArray[Any]:
+    """Pair predictions and references in the format's column order, preserving missing values."""
     if nep_array.size == 0:
-        np.nan_to_num(dft_array, copy=False, nan=0.0)
-        nep_dft_array = np.column_stack([dft_array, dft_array])
-    else:
-        mask = np.isnan(dft_array)
-        if mask.any():
-            MessageManager.send_warning_message(f"Missing DFT {quantity}; using NEP {quantity} instead.")
-
-        dft_array[mask] = nep_array[mask]
-        if deepmd:
-            nep_dft_array = np.column_stack([dft_array, nep_array])
-        else:
-            nep_dft_array = np.column_stack([nep_array, dft_array])
-
-    return nep_dft_array
+        nep_array = np.full(dft_array.shape, np.nan)
+    return np.column_stack((dft_array, nep_array) if deepmd else (nep_array, dft_array))

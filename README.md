@@ -40,6 +40,8 @@ nepkit
 NepTrainKit
 ```
 
+For development from a Git checkout, `python -m pip install -e .` builds the Qt resources. If you run directly with `PYTHONPATH=src`, generate them first with `pyside6-rcc src/NepTrainKit/src.qrc -o src/NepTrainKit/src_rc.py`.
+
 ### NEP compute backend
 
 NepTrainKit does not compile the NEP compute backend into the application. `pip` installs the separate `nep-adapters` dependency:

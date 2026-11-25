@@ -1,0 +1,52 @@
+{
+  "items": [
+    {
+      "path": "src/NepTrainKit/translations/neptrainkit_zh_CN.ts",
+      "context": "TrainingSetAuditWidget",
+      "source": "<b>{scope}: structural order</b> &nbsp; {phases}<br>Analyzed all {analyzed:,} structures; {strong:,} have strong evidence.{confirmed} This classifies local structure; it does not predict thermodynamic stability.",
+      "id": 13,
+      "review": "technical",
+      "review_note": "中文句子已完整；剩余为参数取值、数组字段、软件包名称、晶面记号、格式示例或 HTML 标记。动态异常插槽的内容不在本条结论内。",
+      "evidence": [
+        "src/NepTrainKit/translations/neptrainkit_zh_CN.ts",
+        "src/NepTrainKit/ui/pages/show_nep.py:1414",
+        "src/NepTrainKit/ui/widgets/card_metadata.py:1454"
+      ]
+    },
+    {
+      "path": "src/NepTrainKit/translations/neptrainkit_zh_CN.ts",
+      "context": "TrainingSetAuditWidget",
+      "source": "<b>{scope}: magnetic order</b> &nbsp; {orders}<br>Analyzed {analyzed:,} spin structures; {missing:,} lack a valid spin:R:3 field. Pattern evidence: net moment ratio {net:.2f}, collinearity {col:.2f}, q-peak {q:.2f}. This is a snapshot-pattern classification, not a thermodynamic FM/AFM/PM claim.",
+      "id": 14,
+      "review": "technical",
+      "review_note": "中文句子已完整；剩余为参数取值、数组字段、软件包名称、晶面记号、格式示例或 HTML 标记。动态异常插槽的内容不在本条结论内。",
+      "evidence": [
+        "src/NepTrainKit/translations/neptrainkit_zh_CN.ts",
+        "src/NepTrainKit/ui/pages/show_nep.py:1414",
+        "src/NepTrainKit/ui/widgets/card_metadata.py:1454"
+      ]
+    }
+  ],
+  "retained_candidates": [
+    {
+      "path": "src/NepTrainKit/translations/neptrainkit_zh_CN.ts",
+      "source": "<b>{scope}: structural order</b> &nbsp; {phases}<br>Analyzed all {analyzed:,} structures; {strong:,} have strong evidence.{confirmed} This classifies local structure; it does not predict thermodynamic stability.",
+      "context": "TrainingSetAuditWidget",
+      "rendered": [
+        "<b>{scope}：结构相</b> &nbsp; {phases}<br>已分析全部 {analyzed:,} 个结构；其中 {strong:,} 个具有强证据。{confirmed}这里只判断局域结构，不预测热力学稳定性。"
+      ],
+      "review": "technical",
+      "reason": "已核对完整中文结果；余下为技术字段、格式标记、枚举值或 HTML 标签。"
+    },
+    {
+      "path": "src/NepTrainKit/translations/neptrainkit_zh_CN.ts",
+      "source": "<b>{scope}: magnetic order</b> &nbsp; {orders}<br>Analyzed {analyzed:,} spin structures; {missing:,} lack a valid spin:R:3 field. Pattern evidence: net moment ratio {net:.2f}, collinearity {col:.2f}, q-peak {q:.2f}. This is a snapshot-pattern classification, not a thermodynamic FM/AFM/PM claim.",
+      "context": "TrainingSetAuditWidget",
+      "rendered": [
+        "<b>{scope}：磁序</b> &nbsp; {orders}<br>已分析 {analyzed:,} 个含自旋结构；{missing:,} 个缺少有效的 spin:R:3 字段。模式证据：净磁矩比 {net:.2f}、共线度 {col:.2f}、q 峰强度 {q:.2f}。这里只判断单帧自旋模式，不作热力学 FM/AFM/PM 结论。"
+      ],
+      "review": "technical",
+      "reason": "已核对完整中文结果；余下为技术字段、格式标记、枚举值或 HTML 标签。"
+    }
+  ]
+}

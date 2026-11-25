@@ -162,49 +162,53 @@ def import_dataset_catalog(
         f"Catalog {catalog.catalog_id}@{catalog.catalog_version}. "
         f"{catalog.project_notes}"
     ).strip()
-    project = project_service.create_project(catalog.project_name, provenance)
-    if project is None:
-        raise ValueError(f"Project already exists or could not be created: {catalog.project_name}")
+    if project_service.db.path.resolve() != model_service.db.path.resolve():
+        raise ValueError("Catalog services must use the same database.")
+    with project_service.db.write_session() as session:
+        project = project_service.create_project(catalog.project_name, provenance, _session=session)
+        if project is None:
+            raise ValueError(f"Project already exists or could not be created: {catalog.project_name}")
 
-    pending = list(catalog.models)
-    imported_ids: dict[int, int] = {}
-    while pending:
-        next_pending: list[CatalogModel] = []
-        made_progress = False
-        for model in pending:
-            if model.parent_id is not None and model.parent_id not in imported_ids:
-                next_pending.append(model)
-                continue
-            created = model_service.add_version(
-                project_id=project.id,
-                name=model.name,
-                model_type=model.model_type,
-                model_path=model.model_path,
-                data_size=model.data_size,
-                energy=model.energy,
-                force=model.force,
-                virial=model.virial,
-                tags=list(model.tags),
-                notes=model.notes,
-                parent_id=(
-                    imported_ids[model.parent_id]
-                    if model.parent_id is not None
-                    else None
-                ),
-                id=model.catalog_id if preserve_catalog_ids else None,
-            )
-            imported_ids[model.catalog_id] = int(created.id)
-            made_progress = True
-        if not made_progress:
-            unresolved = ", ".join(str(model.catalog_id) for model in next_pending)
-            raise CatalogValidationError(
-                f"catalog parent graph contains a cycle: {unresolved}"
-            )
-        pending = next_pending
+        pending = list(catalog.models)
+        imported_ids: dict[int, int] = {}
+        while pending:
+            next_pending: list[CatalogModel] = []
+            made_progress = False
+            for model in pending:
+                if model.parent_id is not None and model.parent_id not in imported_ids:
+                    next_pending.append(model)
+                    continue
+                created = model_service.add_version(
+                    project_id=project.id,
+                    name=model.name,
+                    model_type=model.model_type,
+                    model_path=model.model_path,
+                    data_size=model.data_size,
+                    energy=model.energy,
+                    force=model.force,
+                    virial=model.virial,
+                    tags=list(model.tags),
+                    notes=model.notes,
+                    parent_id=(
+                        imported_ids[model.parent_id]
+                        if model.parent_id is not None
+                        else None
+                    ),
+                    id=model.catalog_id if preserve_catalog_ids else None,
+                    _session=session,
+                )
+                imported_ids[model.catalog_id] = int(created.id)
+                made_progress = True
+            if not made_progress:
+                unresolved = ", ".join(str(model.catalog_id) for model in next_pending)
+                raise CatalogValidationError(
+                    f"catalog parent graph contains a cycle: {unresolved}"
+                )
+            pending = next_pending
 
-    return CatalogImportResult(
-        project_id=int(project.id),
-        catalog_id=catalog.catalog_id,
-        catalog_version=catalog.catalog_version,
-        imported_models=len(imported_ids),
-    )
+        return CatalogImportResult(
+            project_id=int(project.id),
+            catalog_id=catalog.catalog_id,
+            catalog_version=catalog.catalog_version,
+            imported_models=len(imported_ids),
+        )

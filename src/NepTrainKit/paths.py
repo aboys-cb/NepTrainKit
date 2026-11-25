@@ -94,6 +94,62 @@ def get_bundled_nep89_path() -> Path:
     return module_path / "Config" / "nep89.txt"
 
 
+#: Portable stand-in for the bundled model, written into exported JSON.
+#:
+#: A workflow that uses the bundled model should keep working on another machine
+#: or another install location, so its configuration stores this token instead
+#: of an absolute path. User-chosen files keep their own path: only the bundled
+#: asset can be resolved everywhere.
+BUNDLED_NEP89_TOKEN = "bundled:nep89"
+
+
+def portable_model_path(path) -> str:
+    """Return ``path`` as a portable token when it is the bundled model.
+
+    Parameters
+    ----------
+    path : PathLike or str
+        Model path as currently displayed in the interface.
+
+    Returns
+    -------
+    str
+        ``BUNDLED_NEP89_TOKEN`` for the bundled model, otherwise the original
+        path so user selections stay explicit.
+    """
+    text = str(path or "")
+    if not text.strip():
+        return text
+    try:
+        resolved = Path(text).expanduser().resolve()
+        bundled = get_bundled_nep89_path().resolve()
+    except OSError:
+        return text
+    return BUNDLED_NEP89_TOKEN if resolved == bundled else text
+
+
+def resolve_model_path(value) -> Path:
+    """Resolve a serialized model path, expanding the bundled-model token.
+
+    Absolute paths from older exports are returned unchanged, so previously
+    saved workflows keep loading.
+
+    Parameters
+    ----------
+    value : PathLike or str
+        Value from card parameters or an exported JSON file.
+
+    Returns
+    -------
+    Path
+        A filesystem path suitable for opening.
+    """
+    text = str(value or "").strip()
+    if text == BUNDLED_NEP89_TOKEN:
+        return get_bundled_nep89_path()
+    return Path(text).expanduser()
+
+
 __all__ = [
     'PathLike',
     'as_path',
@@ -103,4 +159,7 @@ __all__ = [
     'check_path_type',
     'get_user_config_path',
     'get_bundled_nep89_path',
+    'BUNDLED_NEP89_TOKEN',
+    'portable_model_path',
+    'resolve_model_path',
 ]

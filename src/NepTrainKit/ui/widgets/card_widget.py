@@ -2,6 +2,7 @@
 
 import inspect
 import json
+from copy import deepcopy
 from pathlib import Path
 from typing import Any
 
@@ -24,7 +25,9 @@ from qfluentwidgets.components.widgets.card_widget import CardSeparator, SimpleC
 from NepTrainKit.core import CardManager, MessageManager
 from NepTrainKit.core.card_manager import build_card_metadata
 from NepTrainKit.core.cards.operation import DatasetOperation, GeneratorOperation, StructureOperation
+from NepTrainKit.core.io.atomic import atomic_text_output
 from NepTrainKit.core.magnetism import prepare_magnetic_extxyz_export
+from NepTrainKit.core.workflow import CARD_REGISTRY, card_operation_type
 from NepTrainKit.i18n import localized_docs_url
 from NepTrainKit.ui.dialogs import call_path_dialog
 from NepTrainKit.ui.messages import translate_runtime_error, translate_runtime_message
@@ -34,6 +37,18 @@ from NepTrainKit.ui.threads import BackgroundTask, DataProcessingThread, FilterP
 from .card_metadata import CardMetadataDialog, localized_card_description
 from .compact_form import CategoryTag, StatusBadge, StatusDot
 from .label import ProcessLabel
+
+
+def snapshot_card_dataset(dataset):
+    """Copy arrays and nested info without retaining a live ASE calculator."""
+    return deepcopy([atoms.copy() for atoms in dataset])
+
+
+def write_card_dataset(file, dataset, **kwargs):
+    """Write ASE structures atomically without reading mutable widget state."""
+    exported = [prepare_magnetic_extxyz_export(atoms) for atoms in dataset]
+    with atomic_text_output(file, append=kwargs.get("append", False)) as handle:
+        ase_write(handle, exported, format="extxyz", **kwargs)
 
 
 class HeaderCardWidget(SimpleCardWidget):
@@ -809,6 +824,7 @@ class MakeDataCard(MakeDataCardWidget):
         self._last_elapsed_seconds: float | None = None
         self.run_outcome = "idle"
         self._cancel_requested = False
+        self._results_invalidated = False
         self.index = 0
         self.setting_widget = QWidget(self)
         self.viewLayout.setContentsMargins(3, 6, 3, 6)
@@ -851,6 +867,7 @@ class MakeDataCard(MakeDataCardWidget):
             self.summary_label.setToolTip(summary)
         self.summary_label.setVisible(show_summary)
         self.status_label.setVisible(not compact)
+        self._sync_empty_body_visibility()
 
     def _compact_detail_text(self) -> str:
         """Return the stable single-line settings summary for the canvas."""
@@ -870,7 +887,42 @@ class MakeDataCard(MakeDataCardWidget):
     def refresh_compact_presentation(self) -> None:
         """Refresh the canvas summary after parameters or inspector state change."""
         self._refresh_collapsed_summary()
+        self._sync_empty_body_visibility()
         self.presentationChanged.emit()
+
+    def _sync_empty_body_visibility(self) -> None:
+        """Hide a body that holds no visible content so collapsed cards stay tight.
+
+        Parameter editors live in the right inspector, so a card whose
+        parameters are inspector-hosted keeps an empty ``view`` container and
+        a divider between the header and that empty space. Both are pure
+        whitespace once nothing inside ``view`` is visible.
+        """
+        if not hasattr(self, "view") or not hasattr(self, "separator"):
+            return
+        # The portrait group tile owns its own header and deliberately hides
+        # both the body and the divider; never re-show them from here.
+        if getattr(self, "_group_tile_enabled", False):
+            return
+        if getattr(self, "window_state", "collapse") == "expand":
+            self.view.show()
+            self.separator.show()
+            return
+        layout = self.view.layout()
+        has_visible_content = False
+        if layout is not None:
+            for index in range(layout.count()):
+                item = layout.itemAt(index)
+                widget = item.widget() if item is not None else None
+                if widget is not None and not widget.isHidden():
+                    has_visible_content = True
+                    break
+                child_layout = item.layout() if item is not None else None
+                if child_layout is not None and child_layout.count():
+                    has_visible_content = True
+                    break
+        self.view.setVisible(has_visible_content)
+        self.separator.setVisible(has_visible_content)
 
     @staticmethod
     def _safe_count(value) -> int:
@@ -906,6 +958,28 @@ class MakeDataCard(MakeDataCardWidget):
         """
         return ""
 
+    @staticmethod
+    def _first_structure(dataset):
+        if dataset is None:
+            return None
+        if hasattr(dataset, "arrays") and hasattr(dataset, "get_chemical_symbols"):
+            return dataset
+        try:
+            return next(iter(dataset))
+        except (StopIteration, TypeError):
+            return None
+
+    @staticmethod
+    def _dataset_count(dataset) -> int:
+        if dataset is None:
+            return 0
+        if hasattr(dataset, "arrays") and hasattr(dataset, "get_chemical_symbols"):
+            return 1
+        try:
+            return len(dataset)
+        except TypeError:
+            return 0
+
     def set_dataset(self, dataset):
         """Attach the dataset to be processed by the card.
 
@@ -934,15 +1008,12 @@ class MakeDataCard(MakeDataCardWidget):
         **kwargs
             Additional keyword arguments forwarded to `ase.io.write`.
         """
-        export_dataset = [
-            prepare_magnetic_extxyz_export(atoms)
-            for atoms in self.result_dataset
-        ]
-        ase_write(file, export_dataset, format="extxyz", **kwargs)
+        write_card_dataset(file, self.result_dataset, **kwargs)
 
     def export_data(self):
         """Prompt the user for an export path and dump results if available."""
-        if self.dataset is not None:
+        if self.run_outcome == "succeeded" and not self._results_invalidated and self.result_dataset:
+            snapshot = snapshot_card_dataset(self.result_dataset)
             path = call_path_dialog(
                 self,
                 self.tr("Choose a file save location"),
@@ -953,7 +1024,7 @@ class MakeDataCard(MakeDataCardWidget):
             if not path:
                 return
             thread = BackgroundTask(self, show_tip=True, title=self.tr("Exporting data"))
-            thread.start_work(self.write_result_dataset, path)
+            thread.start_work(write_card_dataset, path, snapshot)
 
     def process_structure(self, structure):
         """Transform a single structure and return derived results.
@@ -983,7 +1054,10 @@ class MakeDataCard(MakeDataCardWidget):
         """Apply UI-independent operation parameters to the card widgets."""
 
     def create_operation(self):
-        """Return a UI-independent operation object for migrated cards."""
+        """Build the registered operation for a built-in card."""
+        for cls in type(self).__mro__:
+            if cls.__module__.startswith("NepTrainKit.ui.views._card.") and cls.__name__ in CARD_REGISTRY:
+                return card_operation_type(cls.__name__)()
         return None
 
     def closeEvent(self, event):
@@ -1026,10 +1100,12 @@ class MakeDataCard(MakeDataCardWidget):
         return was_running, was_running
 
     def _wait_for_worker_thread(self):
-        """Wait for a worker that just emitted completion before deleting it."""
+        """Ignore obsolete completion signals and wait before deleting a worker."""
         if not hasattr(self, "worker_thread"):
             return None
         thread = self.worker_thread
+        if self.sender() is not thread:
+            return None
         if thread.isRunning():
             thread.wait()
         return thread
@@ -1047,6 +1123,7 @@ class MakeDataCard(MakeDataCardWidget):
                 return
             self.run_outcome = "running"
             self._cancel_requested = False
+            self._results_invalidated = False
             self.result_dataset = []
             self._last_elapsed_seconds = None
             self.set_output_available(False)
@@ -1109,9 +1186,13 @@ class MakeDataCard(MakeDataCardWidget):
         worker_thread = self._wait_for_worker_thread()
         if worker_thread is None:
             return
-        self.result_dataset = worker_thread.result_dataset
+        self.result_dataset = [] if self._results_invalidated else worker_thread.result_dataset
         self._last_elapsed_seconds = worker_thread.elapsed_seconds
-        if self._cancel_requested or getattr(worker_thread, "outcome", "") == "canceled":
+        if (
+            self._results_invalidated
+            or self._cancel_requested
+            or getattr(worker_thread, "outcome", "") == "canceled"
+        ):
             del self.worker_thread
             self._apply_canceled_state()
             self.runFinishedSignal.emit(self.index)
@@ -1138,6 +1219,11 @@ class MakeDataCard(MakeDataCardWidget):
         if worker_thread is None:
             return
         self.result_dataset = []
+        if self._results_invalidated:
+            del self.worker_thread
+            self._apply_canceled_state()
+            self.runFinishedSignal.emit(self.index)
+            return
         self._last_elapsed_seconds = getattr(worker_thread, "elapsed_seconds", None)
         del self.worker_thread
         self.run_outcome = "failed"

@@ -697,3 +697,190 @@ msgstr ""
 #~ " string fields round-trip with their"
 #~ " original types, while atom order is"
 #~ " canonicalized by `type_map`."
+
+#: ../../source/formats.md
+msgid "`dump` / `lammpstrj` / `.gz`"
+msgstr "`dump` / `lammpstrj` / `.gz`"
+
+#: ../../source/formats.md
+msgid "查看 LAMMPS 轨迹；数值 `type` 会先从同目录 data/in 文件解析，仍缺时再询问"
+msgstr ""
+"View LAMMPS trajectories; numeric `type` values are first resolved from "
+"data/in files in the same directory, with a prompt for any missing mappings"
+
+#: ../../source/formats.md:113
+msgid "`dump.gz` / `lammpstrj.gz`（`custom/gz` 输出）"
+msgstr "`dump.gz` / `lammpstrj.gz` (`custom/gz` output)"
+
+#: ../../source/formats.md:115
+msgid ""
+"支持正交、斜方（restricted triclinic）以及 `dump_modify triclinic/general` 的通用三斜晶胞， 也支持"
+" gzip 压缩的 dump。导入后建议先抽查晶胞、元素类型和坐标单位是否符合预期。"
+msgstr ""
+"Orthogonal, restricted triclinic, and general triclinic cells written with "
+"`dump_modify triclinic/general` are supported, as are gzip-compressed dumps."
+" After importing, check that the cell, element types, and coordinate units "
+"match your expectations."
+
+#: ../../source/formats.md:118
+msgid ""
+"每一帧需要一个完整坐标三元组（`xs/ys/zs`、`x/y/z`、`xu/yu/zu`、`xsu/ysu/zsu` 之一） 以及 "
+"`element`、`typelabel` 或 `type` 列。用 `dump_modify element` 或 `dump_modify "
+"types labels` 可以直接把元素符号写进 dump；只有数值 `type` 时，导入器按以下 顺序解析："
+msgstr ""
+"Each frame requires a complete coordinate triplet (`xs/ys/zs`, `x/y/z`, "
+"`xu/yu/zu`, or `xsu/ysu/zsu`) and an `element`, `typelabel`, or `type` "
+"column. Use `dump_modify element` or `dump_modify types labels` to write "
+"element symbols directly into the dump. When only numeric `type` values are "
+"available, the importer resolves them in this order:"
+
+#: ../../source/formats.md:123
+msgid "调用方显式提供的“类型编号 → 元素”映射；"
+msgstr "An explicit type-ID-to-element mapping supplied by the caller;"
+
+#: ../../source/formats.md:124
+msgid "同目录 `*.data` / `data.*` 文件里的 `Atom Type Labels` 段；"
+msgstr ""
+"The `Atom Type Labels` section in `*.data` / `data.*` files in the same "
+"directory;"
+
+#: ../../source/formats.md:125
+msgid ""
+"同目录 `*.data` 的 `Masses` 段，以及 `in.*` 脚本里的 `mass` 命令（仅当质量在 0.1% "
+"以内唯一匹配标准原子量时采用，避免把粗粒化质量猜成元素）；"
+msgstr ""
+"The `Masses` section in nearby `*.data` files and `mass` commands in `in.*` "
+"scripts (used only when the mass uniquely matches a standard atomic weight "
+"within 0.1%, to avoid interpreting coarse-grained masses as elements);"
+
+#: ../../source/formats.md:127
+msgid "同目录 `in.*` 脚本里的 `labelmap atom` 命令；"
+msgstr "`labelmap atom` commands in `in.*` scripts in the same directory;"
+
+#: ../../source/formats.md:128
+msgid "导入界面的“类型 → 元素”输入框。"
+msgstr "The type-to-element input fields in the import dialog."
+
+#: ../../source/formats.md:130
+msgid ""
+"自动线索只采信与 dump 明显相关的文件：data 文件必须声明**相同的原子数**（或与 dump 同名）， `in.*` 脚本必须提到该 dump"
+" 文件名（或与 dump 同名）。共享目录（例如桌面）里其他体系的 data/输入文件不会参与猜测；因此对“只 dump 了某个 "
+"group”的轨迹，即使真实 data 文件在旁 也会改为询问。"
+msgstr ""
+"Automatic detection only uses files clearly associated with the dump: a data"
+" file must declare **the same atom count** (or share the dump basename), and"
+" an `in.*` script must mention the dump filename (or share its basename). "
+"Data and input files for other systems in a shared directory, such as the "
+"desktop, are not used to infer elements. Consequently, a trajectory "
+"containing only a dumped group may still require confirmation even when the "
+"original data file is nearby."
+
+#: ../../source/formats.md:135
+msgid ""
+"无法自动确定映射时会打开导入对话框：显示帧数、每帧原子数、晶胞、列名，并按类型列出元素 "
+"输入框（可直接输入符号/原子序数、自动补全，也可从元素周期表选择，已识别的会预填）。 “调整字段映射”里可以修改坐标三元组、是否读取力、自旋定义（模长 "
+"+ 方向 / 三列向量 / 忽略）以及额外列；打开时填的就是自动识别的结果，只有改动过的部分才会作为覆盖保存。 LAMMPS 的四列自旋（模长、方向 "
+"X/Y/Z）会重建成结构里的 3 分量自旋向量；额外列可以勾选 保留/忽略，也可以直接重命名输出字段（名称需唯一、非空，且不能与内置字段重名）。"
+msgstr ""
+"If the mapping cannot be determined automatically, an import dialog opens "
+"with the frame count, atom count per frame, cell, column names, and an "
+"element field for each type. You can enter an element symbol or atomic "
+"number, use autocomplete, or choose from the periodic table; recognized "
+"elements are prefilled. Under “Adjust field mapping”, you can change the "
+"coordinate triplet, whether to read forces, the spin representation "
+"(magnitude plus direction, three vector components, or ignored), and extra "
+"columns. These controls start from the automatically detected mapping, and "
+"only edited fields are saved as overrides. Four LAMMPS spin columns "
+"(magnitude and X/Y/Z direction) are reconstructed as three-component spin "
+"vectors. Extra columns can be retained, ignored, or renamed; output field "
+"names must be unique, nonempty, and distinct from built-in fields."
+
+#: ../../source/formats.md:142
+msgid ""
+"“自定义字段”可以把多列合成一个字段：填一个名称，再用逗号分隔列名（例如 `foo` 和 `c_foo[1], c_foo[2], "
+"c_foo[3]`），导入后就是 `foo:R:3`。被占用的列不会重复出现在额外列里； "
+"自定义字段名同样需要唯一，且不能与坐标/力/自旋占用的列重叠。同一处还可以选择是否按镜像标志展开坐标、保留额外列、损坏帧直接报错，以及“记住这次的 "
+"映射”。勾选后只保存**最近一次**的输入；下次导入其他 dump 时会用它预填元素和（列签名 "
+"一致时的）列覆盖，但仍然会弹窗确认，不会按目录/原子数静默跳过。"
+msgstr ""
+"“Custom fields” can combine several columns into one field: enter a name and"
+" comma-separated column names, for example `foo` and `c_foo[1], c_foo[2], "
+"c_foo[3]`, to import `foo:R:3`. Assigned columns are removed from the extra-"
+"column list. Custom field names must also be unique, and their columns must "
+"not overlap with coordinate, force, or spin columns. The same dialog lets "
+"you choose whether to unwrap coordinates using image flags, preserve extra "
+"columns, reject damaged frames, and remember this mapping. Remembering saves"
+" only the **most recent** input. The next dump import prefills those "
+"elements and, when the column signature matches, the column overrides, but "
+"still asks for confirmation; it does not silently skip the dialog based on "
+"the directory or atom count."
+
+#: ../../source/formats.md:148
+msgid ""
+"多个文件给出互相矛盾的类型映射时，冲突类型不会被猜测，而是留给界面确认。仍然无法解析的 "
+"类型会让该次导入明确失败，并列出具体类型编号；NepTrainKit 不会把未知类型替换成伪元素。"
+msgstr ""
+"If multiple files provide conflicting type mappings, the conflicting types "
+"are left for confirmation in the dialog rather than guessed. Any types that "
+"remain unresolved cause the import to fail with their specific IDs; "
+"NepTrainKit does not replace unknown types with placeholder elements."
+
+#: ../../source/formats.md:151
+msgid ""
+"其余数值列不会丢弃：`vx/vy/vz` 合并为 `vel:R:3`，其他列（`q`、`mass`、`c_pe`、`c_ID`、 `v_name` "
+"等）保留为 `dump.<列名>` 逐原子字段，导出 extxyz 时一并写出。`id`、`mol`、 `proc`、`procp1` 与镜像标志 "
+"`ix/iy/iz` 属于簿记信息，不写入结构；`ix/iy/iz` 可在 `unwrap=True` 时用于展开坐标。"
+msgstr ""
+"Other numeric columns are preserved: `vx/vy/vz` are combined as `vel:R:3`, "
+"while columns such as `q`, `mass`, `c_pe`, `c_ID`, and `v_name` become per-"
+"atom `dump.<column_name>` fields and are included in EXTXYZ exports. "
+"Bookkeeping columns `id`, `mol`, `proc`, `procp1`, and image flags "
+"`ix/iy/iz` are not stored in the structure; `ix/iy/iz` can be used to unwrap"
+" coordinates when `unwrap=True`."
+
+#: ../../source/formats.md:156
+msgid ""
+"最后帧截断（例如 LAMMPS 被中断，只写出半帧）会丢弃该帧并给出警告，保留前面的完整帧； "
+"帧头损坏或缺少必要列仍然让导入失败。需要“任何异常都报错”的调用方可以使用 `strict=True`。"
+msgstr ""
+"If the final frame is truncated, for example because LAMMPS was interrupted "
+"halfway through writing it, that frame is discarded with a warning and the "
+"preceding complete frames are retained. Damaged frame headers or missing "
+"required columns still cause the import to fail. Callers that need every "
+"anomaly to raise an error can use `strict=True`."
+
+#: ../../source/formats.md:168
+msgid ""
+"对 compute 名为 `spin` 或 `sp` 的 `c_<名称>[1..4]`，导入器把 `[1]` 解释为磁矩模长，把 "
+"`[2]`、`[3]`、`[4]` 解释为三个方向分量，并重建逐原子自旋向量："
+msgstr ""
+"For `c_<name>[1..4]` columns from a compute named `spin` or `sp`, the "
+"importer treats `[1]` as the magnetic moment magnitude and `[2]`, `[3]`, and"
+" `[4]` as its direction components, reconstructing the per-atom spin vector:"
+
+#: ../../source/formats.md:176
+msgid ""
+"只有 3 列（`c_<名称>[1..3]`，或 `c_<名称>[2..4]`）时按向量直接读取；`spx/spy/spz` 也按向量 "
+"读取。`c_spin[5]`、`c_spin[6]`、`c_spin[7]` 是磁力分量，不会写入 `spin:R:3`，但会作为 "
+"`dump.c_spin[5]` 等字段保留。缺少完整的三分量时，该帧不会生成自旋字段。"
+msgstr ""
+"When only three columns are present (`c_<name>[1..3]` or `c_<name>[2..4]`), "
+"they are read directly as vector components; `spx/spy/spz` are also read as "
+"a vector. `c_spin[5]`, `c_spin[6]`, and `c_spin[7]` are magnetic force "
+"components and are not included in `spin:R:3`, but are retained as fields "
+"such as `dump.c_spin[5]`. No spin field is created for a frame without a "
+"complete set of three components."
+
+#: ../../source/formats.md:180
+msgid ""
+"原子表解析优先使用随包分发的原生扩展 `NepTrainKit._native._dump`，并按帧并行；线程数默认 使用可用核心数，可用 "
+"`NEPKIT_FASTDUMP_THREADS` 限制。扩展缺失或不兼容时自动回退到等价的 Python "
+"参考实现。排查两条路径的差异时，可以设置环境变量 `NEPKIT_DISABLE_FASTDUMP=1` 强制 使用 Python 路径。"
+msgstr ""
+"Atom tables are parsed preferentially by the bundled native extension "
+"`NepTrainKit._native._dump`, with parallel processing across frames. By "
+"default it uses the available CPU cores; set `NEPKIT_FASTDUMP_THREADS` to "
+"limit the thread count. If the extension is unavailable or incompatible, the"
+" importer falls back to the equivalent Python reference implementation. To "
+"investigate differences between the two paths, set "
+"`NEPKIT_DISABLE_FASTDUMP=1` to force the Python path."

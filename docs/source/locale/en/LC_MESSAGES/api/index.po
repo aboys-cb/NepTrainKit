@@ -1611,12 +1611,15 @@ msgstr ""
 
 #: 32af56f1e72347a2aa449f380e17a2fa
 #: NepTrainKit.core.io.deepmd.DeepmdResultData:1
-#: NepTrainKit.core.io.nep.NepDipoleResultData:1
-#: NepTrainKit.core.io.nep.NepPolarizabilityResultData:1
 #: NepTrainKit.core.io.nep.NepTrainResultData:1
 #: NepTrainKit.core.io.tace.TaceResultData:1 of
 msgid "基类：:py:class:`~NepTrainKit.core.io.base.ResultData`"
 msgstr "Bases: :py:class:`~NepTrainKit.core.io.base.ResultData`"
+
+#: NepTrainKit.core.io.nep.NepDipoleResultData:1
+#: NepTrainKit.core.io.nep.NepPolarizabilityResultData:1 of
+msgid "基类：:py:class:`~NepTrainKit.core.io.nep._NepResponseResultData`"
+msgstr "Bases: :py:class:`~NepTrainKit.core.io.nep._NepResponseResultData`"
 
 #: NepTrainKit.core.io.nep.NepTrainResultData:1
 #: c051735392024a7dbd4c0d8bbec2858b of
@@ -3090,3 +3093,6 @@ msgstr ""
 
 #~ msgid "Return a stable element-set key for ASE or NepTrainKit structures."
 #~ msgstr ""
+
+msgid "Empty the selection and its undo history, notifying listeners."
+msgstr ""

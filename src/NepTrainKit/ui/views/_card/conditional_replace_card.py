@@ -9,7 +9,7 @@ from PySide6.QtWidgets import QHBoxLayout, QWidget
 from qfluentwidgets import CheckBox, ComboBox, LineEdit
 
 from NepTrainKit.core import CardManager
-from NepTrainKit.core.cards.alloy import ConditionalReplaceOperation, ConditionalReplaceParams
+from NepTrainKit.core.cards.alloy import ConditionalReplaceParams
 from NepTrainKit.core.cards.operation import params_to_dict
 from NepTrainKit.ui.messages import translate_runtime_message
 from NepTrainKit.ui.widgets import (
@@ -279,28 +279,6 @@ class ConditionalReplaceCard(MakeDataCard):
         self.seed_field.setVisible(bool(checked))
         self.refresh_compact_presentation()
 
-    @staticmethod
-    def _first_structure(dataset):
-        if dataset is None:
-            return None
-        if hasattr(dataset, "arrays") and hasattr(dataset, "get_chemical_symbols"):
-            return dataset
-        try:
-            return next(iter(dataset))
-        except (StopIteration, TypeError):
-            return None
-
-    @staticmethod
-    def _dataset_count(dataset) -> int:
-        if dataset is None:
-            return 0
-        if hasattr(dataset, "arrays") and hasattr(dataset, "get_chemical_symbols"):
-            return 1
-        try:
-            return len(dataset)
-        except TypeError:
-            return 0
-
     def set_dataset(self, dataset) -> None:
         super().set_dataset(dataset)
         self._input_structure = self._first_structure(dataset)
@@ -313,9 +291,6 @@ class ConditionalReplaceCard(MakeDataCard):
     def set_preview_structure(self, structure) -> None:
         self._input_structure = structure
         self.refresh_compact_presentation()
-
-    def create_operation(self):
-        return ConditionalReplaceOperation()
 
     def get_summary_text(self) -> str:
         try:

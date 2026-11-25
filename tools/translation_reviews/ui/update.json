@@ -1,0 +1,18 @@
+{
+  "items": [
+    {
+      "path": "src/NepTrainKit/ui/update.py",
+      "source": "Update check failed with HTTP ⟦value⟧⟦value⟧",
+      "id": 441,
+      "review": "fix",
+      "review_note": "手动更新失败会把 fetch_releases 的原始错误发给消息框；HTTP 状态提示只翻译了 failed 单词。",
+      "evidence": [
+        "src/NepTrainKit/ui/update.py:112",
+        "src/NepTrainKit/ui/update.py:302"
+      ],
+      "resolution": "whole_message",
+      "template": "Update check failed with HTTP {value0}{detail}",
+      "context": "RuntimeMessage"
+    }
+  ]
+}

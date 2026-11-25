@@ -1,0 +1,13 @@
+{
+  "items": [],
+  "retained_candidates": [
+    {
+      "path": "src/NepTrainKit/core/validation/library.py",
+      "source": "Invalid object id: ⟦value⟧",
+      "context": null,
+      "rendered": "Invalid object id: ⟦value⟧",
+      "review": "diagnostic",
+      "reason": "验证库/分享包/无头工作流的内部契约诊断：对象摘要、包格式版本、JSON 结构等，由代码抛出并在错误提示中原样呈现。它们描述的是文件损坏或调用方出错，按仓库既有约定不逐词翻译，保留英文原文以便与日志检索对齐。"
+    }
+  ]
+}

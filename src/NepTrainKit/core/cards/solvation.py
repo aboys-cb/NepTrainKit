@@ -22,6 +22,7 @@ from .geometry import (
     minimum_image_delta as exact_minimum_image_delta,
     wrapped_positions as wrap_structure_positions,
 )
+from .labels import invalidate_changed_labels
 from .operation import StructureOperation
 from .structure import OrganicMolConfigPBCOperation, OrganicMolConfigPBCParams
 
@@ -531,6 +532,7 @@ class LocalSolvationOperation(StructureOperation):
             "periodic": bool(np.any(np.asarray(structure.pbc, dtype=bool))),
         }
 
+    @invalidate_changed_labels
     def run_structure(self, structure, params: LocalSolvationParams) -> list[Atoms]:
         settings = self._validated_settings(structure, params)
         outputs = []
@@ -952,6 +954,7 @@ class SolventBoxFillOperation(StructureOperation):
             ),
         }
 
+    @invalidate_changed_labels
     def run_structure(self, structure, params: SolventBoxFillParams) -> list[Atoms]:
         settings = self._validated_settings(structure, params)
 
@@ -1567,15 +1570,6 @@ class PeriodicSpatialHash:
                     if float(np.dot(delta, delta)) < cutoff * cutoff:
                         return True
         return False
-
-    def _nearby_atoms(self, position: np.ndarray):
-        base = self._bucket_key(position)
-        rx = range(-self.neighbor_range, self.neighbor_range + 1)
-        for dx in rx:
-            for dy in rx:
-                for dz in rx:
-                    key = self._normalize_key((base[0] + dx, base[1] + dy, base[2] + dz))
-                    yield from self.buckets.get(key, ())
 
     def _bucket_key(self, position: np.ndarray) -> tuple[int, int, int]:
         position = np.asarray(position, dtype=float)

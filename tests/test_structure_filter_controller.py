@@ -361,8 +361,6 @@ def test_clearing_selection_cancels_pending_apply_before_preview_finishes():
 
 def test_invalidating_dataset_jobs_cancels_pending_filter_apply():
     page, canvas, result = _apply_page([False, True])
-    page._search_job_id = page._completer_job_id = 0
-    page._update_search_status_label = MagicMock()
     page.structure_filter_controller.invalidate_result = MagicMock()
     ShowNepWidget._apply_structure_filter_result(page, "replace")
     ShowNepWidget._invalidate_background_jobs(page)

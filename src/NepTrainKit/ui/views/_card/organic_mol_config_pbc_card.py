@@ -488,17 +488,6 @@ class OrganicMolConfigPBCCard(MakeDataCard):
         self._update_tab_order()
         self._refresh_preview()
 
-    @staticmethod
-    def _first_structure(dataset):
-        if dataset is None:
-            return None
-        if hasattr(dataset, "arrays") and hasattr(dataset, "get_chemical_symbols"):
-            return dataset
-        try:
-            return next(iter(dataset))
-        except (StopIteration, TypeError):
-            return None
-
     def set_dataset(self, dataset) -> None:
         super().set_dataset(dataset)
         self._input_structure = self._first_structure(dataset)
@@ -712,9 +701,6 @@ class OrganicMolConfigPBCCard(MakeDataCard):
             One of ``"auto"``, ``"yes"``, or ``"no"``.
         """
         return combo_value(self.pbc_combo)
-
-    def create_operation(self):
-        return OrganicMolConfigPBCOperation()
 
     def get_params(self) -> OrganicMolConfigPBCParams:
         return OrganicMolConfigPBCParams(

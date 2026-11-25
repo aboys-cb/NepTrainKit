@@ -2,11 +2,13 @@
 # -*- coding: utf-8 -*-
 import unittest
 import tempfile
+from datetime import datetime
 from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import MagicMock, patch
 
-from PySide6.QtCore import QTranslator, Qt
+from PySide6.QtCore import QModelIndex, QPoint, QTranslator, Qt
+from PySide6.QtTest import QSignalSpy, QTest
 from PySide6.QtWidgets import QApplication, QHeaderView, QWidget
 
 import NepTrainKit.ui.pages.data_manager as data_manager_module
@@ -14,6 +16,37 @@ import NepTrainKit.ui.views.project_view as project_view_module
 from NepTrainKit.ui.views.dataset_widget import ModelItemWidget
 from NepTrainKit.ui.views.project_view import ProjectWidget
 from NepTrainKit.ui.widgets.dialog import ModelInfoMessageBox
+from NepTrainKit.core.dataset.services import ModelItem
+from test_validation_ui import scored as scored, make_service as make_service
+
+
+def test_project_parent_picker_excludes_self_and_descendants(tmp_path):
+    from qfluentwidgets import ComboBox
+    from NepTrainKit.core.dataset.database import Database
+    from NepTrainKit.core.dataset.services import ProjectService
+
+    service = ProjectService(Database(tmp_path / "projects.db"))
+    root = service.create_project("root", notes="training")
+    child = service.create_project("child", parent_id=root.id)
+    service.create_project("grandchild", parent_id=child.id)
+    other = service.create_project("other")
+    with patch.object(project_view_module.QTimer, "singleShot"):
+        widget = ProjectWidget()
+    widget.project_service = service
+    widget.load_all_projects()
+    index = widget._model.index(0, 0)
+    assert index.data() == "root"
+    assert index.data(Qt.ToolTipRole) == f"root  ·  ID {root.id}\ntraining"
+    assert widget.project_count.text() == "4 projects"
+    widget._view.setCurrentIndex(index)
+    dialog = MagicMock()
+    dialog.parent_combox = ComboBox()
+    dialog.exec_.return_value = False
+    with patch.object(project_view_module, "ProjectInfoMessageBox", return_value=dialog):
+        widget.create_project(modify=True)
+    choices = [dialog.parent_combox.itemData(index) for index in range(dialog.parent_combox.count())]
+    assert choices == [None, other.id]
+    widget.close()
 
 
 class _Url:
@@ -70,10 +103,10 @@ class TestDataManagerUi(unittest.TestCase):
         self.assertEqual(model_widget.new_model_button.text(), "New model")
         self.assertEqual(
             model_widget._model.headerData(4, Qt.Orientation.Horizontal),
-            "F(meV/Å)",
+            "F RMSE\nmeV/Å",
         )
         self.assertEqual(model_widget.search_button.text(), "Search")
-        self.assertFalse(model_widget.new_model_button.isEnabled())
+        self.assertTrue(model_widget.new_model_button.isEnabled())
         self.assertFalse(model_widget.open_folder_button.isEnabled())
 
     def test_selecting_project_enables_new_model_action(self):
@@ -103,10 +136,48 @@ class TestDataManagerUi(unittest.TestCase):
             ),
         )
 
-    def test_dropped_path_prefills_existing_model_editor(self):
+    def test_model_row_click_emits_own_project_id_from_any_column(self):
+        model_widget = ModelItemWidget()
+        model_widget.model_item_dict = {}
+        model_widget.project = SimpleNamespace(project_id=7)
+        models = [
+            ModelItem(
+                model_id=model_id, model_type="NEP", name="PbTe-v2",
+                data_size=0, energy=0.0, force=0.0, virial=0.0,
+                parent_id=None, project_id=project_id, model_path="",
+                notes="", created_at=datetime(2026, 1, 1),
+            )
+            for model_id, project_id in ((11, 7), (12, 83))
+        ]
+        # Search results can include models outside the selected project.
+        model_widget.add_models_to_table(models)
+        spy = QSignalSpy(model_widget.projectChangedSignal)
+        expected_ids = []
+        for row, model in enumerate(models):
+            for column in range(model_widget._model.columnCount()):
+                index = model_widget._model.index(row, column)
+                model_widget._view.clicked.emit(index)
+                expected_ids.append(model.project_id)
+
+        self.assertEqual(spy.count(), len(expected_ids))
+        self.assertEqual(
+            [spy.at(i)[0] for i in range(spy.count())], expected_ids
+        )
+        model_widget._view.clicked.emit(QModelIndex())
+        self.assertEqual(spy.count(), len(expected_ids))
+
+    def test_suite_warnings_count_sets_and_keep_failures_visible(self):
+        widget = ModelItemWidget()
+        widget.score_columns = [{"set_id": key} for key in (1, 1, 2)]
+        widget.score_rows[7] = dict(total_sets=2, completed_sets=1, failed_sets=1, regressions=2,
+                                    cells=[{"verdict": "worse"}, {"verdict": "worse"}, {"verdict": None}])
+        self.assertEqual(widget.coverage_text(7), ("1 / 2 computed", "1 failed · 1 regression"))
+
+    def test_new_model_routes_to_the_shared_import_dialog(self):
         model_widget = ModelItemWidget()
         model_widget.project = SimpleNamespace(project_id=7)
         model_widget.model_item_dict = {}
+        spy = QSignalSpy(model_widget.importRequested)
         with patch(
             "NepTrainKit.ui.views.dataset_widget.ModelInfoMessageBox"
         ) as box_class:
@@ -115,7 +186,37 @@ class TestDataManagerUi(unittest.TestCase):
 
             model_widget.create_model(initial_path="/tmp/training-run")
 
-        box.train_path_edit.setText.assert_called_once_with("/tmp/training-run")
+        box_class.assert_not_called()
+        self.assertEqual(spy.count(), 1)
+        self.assertEqual(spy.at(0)[0], "/tmp/training-run")
+
+    def test_open_folder_opens_model_parent_or_existing_directory(self):
+        model_widget = ModelItemWidget()
+        index = MagicMock()
+        index.internalPointer.return_value.data.return_value = 11
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            folder = Path(tmp_dir) / "模型 files #1"
+            folder.mkdir()
+            model_file = folder / "nep.txt"
+            model_file.write_text("test model", encoding="utf-8")
+            with patch.object(model_widget, "_current_index", return_value=index), patch(
+                "NepTrainKit.ui.views.dataset_widget.QDesktopServices.openUrl"
+            ) as open_url:
+                for model_path in (model_file, folder):
+                    with self.subTest(model_path=model_path):
+                        model_widget.model_item_dict = {
+                            11: SimpleNamespace(model_path=str(model_path))
+                        }
+                        open_url.reset_mock()
+
+                        model_widget.open_folder()
+
+                        open_url.assert_called_once()
+                        url = open_url.call_args.args[0]
+                        self.assertTrue(url.isLocalFile())
+                        # QUrl renders separators as "/" on every platform, so
+                        # compare resolved paths rather than raw strings.
+                        self.assertEqual(Path(url.toLocalFile()), folder)
 
     def test_chinese_catalog_translates_visible_data_manager_actions(self):
         catalog = (
@@ -142,6 +243,7 @@ class TestDataManagerUi(unittest.TestCase):
         parent.resize(900, 700)
         with tempfile.TemporaryDirectory() as tmp_dir:
             model_dir = Path(tmp_dir)
+            (model_dir / "nep.txt").write_text("nep4 1 H\n")
             (model_dir / "train.xyz").write_text(
                 '1\nLattice="1 0 0 0 1 0 0 0 1" '
                 'Properties=species:S:1:pos:R:3 pbc="T T T"\nH 0 0 0\n',
@@ -161,45 +263,129 @@ class TestDataManagerUi(unittest.TestCase):
         self.assertEqual(box.energy_spinBox.text(), "1.5")
         self.assertEqual(box.force_spinBox.text(), "2.5")
         self.assertEqual(box.virial_spinBox.text(), "3.5")
-        self.assertEqual(message.call_count, 4)
+        self.assertEqual(message.call_count, 0)
 
-    @patch.object(data_manager_module.os.path, "isdir", return_value=True)
-    def test_dropped_model_folder_opens_prefilled_model_editor(self, _isdir):
-        folder = str(Path("/tmp/training-run"))
-        model_widget = SimpleNamespace(
-            project=SimpleNamespace(project_id=1),
-            create_model=MagicMock(),
-        )
-        page = SimpleNamespace(
-            data_item_widget=model_widget,
-            tr=lambda text: text,
-        )
-        event = _DropEvent([_Url(folder)])
-
-        data_manager_module.DataManagerWidget.dropEvent(page, event)
-
-        model_widget.create_model.assert_called_once_with(initial_path=folder)
-        self.assertTrue(event.accepted)
-        self.assertFalse(event.ignored)
-
-    @patch.object(data_manager_module.MessageManager, "send_info_message")
-    @patch.object(data_manager_module.os.path, "isdir", return_value=True)
-    def test_drop_without_project_explains_required_selection(
-        self, _isdir, info_message
-    ):
-        page = SimpleNamespace(
-            data_item_widget=SimpleNamespace(create_model=MagicMock()),
-            tr=lambda text: text,
-        )
-        event = _DropEvent([_Url("/tmp/training-run")])
-
-        data_manager_module.DataManagerWidget.dropEvent(page, event)
-
-        info_message.assert_called_once_with(
-            "Select a project before dropping a model folder"
-        )
+    def test_unrecognised_folder_drop_does_not_open_a_dialog(self):
+        with tempfile.TemporaryDirectory() as folder, patch.object(
+            data_manager_module, "ImportModelDialog"
+        ) as dialog:
+            event = _DropEvent([_Url(folder)])
+            data_manager_module.DataManagerWidget.dropEvent(SimpleNamespace(), event)
+        dialog.assert_not_called()
         self.assertTrue(event.ignored)
 
 
 if __name__ == "__main__":
     unittest.main()
+
+
+def test_registry_filters_projects_and_shares_live_validation_roles(scored, monkeypatch):
+    monkeypatch.setenv("NEPTRAINKIT_LIBRARY", str(scored.service.library.root))
+    monkeypatch.setattr(data_manager_module, "seed_nep_data_git", lambda *_: None)
+    page = data_manager_module.DataManagerWidget()
+    page.resize(750, 600)
+    page.show()
+    QApplication.processEvents()
+    view = page.data_item_widget
+    assert view.project_filter.currentData() is None
+    assert scored.new["id"] in view.model_item_dict
+    assert view.score_rows[scored.new["id"]]["completed_sets"] == 2
+    assert view.coverage_text(scored.new["id"])[0] == "2 / 2 computed"
+    assert view.coverage_text(scored.fresh["id"]) == ("Not run", "")
+    assert view.role(scored.old["id"]) == "baseline"
+    view.quick_search.setText("FRESH")
+    assert view.count_label.text() == "1 version"
+    index = next(view._model.index(i, 9) for i in range(view._model.rowCount())
+                 if not view._view.isRowHidden(i, QModelIndex()))
+    fresh = scored.fresh["id"]
+    assert index.internalPointer().data(0) == fresh
+    with patch.object(page.library_widget.service(), "evaluate") as predict:
+        QTest.mouseClick(view._view.viewport(), Qt.MouseButton.LeftButton, pos=view._view.visualRect(index).center())
+        assert view.role(fresh) == "compare"
+        assert fresh in page.library_widget.selected_model_ids()
+        QTest.mouseClick(view._view.viewport(), Qt.MouseButton.LeftButton, pos=view._view.visualRect(index).center())
+        assert view.role(fresh) == "hidden"
+        view.roleRequested.emit(fresh, "baseline")
+        assert view.role(fresh) == "baseline"
+        assert scored.service.get_suite(scored.suite["id"])["baseline_model_id"] == fresh
+        predict.assert_not_called()
+    assert view._view.horizontalScrollBar().maximum() == 0
+    page.close()
+    page.deleteLater()
+
+
+def test_registry_refresh_preserves_its_own_suite(scored, monkeypatch):
+    monkeypatch.setenv("NEPTRAINKIT_LIBRARY", str(scored.service.library.root))
+    monkeypatch.setattr(data_manager_module, "seed_nep_data_git", lambda *_: None)
+    other = scored.service.create_suite("EOS only", [scored.eos["id"]])
+    page = data_manager_module.DataManagerWidget()
+    page.show()
+    page.library_widget.refresh(scored.suite["id"])
+    page.show_projects()
+    view = page.data_item_widget
+    view.suite_filter.setCurrentIndex(view.suite_filter.findData(other["id"]))
+    page.show_projects()
+    assert view.suite_filter.currentData() == other["id"]
+    assert {col["set_id"] for col in view.score_columns} == {scored.eos["id"]}
+    page.close()
+    page.deleteLater()
+
+
+def test_registry_header_sorts_all_versions_and_restores_tree():
+    widget = ModelItemWidget()
+    widget.resize(1100, 600)
+    widget.show()
+    def model(key, force):
+        return ModelItem(model_id=key, model_type="NEP", name=str(key), data_size=None, energy=None,
+                         force=force, virial=None, parent_id=None, project_id=1, model_path="", notes="", created_at=None)
+    parent, child, missing, zero = model(1, 20.), model(2, 3.), model(3, None), model(4, 0.)
+    parent.children.append(child)
+    widget.add_models_to_table([parent, missing, zero])
+    header = widget._view.header()
+    x = header.sectionViewportPosition(4) + header.sectionSize(4) // 2
+    def click():
+        QTest.mouseClick(header.viewport(), Qt.MouseButton.LeftButton, pos=QPoint(x, header.height() // 2))
+    def ids():
+        return [widget._model.index(i, 0).data() for i in range(widget._model.rowCount())]
+    widget._view.setCurrentIndex(widget._model.index(0, 1, widget._model.index(0, 0)))
+    click()
+    assert ids() == [4, 2, 1, 3]
+    click()
+    assert ids() == [1, 2, 4, 3]
+    click()
+    assert ids() == [1, 3, 4]
+    assert widget._selected_model_id() == child.model_id
+    assert widget._view.currentIndex().parent().data() == parent.model_id
+    widget.close()
+
+
+def test_registry_metric_picker_uses_the_same_cached_metric_for_every_model(scored, monkeypatch):
+    from PySide6.QtWidgets import QMenu
+
+    monkeypatch.setenv("NEPTRAINKIT_LIBRARY", str(scored.service.library.root))
+    monkeypatch.setattr(data_manager_module, "seed_nep_data_git", lambda *_: None)
+    page = data_manager_module.DataManagerWidget()
+    page.show()
+    QApplication.processEvents()
+    view = page.data_item_widget
+    i = next(i for i, c in enumerate(view.score_columns)
+             if c["set_id"] == scored.efv["id"] and c["metric"] == "force_rmse")
+    with patch.object(page.library_widget.service(), "evaluate") as predict:
+        view.metric_button.click()
+        menu = QApplication.activePopupWidget()
+        assert isinstance(menu, QMenu)
+        submenu = next(group for group in menu.findChildren(QMenu) if group.title() == scored.efv["name"])
+        action = next(action for action in submenu.actions() if action.data() == i)
+        action.trigger()
+        menu.close()
+        header = view._model.headerData(8, Qt.Orientation.Horizontal)
+        assert scored.efv["name"] in header and "Force RMSE" in header
+        assert view.metric_text(scored.fresh["id"]) == ("Not run", "")
+        old = view.score_rows[scored.old["id"]]["cells"][i]["value"]
+        new = view.score_rows[scored.new["id"]]["cells"][i]["value"]
+        assert view.metric_text(scored.new["id"]) == (f"{new:.4g} meV/Å", f"vs baseline {new-old:+.4g}")
+        assert view._model.index(0, 0).data() == scored.new["id"]
+        assert view._model.index(view._model.rowCount()-1, 0).data() == scored.fresh["id"]
+        predict.assert_not_called()
+    page.close()
+    page.deleteLater()

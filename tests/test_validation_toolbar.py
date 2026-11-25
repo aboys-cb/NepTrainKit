@@ -12,6 +12,7 @@ from test_validation_ui import scored as scored
 from NepTrainKit.main import NepTrainKitMainWindow
 from NepTrainKit.ui.pages import data_manager as manager_module
 from NepTrainKit.ui.views.model_library import ModelLibraryWidget
+from NepTrainKit.ui.views.validation_workspace import ValidationWorkspace
 from NepTrainKit.ui.widgets.style_lifetime import keep_created_styles_alive
 
 
@@ -42,7 +43,7 @@ def toolbar(scored, monkeypatch):
     keep_created_styles_alive()
     monkeypatch.setattr(manager_module, "get_library", lambda: scored.service.library)
     monkeypatch.setattr(manager_module, "seed_nep_data_git", lambda *_: None)
-    monkeypatch.setattr(manager_module, "ValidationWorkspace", lambda parent: ModelLibraryWidget(parent, scored.service))
+    monkeypatch.setattr(manager_module, "ValidationWorkspace", lambda parent: ValidationWorkspace(parent, scored.service))
     host = ToolbarHost()
     page = manager_module.DataManagerWidget(host)
     page.validation_page.toolbarActionsChanged.connect(host._refresh_page_actions)
@@ -111,6 +112,7 @@ def test_top_favourite_and_save_state_follow_model_and_validation(toolbar, monke
 
     calls = []
     monkeypatch.setattr(library, "save_current", lambda: calls.append("save"))
+    library.check_visible()
     task = library.run_all()
     assert task is not None
     assert not host.save_dir_button.isEnabled() and not library.save_action.isEnabled()
@@ -386,7 +388,7 @@ def test_plain_entry_defers_result_files_and_charts_until_requested(scored):
         widget.show()
         QApplication.processEvents()
         assert widget.current_suite_id() == scored.suite['id']
-        assert widget.curves_placeholder.isVisible() and widget.splitter.isHidden()
+        assert widget.curves_placeholder.isVisible() and widget.detail.isHidden()
         assert not widget.curves_button.isChecked() and not widget.detail.eos_plots
         widget.refresh_button.click()
         widget.model_combo.setCurrentIndex(widget.model_combo.findData(scored.new['id']))
@@ -395,7 +397,7 @@ def test_plain_entry_defers_result_files_and_charts_until_requested(scored):
         widget.curves_button.click()
         assert details.call_count > 0 and plot.call_count == 1
         assert widget.detail.eos_plots and widget.curves_placeholder.isHidden()
-        assert widget.splitter.isVisible()
+        assert widget.detail.isVisible()
         widget.curves_button.click()
         details.reset_mock();plot.reset_mock()
         widget.model_combo.setCurrentIndex(widget.model_combo.findData(scored.old['id']))

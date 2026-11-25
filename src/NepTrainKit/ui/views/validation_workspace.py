@@ -57,7 +57,7 @@ from NepTrainKit.ui.views.model_library import ModelLibraryWidget, RunDetailPane
 from NepTrainKit.ui.widgets.layout import FlowLayout
 from NepTrainKit.ui.widgets.validation_gallery import ValidationGallery
 from NepTrainKit.ui.widgets.validation_presentation import presentation_for, uses_accuracy_cards, uses_curve_chart
-from NepTrainKit.ui.widgets.reference_response_plot import is_magnetic_eos, response_branches
+from NepTrainKit.ui.widgets.reference_response_plot import response_branches
 from NepTrainKit.ui.widgets.validation_group_comparison import ValidationGroupComparison
 from NepTrainKit.ui.widgets.validation_dialogs import BenchmarkImportDialog
 from NepTrainKit.ui.widgets.validation_model_picker import ModelColorButton, ValidationModelPicker, group_marker_icon, model_role
@@ -304,7 +304,6 @@ class ValidationWorkspace(ModelLibraryWidget):
         self._search_filter = ""
 
         # Enable adaptive plot sizing and the right-hand multi-model quantitative inspector in the workspace
-        self.metrics_footer.hide()
         self.detail.set_adaptive_layout(True)
         self.detail.response_view_changed = self._update_detail
         self.detail.set_inspector_expanded(False)
@@ -382,27 +381,13 @@ class ValidationWorkspace(ModelLibraryWidget):
             options.addWidget(widget)
         self.detail.header_layout.addWidget(self.standard_options)
 
-        # Keep the shared detail and editor controls together above the comparison matrix.
         root = self.layout()
-        root.itemAt(0).layout().setContentsMargins(0, 0, 0, 0)
+        self.controls_row.setContentsMargins(0, 0, 0, 0)
         self.controls_panel.setStyleSheet(
             f"#validationControls {{ background: {palette.SURFACE}; border: 0; border-bottom: 1px solid {palette.BORDER}; }}"
         )
-        detail_page = QFrame(self)
-        detail_page.setObjectName("comparisonDetails")
-        detail_layout = QVBoxLayout(detail_page)
-        detail_layout.setContentsMargins(0, 0, 0, 0)
-        detail_layout.setSpacing(0)
-
-        while root.count() > 2:
-            item = root.takeAt(2)
-            if item.widget():
-                detail_layout.addWidget(item.widget(), item.stretch() if hasattr(item, "stretch") else 0)
-            else:
-                detail_layout.addLayout(item.layout())
-        detail_layout.setStretch(detail_layout.indexOf(self.splitter), 1)
-        detail_layout.setStretch(detail_layout.indexOf(self.editor_scroll), 1)
-        detail_layout.setStretch(detail_layout.indexOf(self.curves_placeholder), 1)
+        root.removeWidget(self.result_panel)
+        self.result_panel.setObjectName("comparisonDetails")
 
         self.sidebar = QFrame(self)
         self.sidebar.setObjectName("validationSidebar")
@@ -423,13 +408,7 @@ class ValidationWorkspace(ModelLibraryWidget):
         side_header.addWidget(self.new_suite_button)
         side.addLayout(side_header)
 
-        fields = self.controls_panel.layout().itemAt(0).layout()
-        suite_field = fields.takeAt(0).layout()
-        caption = suite_field.takeAt(0).widget()
-        caption.hide()
-        caption.deleteLater()
         side.addWidget(self.suite_combo)
-        suite_field.deleteLater()
 
         self.topic_picker = ComboBox(self.sidebar)
         self.topic_picker.setAccessibleName(self.tr("Topic"))
@@ -582,7 +561,7 @@ class ValidationWorkspace(ModelLibraryWidget):
         self.detail_scroll = QScrollArea(self)
         self.detail_scroll.setFrameShape(QFrame.Shape.NoFrame)
         self.detail_scroll.setWidgetResizable(True)
-        self.detail_scroll.setWidget(detail_page)
+        self.detail_scroll.setWidget(self.result_panel)
         self.result_page = self.detail_scroll
         self.gallery = ValidationGallery(self._plot_thumbnail, main)
         self.gallery.itemOpened.connect(self.open_item)
@@ -618,21 +597,8 @@ class ValidationWorkspace(ModelLibraryWidget):
         self.workspace_split.setStretchFactor(1, 1)
         self.workspace_split.splitterMoved.connect(lambda *_: self._present_workspace())
         root.addWidget(self.workspace_split, 1)
-        self.capsule_panel.hide()
-        self.tolerance_label.hide()
-        self.property_combo.hide()
-        self.scope_combo.hide()
-        self.curves_button.hide()
-        self.baseline_label.hide()
-        # The shared workbench owns the selectors and their signals.
-        selectors = QWidget(self.controls_panel)
-        selector_layout = QHBoxLayout(selectors)
-        while fields.count():
-            selector_layout.addLayout(fields.takeAt(0).layout())
-        selectors.hide()
         self.role_dialog = None
         self._picker_rows = None
-        self.scope_hint.hide()
         self.cards = {}
         self._card_context = None
         self._card_rows = None
@@ -645,12 +611,9 @@ class ValidationWorkspace(ModelLibraryWidget):
         self.edit_models.setMinimumHeight(30)
         self.edit_models.setStyleSheet(f"PushButton {{ color: {palette.ACCENT_PRESSED}; border: 1px dashed {palette.ACCENT}; border-radius: 6px; padding: 3px 9px; background: {palette.ACCENT_SOFT}; }}")
         self.edit_models.clicked.connect(self._open_role_dialog)
-        fields.setSpacing(8)
-        fields.addWidget(self.card_scroll, 1)
-        fields.addWidget(self.edit_models)
-        fields.addWidget(self.run_selected_button)
-        self.controls_panel.layout().setContentsMargins(12, 5, 12, 5)
-        self.controls_panel.layout().setSpacing(0)
+        self._model_bar.addWidget(self.card_scroll, 1)
+        self._model_bar.addWidget(self.edit_models)
+        self._model_bar.addWidget(self.run_selected_button)
         self.sidebar.setMinimumWidth(212)
         self.sidebar.setMaximumWidth(420)
         self.workspace_split.setSizes([304, 960])
@@ -661,6 +624,21 @@ class ValidationWorkspace(ModelLibraryWidget):
         self.run_summary.hide()
         self._update_header(None)
         self.show_page("items")
+
+    def _layout_model_controls(self, controls):
+        controls.setContentsMargins(12, 5, 12, 5)
+        controls.setSpacing(0)
+        self._model_bar = QHBoxLayout()
+        self._model_bar.setSpacing(8)
+        controls.addLayout(self._model_bar)
+        # Shared run and scorecard methods still read these selectors.
+        selectors = QWidget(self.controls_panel)
+        selectors.hide()
+        for widget in (
+            self.model_combo, self.comparison_picker, self.baseline_button, self.baseline_label,
+            self.tolerance_label, self.property_combo, self.scope_combo, self.scope_hint, self.curves_button,
+        ):
+            widget.setParent(selectors)
 
     def _update_header(self, baseline):
         suite_name = self.suite_combo.currentText() or self.tr("Model validation")
@@ -1652,11 +1630,6 @@ class ValidationWorkspace(ModelLibraryWidget):
         super()._update_run_scope(*args)
         if not self._workspace_ready:
             return
-        self.capsule_panel.hide()
-        self.tolerance_label.hide()
-        self.property_combo.hide()
-        self.scope_combo.hide()
-        self.curves_button.hide()
         self.run_selected_button.setToolTip(self.scope_hint.text() + "\n" + self.scope_hint.toolTip())
         if self._run_task is None:
             self.run_selected_button.setText(self.tr("Evaluate checked items"))

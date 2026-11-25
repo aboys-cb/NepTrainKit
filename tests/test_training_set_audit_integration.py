@@ -17,6 +17,7 @@ from PySide6.QtWidgets import QApplication, QSizePolicy, QWidget
 import NepTrainKit.main as main_module
 import NepTrainKit.ui.pages.show_nep as show_nep_module
 from NepTrainKit.config import Config
+from NepTrainKit.core.audit import engine as audit_engine
 from NepTrainKit.ui.pages.settings import SettingsWidget
 from NepTrainKit.ui.pages.show_nep import ShowNepWidget
 from NepTrainKit.ui.views.toolbar import NepDisplayGraphicsToolBar
@@ -566,7 +567,7 @@ class TestTrainingSetAuditIntegration(unittest.TestCase):
         with (
             patch.object(main_module, "run_in_thread", side_effect=fake_run_in_thread),
             patch.object(
-                main_module,
+                audit_engine,
                 "build_phase_inventory",
                 return_value=(phase, False),
             ) as phase_mock,
@@ -671,12 +672,12 @@ class TestTrainingSetAuditIntegration(unittest.TestCase):
         with (
             patch.object(main_module, "run_in_thread", side_effect=fake_run_in_thread),
             patch.object(
-                main_module.TrainingSetEvidenceCache,
+                audit_engine.TrainingSetEvidenceCache,
                 "from_result_data",
                 return_value=cache,
             ),
-            patch.object(main_module, "build_phase_inventory") as phase_build,
-            patch.object(main_module, "build_magnetic_inventory") as magnetic_build,
+            patch.object(audit_engine, "build_phase_inventory") as phase_build,
+            patch.object(audit_engine, "build_magnetic_inventory") as magnetic_build,
         ):
             main_module.NepTrainKitMainWindow._start_training_set_phase_analysis(
                 window, data, result

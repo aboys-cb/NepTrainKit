@@ -242,12 +242,7 @@ def test_eos_overview_has_fixed_columns_and_normalizes_each_group(make_service, 
     widget.show()
     QApplication.processEvents()
     assert widget.table.isHidden()
-    assert not widget.metrics_button.isChecked()
     assert widget.detail._grid_columns == 3
-    widget.metrics_button.click()
-    assert not widget.table.isHidden()
-    widget.metrics_button.click()
-    assert widget.table.isHidden()
     assert widget.metrics_model.rowCount() == 10
     assert widget.metrics_model.columnCount() == 5
     assert len(widget.detail.eos_plots) == 10

@@ -14,15 +14,27 @@ from .composition import audit_composition
 from .config_types import audit_config_types
 from .context import build_fingerprints, resolve_audit_scope
 from .data_quality import audit_data_quality
+from .evidence_cache import TrainingSetEvidenceCache
 from .extract import records_from_indexed_structures
 from .findings import build_findings
 from .label_ranges import audit_label_ranges
 from .local_chemistry import audit_local_chemistry
-from .magnetic_inventory import build_magnetic_inventory
+from .magnetic_inventory import (
+    MAGNETIC_ANALYSIS_STRATEGY,
+    MAGNETIC_METHOD_ID,
+    MAGNETIC_SCHEMA_VERSION,
+    build_magnetic_inventory,
+)
 from .inventory import build_dataset_inventory
 from .nep_cutoff import NepCutoffProfile, parse_nep_cutoff
 from .pair_contacts import PairContactCollector
-from .phase_inventory import build_phase_inventory
+from .phase_inventory import (
+    PHASE_ANALYSIS_STRATEGY,
+    PHASE_METHOD_ID,
+    PHASE_REFERENCE_BANK_ID,
+    PHASE_SCHEMA_VERSION,
+    build_phase_inventory,
+)
 from .result import AuditContext, AuditDimension, AuditResult, AuditRun, AuditStatus
 
 
@@ -47,6 +59,96 @@ def _restrict_profile_to_records(
         elements=tuple(profile.elements[index] for index in selected),
         radial_cutoffs=tuple(profile.radial_cutoffs[index] for index in selected),
         angular_cutoffs=tuple(profile.angular_cutoffs[index] for index in selected),
+    )
+
+
+def _collect_structure_evidence(
+    structure, geometry, inventory, *, include_phase=True, include_magnetic=True,
+    cache=None, progress=None, timings_ms=None,
+):
+    count = inventory.structure_count
+    can_analyze = geometry is not None and count > 0
+
+    def collect(kind, enabled, build, **version):
+        if not (can_analyze and enabled):
+            return None, False
+
+        def report(completed, _total):
+            progress(completed + (count if kind == "magnetic" else 0), 2 * count)
+
+        started = perf_counter()
+        try:
+            if cache is not None:
+                saved = getattr(cache, f"load_{kind}")(**version)
+                if saved is not None:
+                    if progress is not None:
+                        report(count, count)
+                    return saved, True
+            evidence, hit = build(report if progress is not None else None)
+            if cache is not None and evidence is not None:
+                getattr(cache, f"save_{kind}")(evidence)
+            return evidence, hit
+        except (RuntimeError, ValueError) as error:
+            logger.warning("Training Set Audit {} evidence unavailable: {}", kind, error)
+            return None, False
+        finally:
+            if timings_ms is not None:
+                timings_ms[f"{kind}_inventory"] = (perf_counter() - started) * 1000.0
+
+    phase, phase_hit = collect(
+        "phase", include_phase,
+        lambda report: build_phase_inventory(geometry, inventory, cache_owner=structure, progress=report),
+        schema_version=PHASE_SCHEMA_VERSION,
+        method_id=PHASE_METHOD_ID,
+        reference_bank_id=PHASE_REFERENCE_BANK_ID,
+        analysis_strategy=PHASE_ANALYSIS_STRATEGY,
+    )
+
+    def build_magnetic(report):
+        if not hasattr(geometry, "source_indices"):
+            return None, False
+        return build_magnetic_inventory(
+            geometry, inventory, getattr(structure, "all_data", ()), cache_owner=structure, progress=report,
+        )
+
+    magnetic, magnetic_hit = collect(
+        "magnetic", include_magnetic, build_magnetic,
+        schema_version=MAGNETIC_SCHEMA_VERSION,
+        method_id=MAGNETIC_METHOD_ID,
+        analysis_strategy=MAGNETIC_ANALYSIS_STRATEGY,
+    )
+
+    def summary(evidence, hit, enabled, *, spin=False):
+        analyzed = evidence.analyzed_structure_count if evidence is not None else 0
+        available = evidence is not None and (not spin or analyzed > 0)
+        if evidence is not None:
+            status = "complete" if available else "no-spin"
+        else:
+            status = "pending" if can_analyze and not enabled else "unavailable"
+        info = dict(available=available, status=status, cache_hit=hit, analyzed_structures=analyzed)
+        if spin:
+            info["missing_spin_structures"] = evidence.missing_spin_count if evidence is not None else count
+        return info
+
+    return phase, magnetic, {
+        "phase_inventory": summary(phase, phase_hit, include_phase),
+        "magnetic_inventory": summary(magnetic, magnetic_hit, include_magnetic, spin=True),
+    }
+
+
+def complete_structure_evidence(result_data: Any, result: AuditResult, *, progress=None) -> AuditResult:
+    """Attach deferred phase and magnetic evidence with persistent cache reuse."""
+    if result.inventory is None:
+        return result
+    structure = result_data.structure
+    geometry = structure.geometry_snapshot(result.scope.indices if result.scope is not None else None)
+    phase, magnetic, overview = _collect_structure_evidence(
+        structure, geometry, result.inventory,
+        cache=TrainingSetEvidenceCache.from_result_data(result_data, result), progress=progress,
+    )
+    return replace(
+        result, phase_inventory=phase, magnetic_inventory=magnetic,
+        overview_metrics={**result.overview_metrics, **overview},
     )
 
 
@@ -80,93 +182,14 @@ def build_audit(context: AuditContext) -> AuditRun:
         except (IndexError, ValueError):
             geometry = None
     timings_ms["geometry_snapshot"] = (perf_counter() - stage_started) * 1000.0
-    phase_inventory = None
-    phase_cache_hit = False
-    if (
-        context.include_phase_inventory
-        and geometry is not None
-        and inventory.structure_count
-    ):
-        stage_started = perf_counter()
-        try:
-            phase_inventory, phase_cache_hit = build_phase_inventory(
-                geometry,
-                inventory,
-                cache_owner=getattr(result_data, "structure", None),
-            )
-        except (RuntimeError, ValueError) as exc:
-            logger.warning("Training Set Audit phase evidence unavailable: {}", exc)
-        timings_ms["phase_inventory"] = (perf_counter() - stage_started) * 1000.0
-    magnetic_inventory = None
-    magnetic_cache_hit = False
-    if (
-        context.include_magnetic_inventory
-        and geometry is not None
-        and inventory.structure_count
-    ):
-        stage_started = perf_counter()
-        try:
-            magnetic_inventory, magnetic_cache_hit = build_magnetic_inventory(
-                geometry,
-                inventory,
-                getattr(result_data.structure, "all_data", ()),
-                cache_owner=getattr(result_data, "structure", None),
-            )
-        except (RuntimeError, ValueError) as exc:
-            logger.warning("Training Set Audit magnetic evidence unavailable: {}", exc)
-        timings_ms["magnetic_inventory"] = (perf_counter() - stage_started) * 1000.0
+    phase_inventory, magnetic_inventory, evidence_overview = _collect_structure_evidence(
+        getattr(result_data, "structure", None), geometry, inventory,
+        include_phase=context.include_phase_inventory, include_magnetic=context.include_magnetic_inventory,
+        timings_ms=timings_ms,
+    )
     dimensions = []
     slices = []
-    overview: dict[str, object] = {
-        "structures": len(records),
-        "phase_inventory": {
-            "available": phase_inventory is not None,
-            "status": (
-                "complete"
-                if phase_inventory is not None
-                else "pending"
-                if not context.include_phase_inventory
-                and geometry is not None
-                and inventory.structure_count
-                else "unavailable"
-            ),
-            "cache_hit": phase_cache_hit,
-            "analyzed_structures": (
-                phase_inventory.analyzed_structure_count
-                if phase_inventory is not None
-                else 0
-            ),
-        },
-        "magnetic_inventory": {
-            "available": (
-                magnetic_inventory is not None
-                and magnetic_inventory.analyzed_structure_count > 0
-            ),
-            "status": (
-                "complete"
-                if magnetic_inventory is not None
-                and magnetic_inventory.analyzed_structure_count > 0
-                else "no-spin"
-                if magnetic_inventory is not None
-                else "pending"
-                if not context.include_magnetic_inventory
-                and geometry is not None
-                and inventory.structure_count
-                else "unavailable"
-            ),
-            "cache_hit": magnetic_cache_hit,
-            "analyzed_structures": (
-                magnetic_inventory.analyzed_structure_count
-                if magnetic_inventory is not None
-                else 0
-            ),
-            "missing_spin_structures": (
-                magnetic_inventory.missing_spin_count
-                if magnetic_inventory is not None
-                else inventory.structure_count
-            ),
-        },
-    }
+    overview: dict[str, object] = {"structures": len(records), **evidence_overview}
 
     stage_started = perf_counter()
     quality_dimension, quality_slices, quality_overview = audit_data_quality(

@@ -2183,9 +2183,14 @@ class TrainingSetAuditWidget(QWidget):
         self.export_report_button.setToolTip("")
         self.composition_phase_progress.hide()
         self.composition_map_progress.hide()
-        self.analysis_status_label.setText(
-            self.tr("Structural and magnetic snapshot evidence is available.")
-        )
+        phase_ready, magnetic_ready, _ = self._structure_evidence_state()
+        if phase_ready and magnetic_ready:
+            status = self.tr("Structural and magnetic snapshot evidence is available.")
+        elif phase_ready:
+            status = self._magnetic_evidence_status_text()
+        else:
+            status = self._phase_evidence_status_text()
+        self.analysis_status_label.setText(status)
         self._update_summary()
         self._populate_inventory_views()
         self.composition_evidence_button.setEnabled(True)

@@ -3,8 +3,9 @@ from unittest.mock import patch
 
 import numpy as np
 
-from NepTrainKit.core.audit import AuditFindingKind, PhaseInventory, build_training_set_audit
+from NepTrainKit.core.audit import AuditFindingKind, MagneticInventory, PhaseInventory, build_training_set_audit
 from NepTrainKit.core.audit.data_quality import audit_data_quality
+from NepTrainKit.core.audit.engine import complete_structure_evidence
 from NepTrainKit.core.io.base import NepPlotData, StructureData
 from NepTrainKit.core.structure import Structure
 
@@ -100,6 +101,28 @@ def test_engine_can_defer_complete_phase_analysis_for_the_desktop_page():
         "cache_hit": False,
         "analyzed_structures": 0,
     }
+
+
+def test_deferred_evidence_keeps_magnetic_result_when_phase_fails():
+    dataset = SimpleNamespace(structure=StructureData([_structure()]), nep_txt_path=None)
+    pending = build_training_set_audit(
+        dataset, include_phase_inventory=False, include_magnetic_inventory=False,
+    )
+    magnetic = MagneticInventory(
+        schema_version="magnetic-inventory-v3", method_id="spin-order-layer-afm-v3",
+        analysis_strategy="all-spin-structures-v1", source_structure_count=1,
+        analyzed_structure_count=1, missing_spin_count=0, composition_points=(),
+    )
+    with (
+        patch("NepTrainKit.core.audit.engine.build_phase_inventory", side_effect=RuntimeError("phase failed")),
+        patch("NepTrainKit.core.audit.engine.build_magnetic_inventory", return_value=(magnetic, False)),
+    ):
+        completed = complete_structure_evidence(dataset, pending)
+
+    assert completed.phase_inventory is None
+    assert completed.overview_metrics["phase_inventory"]["status"] == "unavailable"
+    assert completed.magnetic_inventory is magnetic
+    assert completed.overview_metrics["magnetic_inventory"]["status"] == "complete"
 
 
 def test_quick_check_reports_real_data_contract_failures():

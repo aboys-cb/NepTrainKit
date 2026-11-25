@@ -26,7 +26,6 @@ from NepTrainKit.startup import load_config_class
 Config = load_config_class()
 
 import traceback
-from dataclasses import replace
 from pathlib import Path
 import warnings
 
@@ -48,24 +47,9 @@ from qfluentwidgets import (
 )
 from loguru import logger
 
-from NepTrainKit.core.audit import (
-    build_magnetic_inventory,
-    build_phase_inventory,
-    build_training_set_audit,
-)
-from NepTrainKit.core.audit.evidence_cache import TrainingSetEvidenceCache
+from NepTrainKit.core.audit import build_training_set_audit
+from NepTrainKit.core.audit.engine import complete_structure_evidence
 from NepTrainKit.core.io.importers import ase_atoms_to_structure
-from NepTrainKit.core.audit.magnetic_inventory import (
-    MAGNETIC_ANALYSIS_STRATEGY,
-    MAGNETIC_METHOD_ID,
-    MAGNETIC_SCHEMA_VERSION,
-)
-from NepTrainKit.core.audit.phase_inventory import (
-    PHASE_ANALYSIS_STRATEGY,
-    PHASE_METHOD_ID,
-    PHASE_REFERENCE_BANK_ID,
-    PHASE_SCHEMA_VERSION,
-)
 from NepTrainKit.ui.pages import *
 from NepTrainKit.ui.messages import MessageManager
 from NepTrainKit.ui.threads import ThreadShutdownGuard, run_in_thread
@@ -653,136 +637,23 @@ class NepTrainKitMainWindow(FluentWindow):
             result.inventory.structure_count
         )
 
-        def compute():
-            scope_indices = result.scope.indices if result.scope is not None else None
-            geometry = data.structure.geometry_snapshot(scope_indices)
-            evidence_cache = TrainingSetEvidenceCache.from_result_data(data, result)
+        def report_progress(completed, total):
+            if token is self._training_set_phase_token:
+                self.training_set_audit_interface.phaseAnalysisProgressSignal.emit(completed, total)
 
-            phase_inventory = (
-                evidence_cache.load_phase(
-                    schema_version=PHASE_SCHEMA_VERSION,
-                    method_id=PHASE_METHOD_ID,
-                    reference_bank_id=PHASE_REFERENCE_BANK_ID,
-                    analysis_strategy=PHASE_ANALYSIS_STRATEGY,
-                )
-                if evidence_cache is not None
-                else None
-            )
-            if phase_inventory is None:
-                phase_payload = build_phase_inventory(
-                    geometry,
-                    result.inventory,
-                    cache_owner=data.structure,
-                    progress=lambda completed, total: (
-                        self.training_set_audit_interface.phaseAnalysisProgressSignal.emit(
-                            completed, total * 2
-                        )
-                        if token is self._training_set_phase_token
-                        else None
-                    ),
-                )
-                if evidence_cache is not None:
-                    evidence_cache.save_phase(phase_payload[0])
-            else:
-                phase_payload = (phase_inventory, True)
-                if token is self._training_set_phase_token:
-                    self.training_set_audit_interface.phaseAnalysisProgressSignal.emit(
-                        phase_inventory.analyzed_structure_count,
-                        phase_inventory.source_structure_count * 2,
-                    )
-
-            magnetic_inventory = (
-                evidence_cache.load_magnetic(
-                    schema_version=MAGNETIC_SCHEMA_VERSION,
-                    method_id=MAGNETIC_METHOD_ID,
-                    analysis_strategy=MAGNETIC_ANALYSIS_STRATEGY,
-                )
-                if evidence_cache is not None
-                else None
-            )
-            if magnetic_inventory is None and hasattr(geometry, "source_indices"):
-                magnetic_payload = build_magnetic_inventory(
-                    geometry,
-                    result.inventory,
-                    getattr(data.structure, "all_data", ()),
-                    cache_owner=data.structure,
-                    progress=lambda completed, total: (
-                        self.training_set_audit_interface.phaseAnalysisProgressSignal.emit(
-                            total + completed, total * 2
-                        )
-                        if token is self._training_set_phase_token
-                        else None
-                    ),
-                )
-                if evidence_cache is not None:
-                    evidence_cache.save_magnetic(magnetic_payload[0])
-            elif magnetic_inventory is not None:
-                magnetic_payload = (magnetic_inventory, True)
-                if token is self._training_set_phase_token:
-                    self.training_set_audit_interface.phaseAnalysisProgressSignal.emit(
-                        magnetic_inventory.source_structure_count * 2,
-                        magnetic_inventory.source_structure_count * 2,
-                    )
-            else:
-                magnetic_payload = (None, False)
-            return phase_payload, magnetic_payload
-
-        def apply_completed(payload) -> None:
+        def apply_completed(updated_result) -> None:
             if token is not self._training_set_phase_token:
                 return
             self._training_set_phase_thread = None
             self._training_set_phase_result = None
-            (phase_inventory, phase_cache_hit), (
-                magnetic_inventory,
-                magnetic_cache_hit,
-            ) = payload
             if (
                 getattr(self.show_nep_interface, "nep_result_data", None) is not data
-                or self._training_set_audit_signature(data)
-                != self._audited_result_signature
+                or self._training_set_audit_signature(data) != self._audited_result_signature
                 or self._audited_result is not result
             ):
                 return
-            phase_meta = dict(result.overview_metrics.get("phase_inventory", {}))
-            phase_meta.update(
-                {
-                    "available": True,
-                    "status": "complete",
-                    "cache_hit": bool(phase_cache_hit),
-                    "analyzed_structures": phase_inventory.analyzed_structure_count,
-                }
-            )
-            overview = dict(result.overview_metrics)
-            overview["phase_inventory"] = phase_meta
-            overview["magnetic_inventory"] = {
-                "available": (
-                    magnetic_inventory is not None
-                    and magnetic_inventory.analyzed_structure_count > 0
-                ),
-                "status": (
-                    "complete"
-                    if magnetic_inventory is not None
-                    and magnetic_inventory.analyzed_structure_count > 0
-                    else "no-spin"
-                ),
-                "cache_hit": bool(magnetic_cache_hit),
-                "analyzed_structures": (
-                    magnetic_inventory.analyzed_structure_count
-                    if magnetic_inventory is not None else 0
-                ),
-                "missing_spin_structures": (
-                    magnetic_inventory.missing_spin_count
-                    if magnetic_inventory is not None else result.inventory.structure_count
-                ),
-            }
-            updated_result = replace(
-                result,
-                overview_metrics=overview,
-                phase_inventory=phase_inventory,
-                magnetic_inventory=magnetic_inventory,
-            )
             self._audited_result = updated_result
-            self.show_nep_interface.set_phase_inventory(phase_inventory, data)
+            self.show_nep_interface.set_phase_inventory(updated_result.phase_inventory, data)
             self.training_set_audit_interface.finish_phase_analysis(updated_result)
 
         def report_error(message: str) -> None:
@@ -799,7 +670,7 @@ class NepTrainKitMainWindow(FluentWindow):
 
         self._training_set_phase_thread = run_in_thread(
             self,
-            compute,
+            lambda: complete_structure_evidence(data, result, progress=report_progress),
             on_finished=apply_completed,
             on_error=report_error,
         )

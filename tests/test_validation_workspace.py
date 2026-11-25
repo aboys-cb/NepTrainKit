@@ -360,7 +360,6 @@ def test_clicking_compare_and_run_cells_has_independent_effects(scored):
     QApplication.processEvents()
     assert navigator.isVisible() and w.detail.plot_pane.isVisible()
     assert not w.matrix_card.isVisible() and not w.detail.inspector_panel.isVisible()
-    assert not w.metrics_button.isVisible()
     assert list(w.page_widgets) == ["result", "items", "gallery"]
     w.show_page("items")
     assert w.item_table.isVisible() and not w.detail_scroll.isVisible()

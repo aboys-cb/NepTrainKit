@@ -1180,9 +1180,6 @@ class ModelLibraryWidget(QWidget):
         controls = QVBoxLayout(self.controls_panel)
         controls.setContentsMargins(12, 10, 12, 10)
         controls.setSpacing(8)
-        fields = QHBoxLayout()
-        controls.addLayout(fields)
-        fields.setSpacing(14)
         self.suite_combo = ComboBox(self)
         self.suite_combo.setMinimumWidth(150)
         self.suite_combo.currentIndexChanged.connect(self._on_suite_changed)
@@ -1290,21 +1287,6 @@ class ModelLibraryWidget(QWidget):
         self.comparison_picker.setMinimumWidth(130)
         self.model_combo.currentIndexChanged.connect(self._on_model_changed)
         self.comparison_picker.selectionChanged.connect(self._on_selection_changed)
-        for title, combo, buttons, stretch in (
-            (self.tr("Validation plan"), self.suite_combo, (self.refresh_button,), 4),
-            (self.tr("Current model"), self.model_combo, (self.baseline_button,), 5),
-            (self.tr("Compare with"), self.comparison_picker, (), 3),
-        ):
-            field = QHBoxLayout()
-            fields.addLayout(field, stretch)
-            field.setSpacing(6)
-            caption = CaptionLabel(title, self)
-            caption.setStyleSheet(f"color: {palette.TEXT_SECONDARY};")
-            field.addWidget(caption)
-            field.addWidget(combo, 1)
-            for button in buttons:
-                button.setFixedSize(28, 28)
-                field.addWidget(button)
         self.import_action.triggered.connect(lambda: self.import_benchmark())
         self.star_action.triggered.connect(lambda: self.toggle_star())
         self.save_action.triggered.connect(lambda: self.save_current())
@@ -1317,37 +1299,19 @@ class ModelLibraryWidget(QWidget):
         self.tolerance_label.setWordWrap(True)
         self.tolerance_label.setStyleSheet(f"color:{palette.TEXT_SECONDARY};")
         self.tolerance_label.hide()
-        actions = QHBoxLayout()
-        controls.addLayout(actions)
-        actions.setSpacing(8)
-        actions.addWidget(self.baseline_label, 1)
-        actions.addWidget(self.tolerance_label, 1)
         self.curves_button = PushButton(FluentIcon.VIEW, "查看曲线", self)
         self.curves_button.setCheckable(True)
         self.curves_button.toggled.connect(self._toggle_curves)
-        actions.addWidget(self.scope_combo)
-        actions.addWidget(self.scope_hint)
-        actions.addWidget(self.curves_button)
-        actions.addWidget(self.run_selected_button)
-
-        # Visual Model Comparison Capsule Bar (shows active models, training RMSE, and 1-click baseline pin)
-        self.capsule_panel = QWidget(self.controls_panel)
-        self.capsule_flow = FlowLayout(self.capsule_panel, needAni=False)
-        self.capsule_flow.setContentsMargins(0, 2, 0, 0)
-        self.capsule_flow.setHorizontalSpacing(8)
-        self.capsule_flow.setVerticalSpacing(4)
-        controls.addWidget(self.capsule_panel)
 
         self.property_combo = ComboBox(self)
         self.property_combo.currentIndexChanged.connect(lambda *_: self._load_groups())
-        self.group_hint = CaptionLabel(
-            self.tr("Each group has independent axes. Focus a chart or select rows in the error details."),
-            self,
-        )
-        self.group_hint.hide()
+        self.property_combo.setAccessibleName("验证性质")
+        self._layout_model_controls(controls)
         self.all_groups_button = TransparentPushButton(self.tr("Show all groups"), self)
         self.all_groups_button.clicked.connect(self._select_all_groups)
-        self.all_groups_button.setToolTip(self.group_hint.text())
+        self.all_groups_button.setToolTip(
+            self.tr("Each group has independent axes. Focus a chart or select rows in the error details."),
+        )
         self._benchmarks = []
 
         self.model = ScorecardTableModel(self)
@@ -1356,55 +1320,24 @@ class ModelLibraryWidget(QWidget):
         self.table.setModel(self.metrics_model)
         self.table.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
         self.table.setSelectionMode(QAbstractItemView.SelectionMode.ExtendedSelection)
-        self.table.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
-        self.table.verticalHeader().hide()
-        self.table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
-        self.table.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeMode.Interactive)
-        self.table.setColumnWidth(0, 420)
-        self.table.verticalHeader().setDefaultSectionSize(30)
-        self.table.setMinimumHeight(130)
         self.table.selectionModel().selectionChanged.connect(self._on_group_selection_changed)
-        self.empty_hint = CaptionLabel(self.table.viewport())
-        self.empty_hint.setWordWrap(True)
-        self.empty_hint.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.empty_hint.setStyleSheet(f"color:{palette.TEXT_SECONDARY};")
-        hint_layout = QVBoxLayout(self.table.viewport())
-        hint_layout.addWidget(self.empty_hint, 0, Qt.AlignmentFlag.AlignCenter)
+        self.table.hide()
 
         self.detail = RunDetailPanel(self)
         self.detail.load_scan_energies = lambda item, run: self.service().absolute_scan_energies(item, run)
-        # Property selection remains available while plots are collapsed.
-        actions.insertWidget(1, self.property_combo)
-        self.property_combo.setAccessibleName("验证性质")
         self.detail.header_layout.insertWidget(2, self.all_groups_button)
         self.detail.comparisonRemoved.connect(self.comparison_picker.remove_id)
         self.detail.baselineRequested.connect(self.set_baseline_for_model)
         self.detail.allGroupsRequested.connect(self._select_all_groups)
         self.detail.groupFocused.connect(self._focus_plot_group)
         self.detail.samplingRequested.connect(self.open_sampling)
-        self.metrics_button = PushButton(
-            FluentIcon.CHEVRON_RIGHT.colored(palette.PLOT_LOADED_OVERLAY, palette.PLOT_LOADED_OVERLAY),
-            self.tr("Error details"),
-            self,
-        )
-        self.metrics_button.setCheckable(True)
-        self.metrics_button.toggled.connect(self._toggle_metrics)
-        self.table.hide()
-        self.splitter = QSplitter(Qt.Orientation.Vertical, self)
-        self.splitter.addWidget(self.detail)
-        self.splitter.addWidget(self.table)
-        self.splitter.setChildrenCollapsible(False)
-        self.splitter.setStretchFactor(0, 3)
-        self.splitter.setStretchFactor(1, 1)
-        self.splitter.setSizes([440, 180])
-
         layout = QVBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
         layout.setSpacing(0)
-        panel_row = QHBoxLayout()
-        panel_row.setContentsMargins(12, 10, 12, 4)
-        panel_row.addWidget(self.controls_panel)
-        layout.addLayout(panel_row)
+        self.controls_row = QHBoxLayout()
+        self.controls_row.setContentsMargins(12, 10, 12, 4)
+        self.controls_row.addWidget(self.controls_panel)
+        layout.addLayout(self.controls_row)
         status_row = QHBoxLayout()
         status_row.setContentsMargins(16, 2, 16, 4)
         self.run_summary = CaptionLabel(self)
@@ -1416,16 +1349,10 @@ class ModelLibraryWidget(QWidget):
         status_row.addWidget(self.run_summary, 1)
         status_row.addWidget(self.retry_button)
         layout.addLayout(status_row)
-        legend = CaptionLabel(
-            self.tr(
-                "Metrics are for the current model. Green / red compare against the baseline model; choosing a comparison curve does not change the baseline."
-            ),
-            self,
-        )
-        legend.setContentsMargins(10, 0, 10, 4)
-        legend.setStyleSheet(f"color:{palette.TEXT_SECONDARY};")
-        self.table.setToolTip(legend.text() + "\n" + self.group_hint.text())
-        legend.hide()
+        self.result_panel = QFrame(self)
+        result_layout = QVBoxLayout(self.result_panel)
+        result_layout.setContentsMargins(0, 0, 0, 0)
+        result_layout.setSpacing(0)
         from NepTrainKit.ui.widgets.diagnostic_editor import DiagnosticEditor
 
         self.diagnostic_editor = DiagnosticEditor(self)
@@ -1438,8 +1365,8 @@ class ModelLibraryWidget(QWidget):
         self.editor_scroll.hide()
         self.diagnostic_editor.hide()
         self.diagnostic_editor.installEventFilter(self)
-        layout.addWidget(self.editor_scroll, 1)
-        layout.addWidget(self.splitter, 1)
+        result_layout.addWidget(self.editor_scroll, 1)
+        result_layout.addWidget(self.detail, 1)
         self.curves_placeholder = QWidget(self)
         placeholder = QVBoxLayout(self.curves_placeholder)
         placeholder.addStretch()
@@ -1456,117 +1383,45 @@ class ModelLibraryWidget(QWidget):
         hint.setAlignment(Qt.AlignmentFlag.AlignCenter)
         placeholder.addWidget(hint)
         placeholder.addStretch()
-        layout.addWidget(self.curves_placeholder, 1)
-        self.metrics_footer = QWidget(self)
-        metrics_footer = QHBoxLayout(self.metrics_footer)
-        metrics_footer.setContentsMargins(12, 4, 12, 8)
-        metrics_footer.addWidget(self.metrics_button)
-        metrics_footer.addStretch(1)
-        layout.addWidget(self.metrics_footer)
+        result_layout.addWidget(self.curves_placeholder, 1)
+        layout.addWidget(self.result_panel, 1)
         self._sync_curve_visibility()
 
-    def _rebuild_model_capsules(self) -> None:
-        """Render interactive model capsules in the top bar for Current, Baseline, and Comparison models."""
-        if not hasattr(self, "capsule_flow"):
-            return
-        while self.capsule_flow.count():
-            item = self.capsule_flow.takeAt(0)
-            item.hide()
-            item.deleteLater()
-        active_ids = self.selected_model_ids()
-        suite_id = self.current_suite_id()
-        baseline_id = None
-        if suite_id is not None:
-            try:
-                suite = self.service().get_suite(suite_id)
-                baseline_id = suite.get("baseline_model_id") if suite else None
-            except Exception:
-                baseline_id = None
-        if baseline_id and baseline_id not in active_ids:
-            active_ids.append(baseline_id)
+    def _layout_model_controls(self, controls):
+        fields = QHBoxLayout()
+        fields.setSpacing(14)
+        controls.addLayout(fields)
+        for title, combo, button, stretch in (
+            (self.tr("Validation plan"), self.suite_combo, self.refresh_button, 4),
+            (self.tr("Current model"), self.model_combo, self.baseline_button, 5),
+            (self.tr("Compare with"), self.comparison_picker, None, 3),
+        ):
+            field = QHBoxLayout()
+            field.setSpacing(6)
+            fields.addLayout(field, stretch)
+            caption = CaptionLabel(title, self)
+            caption.setStyleSheet(f"color: {palette.TEXT_SECONDARY};")
+            field.addWidget(caption)
+            field.addWidget(combo, 1)
+            if button is not None:
+                button.setFixedSize(28, 28)
+                field.addWidget(button)
 
-        self.capsule_panel.setVisible(bool(active_ids))
-        current_id = self.model_combo.currentData()
-        model_meta = {}
-        try:
-            model_meta = {m["id"]: m for m in self.service().models()}
-        except Exception:
-            pass
-
-        for idx, model_id in enumerate(active_ids):
-            row_idx = self.model.row_of_model(model_id)
-            row = self.model.row(row_idx)
-            if not row:
-                continue
-            color = SERIES_COLORS[idx % len(SERIES_COLORS)]
-            is_current = model_id == current_id
-            is_base = bool(row.get("is_baseline")) or (baseline_id is not None and model_id == baseline_id)
-            role_text = (
-                "当前势 · 基准势"
-                if (is_current and is_base)
-                else "当前势"
-                if is_current
-                else "📌 基准势"
-                if is_base
-                else "对比势"
-            )
-            pill = QFrame(self.capsule_panel)
-            pill.setObjectName("modelCapsule")
-            border_color = palette.ACCENT if is_current else palette.PLOT_CURRENT if is_base else palette.BORDER
-            pill.setStyleSheet(
-                f"#modelCapsule {{ background: {palette.SURFACE}; border: 1px solid {border_color}; border-radius: 8px; }}"
-            )
-            pill_layout = QHBoxLayout(pill)
-            pill_layout.setContentsMargins(8, 3, 6, 3)
-            pill_layout.setSpacing(6)
-
-            dot = CaptionLabel("●", pill)
-            dot.setStyleSheet(f"color: {color}; font-size: 13px; font-weight: bold;")
-            pill_layout.addWidget(dot)
-
-            title_str = f"{row['project_name']} / {row['name']}" if row.get("project_name") else row["name"]
-            meta = model_meta.get(model_id) or {}
-            rmse_parts = []
-            if meta.get("energy") is not None:
-                rmse_parts.append(f"E:{meta['energy']:.2g}")
-            if meta.get("force") is not None:
-                rmse_parts.append(f"F:{meta['force']:.2g}")
-            sub_str = f" ({' · '.join(rmse_parts)})" if rmse_parts else ""
-
-            label = CaptionLabel(f"{title_str}{sub_str} [{role_text}]", pill)
-            label.setStyleSheet(f"color: {palette.TEXT_PRIMARY}; font-weight: 600;")
-            pill_layout.addWidget(label)
-
-            if model_id > 0 and not row.get("temporary") and suite_id is not None:
-                pin = TransparentToolButton(
-                    FluentIcon.PIN.colored(
-                        palette.PLOT_CURRENT if is_base else palette.TEXT_SECONDARY,
-                        palette.PLOT_CURRENT if is_base else palette.TEXT_SECONDARY,
-                    ),
-                    pill,
-                )
-                pin.setFixedSize(22, 22)
-                pin.setToolTip(self.tr("Set baseline model"))
-                pin.clicked.connect(lambda _=False, mid=model_id: self.set_baseline_for_model(mid))
-                pill_layout.addWidget(pin)
-
-            if not is_current and model_id in self.comparison_picker.selected_ids():
-                close_btn = TransparentToolButton(
-                    FluentIcon.CLOSE.colored(palette.TEXT_SECONDARY, palette.PLOT_REJECT), pill
-                )
-                close_btn.setFixedSize(22, 22)
-                close_btn.setToolTip(self.tr("Remove comparison model"))
-                close_btn.clicked.connect(lambda _=False, mid=model_id: self.comparison_picker.remove_id(mid))
-                pill_layout.addWidget(close_btn)
-
-            self.capsule_flow.addWidget(pill)
+        actions = QHBoxLayout()
+        actions.setSpacing(8)
+        controls.addLayout(actions)
+        for widget, stretch in (
+            (self.baseline_label, 1), (self.property_combo, 0), (self.tolerance_label, 1),
+            (self.scope_combo, 0), (self.scope_hint, 0), (self.curves_button, 0),
+            (self.run_selected_button, 0),
+        ):
+            actions.addWidget(widget, stretch)
 
     def _sync_curve_visibility(self):
         expanded = self.curves_button.isChecked()
         editing = not self.editor_scroll.isHidden()
         self.curves_button.setText("收起曲线" if expanded else "查看曲线")
-        self.splitter.setVisible(expanded and not editing)
-        self.metrics_button.setVisible(expanded and not editing)
+        self.detail.setVisible(expanded and not editing)
         self.curves_placeholder.setVisible(not expanded and not editing)
 
     def _toggle_curves(self, expanded):
@@ -1579,16 +1434,6 @@ class ModelLibraryWidget(QWidget):
         self.curves_button.setChecked(True)
         self.curves_button.blockSignals(False)
         self._sync_curve_visibility()
-
-    def _toggle_metrics(self, expanded):
-        self.table.setVisible(expanded)
-        self.metrics_button.setIcon(
-            (FluentIcon.CHEVRON_DOWN_MED if expanded else FluentIcon.CHEVRON_RIGHT).colored(
-                palette.PLOT_LOADED_OVERLAY, palette.PLOT_LOADED_OVERLAY
-            )
-        )
-        if expanded:
-            self.splitter.setSizes([max(260, self.splitter.height() - 180), 180])
 
     # -- data -----------------------------------------------------------------
     def service(self) -> ValidationService:
@@ -1714,19 +1559,6 @@ class ModelLibraryWidget(QWidget):
                 suite_id, [row["model_id"] for row in card["rows"]] + [model_id], draft=self._draft
             )
         self.model.set_scorecard(card)
-        if suite_id is None:
-            self.empty_hint.setText(
-                self.tr("Open the menu above to start a reference-free diagnostic, or to import reference data.")
-            )
-        elif not card["columns"]:
-            self.empty_hint.setText(self.tr("This validation plan has no reference datasets yet."))
-        elif not card["rows"]:
-            self.empty_hint.setText(
-                self.tr(
-                    "Open a compatible NEP model to validate this plan. Reference data can already be previewed below."
-                )
-            )
-        self.empty_hint.setVisible(not self._benchmarks)
         suite = (card or {}).get("suite") or {}
         baseline = next((row for row in (card or {}).get("rows", []) if row["is_baseline"]), None)
         tolerance = (card or {}).get("tolerance")
@@ -1937,7 +1769,6 @@ class ModelLibraryWidget(QWidget):
                 self.table.selectRow(next((i for i, b in enumerate(benchmarks) if b["id"] in selected), 0))
         selection.blockSignals(False)
         self.all_groups_button.setVisible(kind in ("eos", "diagnostic", "response"))
-        self.metrics_button.setText("响应与运行详情" if kind == "diagnostic" else self.tr("Error details"))
         self._update_run_scope()
         if update_detail:
             self._update_detail()
@@ -1978,8 +1809,6 @@ class ModelLibraryWidget(QWidget):
         self.star_action.setToolTip(self.star_action.text())
         self.star_action.setChecked(bool(row and row["starred"]))
         self.baseline_button.setEnabled(saved and has_suite and self._run_task is None)
-        if not getattr(self, "_workspace_ready", False):
-            self._rebuild_model_capsules()
         self._update_run_scope()
         if update_detail:
             self._update_detail()
@@ -2083,8 +1912,7 @@ class ModelLibraryWidget(QWidget):
         self.save_plan_action.setEnabled(False)
         self.edit_diagnostic_action.setEnabled(False)
         self.export_package_action.setEnabled(False)
-        self.splitter.hide()
-        self.metrics_button.hide()
+        self.detail.hide()
         self.curves_placeholder.hide()
         self.editor_scroll.show()
         self.diagnostic_editor.show()

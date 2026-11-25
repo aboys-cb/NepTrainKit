@@ -1,0 +1,12 @@
+---
+name: make-dataset-workflow
+description: Turn structure generation or training-set expansion requirements into an importable NepTrainKit workflow. Clarify user choices, compose existing Make Dataset cards, and confirm a plain-text flowchart before writing JSON.
+---
+
+# Make Dataset Workflow
+
+1. Use the user's goal, seed structures, and existing workflows. Verify what you can from the files. Ask one decision at a time in terms of the desired structures or outputs. State a recommendation for each applicable choice and use it when the user says “default” or skips that choice. Ask for missing inputs that determine feasibility. Carry confirmed choices forward when the user revises a step.
+2. Ask whether to apply operations in sequence, generate independent variants from shared input, or do both. Top-level cards run in sequence. Use `CardGroup` for independent cards whose outputs are pooled. Use `WorkflowFork` for separate branch pipelines or outputs, with an explicit merge before shared downstream cards. When extending a workflow, confirm which stage supplies the input. Track candidates per seed, total candidates, and final selections.
+3. Recommend batch generation followed by review, selection, and subset export in Show NEP. Ask whether the user wants this and clarify pooled or per-group selection, criteria, and budget as needed. Use the Make Dataset FPS card only when the user requests automatic in-workflow sampling. Identify the card or branch output to open in Show NEP. Descriptor-based selection needs a suitable NEP model.
+4. Draw a plain-text flowchart with inputs, card order, branches and merges, key parameters and units, output counts, and where selection and export happen. Mark defaults and estimated counts. Wait for confirmation before generating JSON. Keep Show NEP steps in the diagram and handoff instructions. Serialize the Make Dataset configuration.
+5. Follow a real export from the target version. Find cards and Params through the [card registry](../../src/NepTrainKit/core/workflow.py) and check their `to_dict()`, `from_dict()`, and parameter docs. Write `workflow_schema: 2` and `cards` using the native card and container formats. Ask before changing requirements that existing cards cannot express. Validate the configuration and, when possible, import and re-export it in the GUI to compare cards, effective settings, and data flow. `preview` checks parsing only. Deliver the file, import instructions, Show NEP handoff if agreed, and the checks performed.

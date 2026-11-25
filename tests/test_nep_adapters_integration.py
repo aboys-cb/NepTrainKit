@@ -9,6 +9,7 @@ from ase.io import read as ase_read
 
 from NepTrainKit.core import MessageManager
 from NepTrainKit.core.calculator import NepCalculator
+from NepTrainKit.core.cards.labels import clear_reference_labels
 from NepTrainKit.core.io.importers import ase_atoms_to_structure
 from NepTrainKit.core.io.nep import (
     NepDipoleResultData,
@@ -387,10 +388,10 @@ def test_transient_result_keeps_predictions_in_memory_without_cache_files(
     model = tmp_path / "nep89.txt"
     dataset = tmp_path / "make_dataset.xyz"
     shutil.copy2(fixture / "nep.txt", model)
-    structures = [
-        ase_atoms_to_structure(atoms)
-        for atoms in ase_read(fixture / "train.xyz", index=":")
-    ]
+    frames = ase_read(fixture / "train.xyz", index=":")
+    for atoms in frames:
+        clear_reference_labels(atoms)
+    structures = [ase_atoms_to_structure(atoms) for atoms in frames]
 
     result = NepTrainResultData.from_path(
         dataset,
@@ -405,8 +406,12 @@ def test_transient_result_keeps_predictions_in_memory_without_cache_files(
     result._load_descriptors()
     result._load_dataset()
 
-    assert result.energy.now_data.size > 0
-    assert result.force.now_data.size > 0
+    for plot in (result.energy, result.force):
+        assert plot.y.size and np.isfinite(plot.y).all()
+        np.testing.assert_array_equal(plot.x, plot.y)
+        assert np.isnan(plot.all_data[:, plot.x_cols]).all()
+        assert np.isnan(plot.get_rmse())
+        assert plot.get_max_error_index(1) == []
     output_directory = tmp_path / "make_dataset_nep89"
     assert not output_directory.exists()
 

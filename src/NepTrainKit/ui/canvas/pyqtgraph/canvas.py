@@ -15,6 +15,7 @@ from NepTrainKit.config import Config
 from NepTrainKit import palette
 from ..base.canvas import CanvasLayoutBase, dataset_axis_labels
 from NepTrainKit.core.io import NepTrainResultData
+from NepTrainKit.core.io.base import plot_x_coordinates
 
 
 class MyPlotItem(PlotItem):
@@ -321,6 +322,7 @@ class PyqtgraphCanvas(CanvasLayoutBase, GraphicsLayoutWidget, metaclass=Combined
 
         for index, _dataset in enumerate(self.nep_result_data.datasets):
             plot = self.axes_list[index]
+            prediction_only = getattr(_dataset, "prediction_only", False)
             plot.parity_mode = bool(getattr(_dataset, "parity_mode", _dataset.title != "descriptor"))
             plot.title = _dataset.title
             display_title = str(getattr(_dataset, "display_title", _dataset.title) or _dataset.title)
@@ -356,7 +358,7 @@ class PyqtgraphCanvas(CanvasLayoutBase, GraphicsLayoutWidget, metaclass=Combined
             else:
                 plot.set_current_point([], [])
 
-            if bool(getattr(_dataset, "show_rmse", _dataset.title not in ["descriptor"])):
+            if not prediction_only and bool(getattr(_dataset, "show_rmse", _dataset.title != "descriptor")):
                 # Update RMSE overlays for non-descriptor plots.
                 pos = self.convert_pos(plot, (0, 1))
                 text = f"RMSE: {_dataset.get_formart_rmse()}"
@@ -395,12 +397,11 @@ class PyqtgraphCanvas(CanvasLayoutBase, GraphicsLayoutWidget, metaclass=Combined
         for plot in self.axes_list:
             dataset = self.get_axes_dataset(plot)
             array_index = dataset.convert_index(structure_index)
-            if dataset.is_visible(array_index) :
-
-                data=dataset.all_data[array_index,: ]
-                plot.set_current_point(data[:,dataset.x_cols].flatten(),
-                                       data[:, dataset.y_cols].flatten(),
-                                       )
+            if dataset.is_visible(array_index):
+                rows = dataset.all_data[array_index]
+                plot.set_current_point(
+                    plot_x_coordinates(dataset, rows), rows[:, dataset.y_cols].ravel()
+                )
             else:
                 plot.set_current_point([], [])
     def item_clicked(self, scatter_item, items, event):

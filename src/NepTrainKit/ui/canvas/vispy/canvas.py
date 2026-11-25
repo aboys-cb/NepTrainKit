@@ -26,6 +26,7 @@ from NepTrainKit import palette
 from NepTrainKit.ui.canvas.base.canvas import VispyCanvasLayoutBase, dataset_axis_labels
 from NepTrainKit.ui.canvas.vispy.fast_scatter import FastScatter
 from NepTrainKit.core.io import NepTrainResultData
+from NepTrainKit.core.io.base import plot_x_coordinates
 from NepTrainKit.core.types import Brushes, Pens
 
 
@@ -206,7 +207,7 @@ class DatasetGpuCache:
             structure_index = np.asarray(dataset.group_array.all_data, dtype=np.int32).reshape(-1)
         else:
             cols = data.shape[1] // 2
-            x = data[:, dataset.x_cols].ravel()
+            x = plot_x_coordinates(dataset, data)
             y = data[:, dataset.y_cols].ravel()
             structure_index = np.asarray(dataset.group_array.all_data, dtype=np.int32).repeat(cols)
 
@@ -1632,7 +1633,10 @@ class VispyCanvas(VispyCanvasLayoutBase, scene.SceneCanvas, metaclass=CombinedMe
 
     def _apply_plot_annotations(self, plot, dataset, full_detail):
         rmse_func = getattr(dataset, "get_formart_rmse", None)
-        show_rmse = bool(full_detail) and bool(getattr(dataset, "show_rmse", dataset.title not in ["descriptor"])) and callable(rmse_func)
+        show_rmse = (
+            full_detail and not getattr(dataset, "prediction_only", False)
+            and getattr(dataset, "show_rmse", dataset.title != "descriptor") and callable(rmse_func)
+        )
         rmse_text = f"RMSE: {rmse_func()}" if show_rmse else ""
         plot.set_rmse_text(rmse_text if full_detail else "")
         if show_rmse and full_detail:
@@ -1927,12 +1931,11 @@ class VispyCanvas(VispyCanvasLayoutBase, scene.SceneCanvas, metaclass=CombinedMe
                 plot.set_current_point([], [])
                 continue
             array_index=dataset.convert_index(structure_index)
-            if dataset.is_visible(array_index) :
-
-                data=dataset.all_data[array_index,: ]
-                plot.set_current_point(data[:,dataset.x_cols].flatten(),
-                                       data[:, dataset.y_cols].flatten(),
-                                       )
+            if dataset.is_visible(array_index):
+                rows = dataset.all_data[array_index]
+                plot.set_current_point(
+                    plot_x_coordinates(dataset, rows), rows[:, dataset.y_cols].ravel()
+                )
             else:
                 plot.set_current_point([], [])
 
@@ -1973,7 +1976,7 @@ class VispyCanvas(VispyCanvasLayoutBase, scene.SceneCanvas, metaclass=CombinedMe
                 x = rows.reshape(-1)
                 y = x
             else:
-                x = rows[:, dataset.x_cols].ravel()
+                x = plot_x_coordinates(dataset, rows)
                 y = rows[:, dataset.y_cols].ravel()
         else:
             x = np.asarray(dataset.x)

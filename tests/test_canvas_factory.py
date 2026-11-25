@@ -138,6 +138,34 @@ class TestCanvasFactory(unittest.TestCase):
         self.assertEqual(brushes[1].color().rgba(), Brushes.TrainingOverlay.color().rgba())
         self.assertEqual(brushes[2].color().rgba(), Brushes.TrainingOverlay.color().rgba())
 
+    def test_unlabelled_mforce_uses_prediction_coordinates_in_both_canvases(self):
+        predictions = np.arange(9, dtype=np.float32).reshape(3, 3)
+        dataset = NepPlotData(
+            np.column_stack([predictions, np.full_like(predictions, np.nan)]),
+            group_list=[2, 1],
+            title="mforce",
+        )
+        canvas = canvas_factory._create_pyqtgraph_result_canvas(None)
+        canvas.init_axes(1)
+        canvas.set_nep_result_data(SimpleNamespace(datasets=[dataset], select_index=set(), reject_index=set()))
+        canvas.plot_nep_result()
+        plot = canvas.axes_list[0]
+        np.testing.assert_array_equal(plot._scatter.data["x"], predictions.ravel())
+        np.testing.assert_array_equal(plot._scatter.data["y"], predictions.ravel())
+        self.assertIn("Predicted magnetic force", plot.getAxis("bottom").labelText)
+        self.assertEqual(plot.getAxis("bottom").labelText, plot.getAxis("left").labelText)
+        self.assertEqual(plot.text.toPlainText(), "")
+        canvas.plot_current_point(1)
+        np.testing.assert_array_equal(plot.current_point.getData(), [predictions[2]] * 2)
+
+        vispy = canvas_factory._create_vispy_result_canvas(None)
+        x, y, groups = vispy._dataset_cache.arrays(dataset)
+        np.testing.assert_array_equal(x, predictions.ravel())
+        np.testing.assert_array_equal(y, x)
+        np.testing.assert_array_equal(groups, [0] * 6 + [1] * 3)
+        positions = vispy._overlay_positions_for_indices(dataset, {1})
+        np.testing.assert_array_equal(positions, np.column_stack([predictions[2]] * 2))
+
     def test_pyqtgraph_replot_can_preserve_selection_for_backend_switch(self):
         canvas, fallback = canvas_factory.create_result_canvas(CanvasMode.PYQTGRAPH, None)
         self.assertFalse(fallback)

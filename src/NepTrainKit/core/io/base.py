@@ -348,14 +348,29 @@ class NepPlotData(NepData):
         self.x_cols = slice(self.cols, None)
         self.y_cols = slice(None, self.cols)
     @property
+    def prediction_only(self) -> bool:
+        """Whether to plot predictions on both axes."""
+        if not self.cols or not getattr(self, "parity_mode", getattr(self, "title", "") != "descriptor"):
+            return False
+        version = getattr(self, "_plot_coord_version", 0)
+        cached = getattr(self, "_prediction_only_cache", None)
+        if cached is None or cached[0] != version:
+            rows = self.all_data
+            prediction_only = (
+                not np.isfinite(rows[:, self.x_cols]).any()
+                and np.isfinite(rows[:, self.y_cols]).any()
+            )
+            cached = self._prediction_only_cache = (version, prediction_only)
+        return bool(cached[1])
+    @property
     def x(self) -> npt.NDArray[Any]:
-        """Flattened NEP predictions suitable for scatter plots."""
+        """Flattened reference values, or predictions for unlabelled data."""
         if self.cols == 0:
             return self.now_data
-        return self.now_data[:, self.x_cols].ravel()
+        return plot_x_coordinates(self, self.now_data)
     @property
     def y(self) -> npt.NDArray[Any]:
-        """Flattened reference values."""
+        """Flattened NEP predictions."""
         if self.cols == 0:
             return self.now_data
         return self.now_data[:, self.y_cols].ravel()
@@ -365,6 +380,14 @@ class NepPlotData(NepData):
         if self.cols == 0:
             return self.group_array.now_data.astype(np.int32)
         return self.group_array[:].repeat(self.cols).astype(np.int32)
+
+
+def plot_x_coordinates(dataset, rows):
+    """Project paired output rows onto the same x axis used by the canvases."""
+    columns = dataset.y_cols if getattr(dataset, "prediction_only", False) else dataset.x_cols
+    return rows[:, columns].ravel()
+
+
 class DPPlotData(NepData):
     """Plot helper for DP datasets where columns are ordered differently."""
     def __init__(self, data_list: Sequence[Any] | npt.NDArray[Any], **kwargs: Any) -> None:

@@ -2,6 +2,8 @@
 
 ## Project Skill
 
+For turning user requirements into an importable Make Dataset workflow with existing cards, read `skills/make-dataset-workflow/SKILL.md`.
+
 This repo has a local skill at `skills/make-dataset-card-dev/SKILL.md`.
 
 Before changing Make Dataset cards, card operations, card docs, or card tests:

@@ -762,10 +762,11 @@ class SettingsWidget(ScrollArea):
 
     def check_runtime_update(self) -> None:
         """Check and install the currently selected managed runtime."""
-        self._runtime_update_worker = RuntimePackageUpdateWorker(
-            self,
-            spec=MANAGED_RUNTIME_SPEC,
-        )
+        notifier = getattr(self.window(), "auto_update_notifier", None)
+        if notifier is not None:
+            self._runtime_update_worker = notifier.runtime_update_worker
+        elif not hasattr(self, "_runtime_update_worker"):
+            self._runtime_update_worker = RuntimePackageUpdateWorker(self, spec=MANAGED_RUNTIME_SPEC)
         self._runtime_update_worker.check(
             on_finished=self._on_runtime_update_finished
         )

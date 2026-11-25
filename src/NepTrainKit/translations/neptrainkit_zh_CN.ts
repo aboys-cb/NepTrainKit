@@ -31070,6 +31070,10 @@ Magnetic: {magnetic}</source>
         <translation>发现新的 {package} 版本：{current} → {latest}。此运行时更新可能是使用最新功能和保持兼容性所必需的。是否立即安装？重启 NepTrainKit 后将使用新的运行时。</translation>
     </message>
     <message>
+        <source>{package} {current} → {latest}. Restart NepTrainKit after installing the update.</source>
+        <translation>{package} {current} → {latest}。安装后重启 NepTrainKit 以使用新版运行时。</translation>
+    </message>
+    <message>
         <location filename="../ui/update.py" line="491" />
         <source>{runtime} Update</source>
         <translation>{runtime}更新</translation>

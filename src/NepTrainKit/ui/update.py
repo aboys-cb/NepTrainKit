@@ -14,10 +14,10 @@ import traceback
 from pathlib import Path
 from typing import Any, Callable
 
-from PySide6.QtCore import QObject, QUrl, Signal, QCoreApplication
+from PySide6.QtCore import QObject, QUrl, Qt, Signal, QCoreApplication
 from PySide6.QtGui import QDesktopServices
 from loguru import logger
-from qfluentwidgets import CaptionLabel, MessageBox, MessageBoxBase, TextEdit
+from qfluentwidgets import CaptionLabel, InfoBar, InfoBarIcon, MessageBox, MessageBoxBase, PushButton, TextEdit
 
 from NepTrainKit import is_nuitka_compiled, managed_runtime_root, module_path
 from NepTrainKit.config import Config
@@ -388,6 +388,8 @@ class RuntimePackageUpdateWorker(QObject):
         self._manual = True
         self._on_finished: Callable[[dict[str, Any]], None] | None = None
         self._pending_update: RuntimePackageUpdate | None = None
+        self._update_notice: InfoBar | None = None
+        self._checking = False
         self.check_thread = BackgroundTask(parent, show_tip=False)
         self.install_thread = BackgroundTask(
             parent,
@@ -416,6 +418,9 @@ class RuntimePackageUpdateWorker(QObject):
             self.check_result.emit({"ok": False, "error": str(exc)})
 
     def _handle_check_result(self, result: dict[str, Any]) -> None:
+        self._checking = False
+        if self._is_closing():
+            return
         if not result.get("ok"):
             if self._manual:
                 MessageManager.send_error_message(
@@ -482,6 +487,11 @@ class RuntimePackageUpdateWorker(QObject):
             return
 
         current = update.current_version or _tr("not installed")
+        title = _tr("{runtime} Update").format(runtime=self._runtime_name)
+        if not self._manual:
+            self._offer_startup_update(update, title, current)
+            return
+
         message = _tr(
             "A new {package} version is available: {current} → {latest}. "
             "This runtime update may be required for the latest features and "
@@ -492,11 +502,7 @@ class RuntimePackageUpdateWorker(QObject):
             current=current,
             latest=update.latest_version,
         )
-        box = MessageBox(
-            _tr("{runtime} Update").format(runtime=self._runtime_name),
-            message,
-            self._parent,
-        )
+        box = MessageBox(title, message, self._parent)
         box.yesButton.setText(_tr("Install"))
         box.cancelButton.setText(_tr("Cancel"))
         box.exec()
@@ -504,8 +510,48 @@ class RuntimePackageUpdateWorker(QObject):
             self._finish({"ok": True, "updated": False, "cancelled": True})
             return
 
-        self._pending_update = update
-        self.install_thread.start_work(self._install)
+        self._start_install(update)
+
+    def _is_closing(self) -> bool:
+        window = self._parent.window() if self._parent is not None else None
+        return bool(getattr(getattr(window, "_thread_shutdown", None), "closing", False))
+
+    def _offer_startup_update(self, update: RuntimePackageUpdate, title: str, current: str) -> None:
+        if self._parent is None:
+            return
+        notice = InfoBar(
+            InfoBarIcon.INFORMATION,
+            title,
+            _tr("{package} {current} → {latest}. Restart NepTrainKit after installing the update.").format(
+                package=self._spec.distribution, current=current, latest=update.latest_version,
+            ),
+            orient=Qt.Orientation.Vertical,
+            duration=-1,
+            parent=self._parent.window(),
+        )
+        button = PushButton(_tr("Install"), notice)
+        notice.addWidget(button)
+        self._update_notice = notice
+
+        def dismiss() -> None:
+            if self._update_notice is notice:
+                self._update_notice = None
+                self._finish({"ok": True, "updated": False, "cancelled": True})
+
+        def accept() -> None:
+            if self._update_notice is notice:
+                self._update_notice = None
+                notice.close()
+                self._start_install(update)
+
+        notice.closedSignal.connect(dismiss)
+        button.clicked.connect(accept)
+        notice.show()
+
+    def _start_install(self, update: RuntimePackageUpdate) -> None:
+        if not self._is_closing() and not self.install_thread.isRunning():
+            self._pending_update = update
+            self.install_thread.start_work(self._install)
 
     def _install(self) -> None:
         try:
@@ -572,8 +618,10 @@ class RuntimePackageUpdateWorker(QObject):
         manual: bool = True,
     ) -> None:
         """Check for an update, suppressing routine notices during app startup."""
-        if self.check_thread.isRunning() or self.install_thread.isRunning():
+        if self._is_closing() or self._checking or self.check_thread.isRunning() or self.install_thread.isRunning():
             return
+        if self._update_notice is not None:
+            self._update_notice.close()
         self._manual = manual
         self._on_finished = on_finished
         if manual:
@@ -582,6 +630,7 @@ class RuntimePackageUpdateWorker(QObject):
                     runtime=self._runtime_name
                 )
             )
+        self._checking = True
         self.check_thread.start_work(self._check)
 
 

@@ -4,7 +4,8 @@ import time
 from pathlib import Path
 from unittest.mock import Mock, patch
 
-from PySide6.QtWidgets import QApplication, QWidget
+from PySide6.QtCore import QTimer
+from PySide6.QtWidgets import QApplication, QDialog, QPushButton, QVBoxLayout, QWidget
 
 import NepTrainKit.ui.update as update_module
 from NepTrainKit.runtime_package import (
@@ -102,11 +103,11 @@ def test_runtime_update_worker_reuses_same_flow_for_another_package(
             spec=spec,
             runtime_name="requests test runtime",
         )
-        worker.check(on_finished=finished.append, manual=False)
+        worker.check(on_finished=finished.append)
 
     check.assert_called_once_with(spec, update_module.managed_runtime_root)
     install.assert_called_once_with(spec, update_module.managed_runtime_root, update)
-    info.assert_not_called()
+    info.assert_called_once()
     assert "requests" in _AcceptedMessageBox.last_message
     assert "2.31.0" in _AcceptedMessageBox.last_message
     assert "2.34.2" in _AcceptedMessageBox.last_message
@@ -119,6 +120,50 @@ def test_runtime_update_worker_reuses_same_flow_for_another_package(
             "path": str(installed.package_path),
         }
     ]
+
+
+def test_startup_runtime_update_does_not_interrupt_an_open_import_dialog():
+    app = QApplication.instance() or QApplication([])
+    parent = QWidget()
+    parent.resize(640, 480)
+    parent.show()
+    dialog = QDialog(parent)
+    layout = QVBoxLayout(dialog)
+    confirm = QPushButton("Confirm import", dialog)
+    layout.addWidget(confirm)
+    confirm.clicked.connect(dialog.accept)
+    update = RuntimePackageUpdate(
+        current_version="1.0.9", latest_version="1.0.10", update_available=True, artifact=None,
+    )
+    loaded = []
+    try:
+        with (
+            patch.object(update_module, "BackgroundTask", _ImmediateTask),
+            patch.object(update_module, "MessageBox", wraps=_AcceptedMessageBox) as message_box,
+            patch.object(update_module, "check_runtime_package_update", return_value=update),
+        ):
+            worker = RuntimePackageUpdateWorker(parent)
+            with patch.object(worker, "_start_install") as install:
+                def finish_import():
+                    confirm.setFocus()
+                    before = app.activeModalWidget()
+                    worker.check(manual=False)
+                    loaded.extend((before, app.activeModalWidget(), dialog.focusWidget()))
+                    confirm.click()
+
+                QTimer.singleShot(0, finish_import)
+                assert dialog.exec() == QDialog.DialogCode.Accepted
+                assert loaded == [dialog, dialog, confirm]
+                notice = worker._update_notice
+                assert notice is not None and notice.isVisible() and notice.window() is parent
+                install.assert_not_called()
+                notice.findChild(update_module.PushButton).click()
+                install.assert_called_once_with(update)
+                assert worker._update_notice is None
+                message_box.assert_not_called()
+    finally:
+        parent.close()
+        parent.deleteLater()
 
 
 def test_startup_runtime_check_is_silent_when_no_update_is_available() -> None:

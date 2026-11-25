@@ -67,7 +67,7 @@ def test_scope_matches_visible_counts_and_each_run_action(scored, tmp_path):
     suite = s.create_suite('mixed', [scored.eos['id'], another['id'], scored.efv['id']])
     w = ModelLibraryWidget(service=s)
     w.open_scorecard(suite['id'], scored.new['id'])
-    w.comparison_picker.set_selected_ids([scored.old['id']])
+    w.set_comparison_ids([scored.old['id']])
     w.table.selectRow(0)
     # Zoom/focus is a view operation; default scope explicitly says all EOS groups.
     ids = w.selected_model_ids()
@@ -155,7 +155,7 @@ def test_failed_unsupported_and_success_are_reported_separately(scored):
     s = scored.service
     w = ModelLibraryWidget(service=s)
     w.open_scorecard(scored.suite['id'], scored.fresh['id'])
-    w.comparison_picker.set_selected_ids([scored.old['id'], scored.new['id']])
+    w.set_comparison_ids([scored.old['id'], scored.new['id']])
     def result(model_id, set_id):
         status = {scored.old['id']: 'succeeded', scored.new['id']: 'unsupported', scored.fresh['id']: 'failed'}[model_id]
         return {'status': status, 'error': 'unsupported test' if status == 'unsupported' else 'failure test'}

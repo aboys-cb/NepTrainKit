@@ -106,7 +106,7 @@ def test_library_runs_all_in_background_and_overlays_details(scored, monkeypatch
     assert widget.model.row_of_model(scored.fresh["id"]) >= 0
 
     widget.model_combo.setCurrentIndex(widget.model_combo.findData(scored.new["id"]))
-    widget.comparison_picker.set_selected_ids([scored.old["id"]])
+    widget.set_comparison_ids([scored.old["id"]])
     assert widget.detail.title_label.text() == "EOS · 1 groups"
     assert "Reference: DFT, PBE" in widget.detail.info_label.text()
     assert len(widget.detail.eos_plots[0].listDataItems()) == 3
@@ -181,8 +181,7 @@ def test_incompatible_models_explain_why_the_list_is_empty(tmp_path, monkeypatch
     assert widget.model.rowCount() == 0
     assert "hidden" in widget.model_combo.currentText().lower()
     assert not widget.model_combo.isEnabled()
-    # The comparison picker must not invite a choice that does not exist.
-    assert widget.comparison_picker.text() == "No other model to compare"
+    assert widget.comparison_ids() == []
     widget.close()
 
 
@@ -287,7 +286,7 @@ def test_eos_relative_zero_preserves_model_offset_and_refresh_selection(make_ser
     service.set_baseline(suite["id"], model["id"])
     widget = ModelLibraryWidget(service=service)
     widget.open_scorecard(suite["id"], model["id"])
-    widget.comparison_picker.set_selected_ids([])
+    widget.set_comparison_ids([])
     widget.table.selectRow(1)
     widget.detail.offset_checkbox.setChecked(False)
     ref, pred = widget.detail.eos_plots[0].listDataItems()
@@ -302,7 +301,7 @@ def test_eos_relative_zero_preserves_model_offset_and_refresh_selection(make_ser
     np.testing.assert_allclose(ref.getData()[1], second["summary"]["energies"])
     np.testing.assert_allclose(pred.getData()[1] - ref.getData()[1], 0.7)
     widget.refresh()
-    assert widget.comparison_picker.selected_ids() == []
+    assert widget.comparison_ids() == []
     assert [i.row() for i in widget.table.selectionModel().selectedRows()] == [1]
     assert len(widget.detail.eos_plots[0].listDataItems()) == 2
     widget.deleteLater()
@@ -1278,7 +1277,7 @@ def test_scorecard_translates_stored_run_errors_but_keeps_unknown_diagnostics():
     assert tooltip(1) == "Library object 0123456789ab is missing from /lib."
 
 
-def test_multi_comparison_search_and_shared_legend_keep_identity(scored, tmp_path):
+def test_multi_comparison_selection_and_shared_legend_keep_identity(scored, tmp_path):
     service = scored.service
     second = _import(service, tmp_path, eos_frames(curvature=0.8), "second-phase")
     suite = service.create_suite("Two phases", [scored.eos["id"], second["id"]])
@@ -1287,20 +1286,9 @@ def test_multi_comparison_search_and_shared_legend_keep_identity(scored, tmp_pat
         service.run_suite(model["id"], suite["id"])
     widget = ModelLibraryWidget(service=service)
     widget.open_scorecard(suite["id"], scored.new["id"])
-    picker = widget.comparison_picker
-    picker.set_selected_ids([scored.old["id"], scored.fresh["id"], scored.new["id"]])
-    assert picker.selected_ids() == [scored.old["id"], scored.fresh["id"]]  # current is never duplicated
-    picker.search.setText("fresh")
-    visible = [picker.list.item(i) for i in range(picker.list.count()) if not picker.list.item(i).isHidden()]
-    assert len(visible) == 1 and "fresh" in visible[0].text()
-    visible[0].setCheckState(Qt.CheckState.Unchecked)
-    assert picker.selected_ids() == [scored.old["id"]]
-    visible[0].setCheckState(Qt.CheckState.Checked)
-    picker.search.clear()
-    from PySide6.QtTest import QTest
-    picker.open_popup()
-    QTest.keyClick(picker.search, Qt.Key.Key_Escape)
-    assert picker.popup.isHidden()
+    old, fresh, current = (model["id"] for model in (scored.old, scored.fresh, scored.new))
+    widget.set_comparison_ids([old, fresh, current, fresh, -1])
+    assert widget.comparison_ids() == [old, fresh]
     assert all(len(plot.listDataItems()) == 4 for plot in widget.detail.eos_plots)
     keys = [None, scored.new["id"], scored.old["id"], scored.fresh["id"]]
     assert list(widget.detail.legend_buttons) == keys
@@ -1308,10 +1296,10 @@ def test_multi_comparison_search_and_shared_legend_keep_identity(scored, tmp_pat
     widget.detail.legend_buttons[scored.fresh["id"]].click()
     assert all(not curve.isVisible() for curve in widget.detail._curves[scored.fresh["id"]])
     widget.refresh()
-    assert picker.selected_ids() == [scored.old["id"], scored.fresh["id"]]
+    assert widget.comparison_ids() == [old, fresh]
     assert not widget.detail.legend_buttons[scored.fresh["id"]].isChecked()
     widget.detail.comparisonRemoved.emit(scored.old["id"])
-    assert picker.selected_ids() == [scored.fresh["id"]]
+    assert widget.comparison_ids() == [fresh]
     assert widget.detail._curves[scored.fresh["id"]][0].opts["pen"].color() == fresh_color
     assert service.get_suite(suite["id"])["baseline_model_id"] == scored.old["id"]
     widget.detail.groupFocused.emit("G2")
@@ -1319,7 +1307,7 @@ def test_multi_comparison_search_and_shared_legend_keep_identity(scored, tmp_pat
     widget.detail.legend_buttons[scored.fresh["id"]].click()
     assert widget.detail._curves[scored.fresh["id"]][0].isVisible()
     widget.model_combo.setCurrentIndex(widget.model_combo.findData(scored.fresh["id"]))
-    assert picker.selected_ids() == []
+    assert widget.comparison_ids() == []
     assert len(widget.detail.eos_plots[0].listDataItems()) == 2
     widget.deleteLater()
 
@@ -1329,7 +1317,7 @@ def test_validate_selected_versions_includes_hidden_but_not_unselected(scored, t
     outsider = _capture(service, tmp_path, "unselected")
     widget = ModelLibraryWidget(service=service)
     widget.open_scorecard(scored.suite["id"], scored.new["id"])
-    widget.comparison_picker.set_selected_ids([scored.fresh["id"]])
+    widget.set_comparison_ids([scored.fresh["id"]])
     assert "Not run" in widget.detail.legend_buttons[scored.fresh["id"]].text()
     widget.detail.legend_buttons[scored.fresh["id"]].click()
     widget.scope_combo.setCurrentIndex(widget.scope_combo.findData("suite"))
@@ -1342,7 +1330,7 @@ def test_validate_selected_versions_includes_hidden_but_not_unselected(scored, t
             for set_id in (scored.eos["id"], scored.efv["id"])
         }
     assert service.latest_run(outsider["id"], scored.eos["id"]) is None
-    assert widget.comparison_picker.selected_ids() == [scored.fresh["id"]]
+    assert widget.comparison_ids() == [scored.fresh["id"]]
     assert not widget.detail.legend_buttons[scored.fresh["id"]].isChecked()
     assert "Not run" not in widget.detail.legend_buttons[scored.fresh["id"]].text()
     assert service.get_suite(scored.suite["id"])["baseline_model_id"] == scored.old["id"]
@@ -1356,7 +1344,7 @@ def test_selected_validation_promotes_only_current_draft(scored):
     widget = ModelLibraryWidget(service=scored.service)
     draft = ModelDraft((MODEL_HEADER + "new draft").encode(), "/tmp/new-draft.txt")
     widget.open_scorecard(scored.suite["id"], draft=draft)
-    widget.comparison_picker.set_selected_ids([scored.old["id"]])
+    widget.set_comparison_ids([scored.old["id"]])
     widget.scope_combo.setCurrentIndex(widget.scope_combo.findData("suite"))
     with patch.object(scored.service, "evaluate", wraps=scored.service.evaluate) as evaluate:
         widget.run_selected_button.button.click()
@@ -1364,7 +1352,7 @@ def test_selected_validation_promotes_only_current_draft(scored):
         current = widget.current_model_row()
         assert current["temporary"] and current["model_id"] > 0
         assert {call.args[0] for call in evaluate.call_args_list} == {current["model_id"], scored.old["id"]}
-    assert widget.comparison_picker.selected_ids() == [scored.old["id"]]
+    assert widget.comparison_ids() == [scored.old["id"]]
     widget.deleteLater()
 
 
@@ -1381,7 +1369,7 @@ def test_same_named_comparison_versions_are_independent(make_service, tmp_path):
         service.run_suite(model["id"], suite["id"])
     widget = ModelLibraryWidget(service=service)
     widget.open_scorecard(suite["id"], models[0]["id"])
-    widget.comparison_picker.set_selected_ids([model["id"] for model in models[1:]])
+    widget.set_comparison_ids([model["id"] for model in models[1:]])
     assert len({entry[1] for entry in widget.detail._groups[0][2]}) == 3
     widget.detail.legend_buttons[models[1]["id"]].click()
     assert not widget.detail._curves[models[1]["id"]][0].isVisible()
@@ -1401,7 +1389,7 @@ def test_eos_focus_button_returns_to_grid_and_reset_fits_visible_curves(scored, 
     widget = ModelLibraryWidget(service=service)
     widget.resize(1180, 800)
     widget.open_scorecard(suite["id"], scored.new["id"])
-    widget.comparison_picker.set_selected_ids([scored.old["id"]])
+    widget.set_comparison_ids([scored.old["id"]])
     widget.show()
     QApplication.processEvents()
     widget.detail.legend_buttons[scored.old["id"]].click()
@@ -1428,7 +1416,7 @@ def test_eos_focus_button_returns_to_grid_and_reset_fits_visible_curves(scored, 
     restore.click()
     assert len(widget.detail.eos_cards) == 2
     assert not widget.all_groups_button.isEnabled()
-    assert widget.comparison_picker.selected_ids() == [scored.old["id"]]
+    assert widget.comparison_ids() == [scored.old["id"]]
     assert not widget.detail.legend_buttons[scored.old["id"]].isChecked()
     single = service.create_suite("Single group", [second["id"]])
     widget.open_scorecard(single["id"], scored.new["id"])

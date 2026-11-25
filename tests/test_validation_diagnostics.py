@@ -266,8 +266,7 @@ def test_workbench_editor_draft_run_overlays_focus_and_save(service,seed,tmp_pat
     assert all(len(curve.derivative_parts)==2 for _, curves in widget.detail._diagnostic_charts for curve, _ in curves)
     second=service.capture_model(ModelDraft(b'nep4_spin3 1 Fe\nold','/test/old.txt'),auto=False)
     widget.refresh(model_id=current)
-    widget.comparison_picker.set_options([(second['id'],'old','not run')],[second['id']])
-    widget._on_selection_changed()
+    widget.set_comparison_ids([second['id']])
     task=widget.run_selected()
     assert task and _wait_until(lambda:widget._run_task is None)
     assert sum(c.property('diagnosticRole')=='analytic' for c in widget.detail._curves[second['id']])==3

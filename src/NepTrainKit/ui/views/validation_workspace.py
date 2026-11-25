@@ -184,7 +184,7 @@ class _ModelCard(QFrame):
         self.eye.setCheckable(True)
         self.eye.toggled.connect(lambda shown: workspace.detail.set_series_visible(key, shown))
         self.remove = self.action(FluentIcon.CLOSE, workspace.tr("Remove comparison model"))
-        self.remove.clicked.connect(lambda: workspace.comparison_picker.remove_id(key))
+        self.remove.clicked.connect(lambda: workspace.remove_comparison(key))
         policy = self.remove.sizePolicy()
         policy.setRetainSizeWhenHidden(True)
         self.remove.setSizePolicy(policy)
@@ -635,7 +635,7 @@ class ValidationWorkspace(ModelLibraryWidget):
         selectors = QWidget(self.controls_panel)
         selectors.hide()
         for widget in (
-            self.model_combo, self.comparison_picker, self.baseline_button, self.baseline_label,
+            self.model_combo, self.baseline_button, self.baseline_label,
             self.tolerance_label, self.property_combo, self.scope_combo, self.scope_hint, self.curves_button,
         ):
             widget.setParent(selectors)
@@ -784,7 +784,7 @@ class ValidationWorkspace(ModelLibraryWidget):
         current = self.model_combo.currentData()
         baseline = next((r["model_id"] for r in rows if r["is_baseline"]), None)
         eligible = {r["model_id"] for r in rows if not r["temporary"]} if self.current_suite_id() is not None else set()
-        self.role_dialog.set_roles(current, baseline, self.comparison_picker.selected_ids(), eligible,
+        self.role_dialog.set_roles(current, baseline, self.comparison_ids(), eligible,
                                    running=self._run_task is not None)
         self.role_dialog.setAcceptDrops(self._run_task is None)
 
@@ -850,7 +850,7 @@ class ValidationWorkspace(ModelLibraryWidget):
             self.model_combo.blockSignals(True)
             self.model_combo.setCurrentIndex(self.model.row_of_model(current))
             self.model_combo.blockSignals(False)
-            self._update_comparison_options(selected)
+            self._update_comparison_ids(selected)
             self._load_groups(update_detail=False)
             self._on_selection_changed()
 
@@ -1635,7 +1635,6 @@ class ValidationWorkspace(ModelLibraryWidget):
             self.run_selected_button.setText(self.tr("Evaluate checked items"))
         # Changing the view/next selection cannot change the frozen active job list.
         self.model_combo.setEnabled(bool(self.model._rows))
-        self.comparison_picker.setEnabled(bool(self.comparison_picker._options))
         idle = self._run_task is None
         saved = self.current_suite_id() is not None and self.current_suite_id() > 0
         self.new_suite_button.setEnabled(idle)

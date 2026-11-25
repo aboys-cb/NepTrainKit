@@ -105,7 +105,7 @@ def test_workspace_separates_navigation_checks_and_model_selection(scored):
     w.open_item(scored.eos["id"])
     assert w.checked_ids == before and len(w.detail.eos_plots) == 1
     assert w.pages.currentWidget() is w.result_page
-    w.comparison_picker.set_selected_ids([scored.old["id"]])
+    w.set_comparison_ids([scored.old["id"]])
     assert len(w.run_jobs(model_ids=w.selected_model_ids())) == 4
     w.clear_checks()
     assert not w.run_selected_button.isEnabled()
@@ -619,7 +619,7 @@ def test_comparison_cards_control_curves_independently_of_run_scope(scored):
 
     new, old, fresh = [model["id"] for model in (scored.new, scored.old, scored.fresh)]
     w.check_visible()
-    w.comparison_picker.set_selected_ids([fresh])
+    w.set_comparison_ids([fresh])
     assert list(w.cards) == [new, old, fresh]
     assert set(w.selected_model_ids()) == {new, fresh}
     assert w.controls_panel.geometry().topLeft() == w.rect().topLeft()
@@ -746,7 +746,7 @@ def test_model_strip_wraps_after_four_complete_cards(scored, tmp_path):
     w = ValidationWorkspace(service=scored.service)
     w.resize(1360, 700)
     w.open_scorecard(scored.suite["id"], scored.new["id"])
-    w.comparison_picker.set_selected_ids([r["id"] for r in (scored.old, scored.fresh, *extra)])
+    w.set_comparison_ids([r["id"] for r in (scored.old, scored.fresh, *extra)])
     w.show()
     QApplication.processEvents()
     reserved = w.width() - w.card_scroll.width()
@@ -777,7 +777,7 @@ def test_pinning_a_comparison_keeps_cards_columns_and_plot_in_place(scored):
     w.open_scorecard(scored.suite["id"], current)
     w.show()
     w.open_item(scored.eos["id"])
-    w.comparison_picker.set_selected_ids([new])
+    w.set_comparison_ids([new])
     QApplication.processEvents()
     cards = w.cards.copy()
     readable = max(card.minimumSizeHint().width() + 10 * card.name.fontMetrics().averageCharWidth()
@@ -906,7 +906,7 @@ def test_draft_can_run_as_comparison_without_replacing_current_model(scored):
     captured = scored.service.find_model_by_hash(draft.content_hash)
     assert captured and captured["project_id"] is None
     assert w.model_combo.currentData() == current
-    assert captured["id"] in w.comparison_picker.selected_ids()
+    assert captured["id"] in w.comparison_ids()
     w.close()
     w.deleteLater()
 
@@ -1141,7 +1141,7 @@ def test_validation_tab_navigation_reuses_plots_and_invalidates_changed_data(sco
 
         w.show_page("items")
         old_checkbox = w.sidebar_item_list.item(0, 1)
-        w.comparison_picker.set_selected_ids([scored.fresh["id"]])
+        w.set_comparison_ids([scored.fresh["id"]])
         assert not isValid(old_checkbox)
         assert not w.gallery.loaded
         reads.assert_not_called()

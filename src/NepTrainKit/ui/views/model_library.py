@@ -50,7 +50,6 @@ from NepTrainKit.core.validation.service import ModelDraft, parse_model_header
 from NepTrainKit.ui.messages import translate_runtime_message
 from NepTrainKit.ui.threads import BackgroundTask
 from NepTrainKit.ui.widgets import GetStrMessageBox
-from NepTrainKit.ui.widgets.comparison_picker import ComparisonPicker
 from NepTrainKit.ui.widgets.validation_dialogs import BenchmarkImportDialog, save_model_to_project
 
 CONFIG_SUITE = "suite"
@@ -1171,6 +1170,7 @@ class ModelLibraryWidget(QWidget):
         self._loaded = False
         self._displayed_suite_id = None
         self._draft: ModelDraft | None = None
+        self._comparison_ids: list[int] = []
 
         self.controls_panel = QFrame(self)
         self.controls_panel.setObjectName("validationControls")
@@ -1283,10 +1283,7 @@ class ModelLibraryWidget(QWidget):
         self.scope_hint.setStyleSheet(f"color:{palette.TEXT_SECONDARY};")
         self.model_combo = ComboBox(self)
         self.model_combo.setMinimumWidth(130)
-        self.comparison_picker = ComparisonPicker(self)
-        self.comparison_picker.setMinimumWidth(130)
         self.model_combo.currentIndexChanged.connect(self._on_model_changed)
-        self.comparison_picker.selectionChanged.connect(self._on_selection_changed)
         self.import_action.triggered.connect(lambda: self.import_benchmark())
         self.star_action.triggered.connect(lambda: self.toggle_star())
         self.save_action.triggered.connect(lambda: self.save_current())
@@ -1326,7 +1323,7 @@ class ModelLibraryWidget(QWidget):
         self.detail = RunDetailPanel(self)
         self.detail.load_scan_energies = lambda item, run: self.service().absolute_scan_energies(item, run)
         self.detail.header_layout.insertWidget(2, self.all_groups_button)
-        self.detail.comparisonRemoved.connect(self.comparison_picker.remove_id)
+        self.detail.comparisonRemoved.connect(self.remove_comparison)
         self.detail.baselineRequested.connect(self.set_baseline_for_model)
         self.detail.allGroupsRequested.connect(self._select_all_groups)
         self.detail.groupFocused.connect(self._focus_plot_group)
@@ -1394,7 +1391,6 @@ class ModelLibraryWidget(QWidget):
         for title, combo, button, stretch in (
             (self.tr("Validation plan"), self.suite_combo, self.refresh_button, 4),
             (self.tr("Current model"), self.model_combo, self.baseline_button, 5),
-            (self.tr("Compare with"), self.comparison_picker, None, 3),
         ):
             field = QHBoxLayout()
             field.setSpacing(6)
@@ -1403,9 +1399,8 @@ class ModelLibraryWidget(QWidget):
             caption.setStyleSheet(f"color: {palette.TEXT_SECONDARY};")
             field.addWidget(caption)
             field.addWidget(combo, 1)
-            if button is not None:
-                button.setFixedSize(28, 28)
-                field.addWidget(button)
+            button.setFixedSize(28, 28)
+            field.addWidget(button)
 
         actions = QHBoxLayout()
         actions.setSpacing(8)
@@ -1471,7 +1466,7 @@ class ModelLibraryWidget(QWidget):
                 suite_id, model_id = None, None
                 self._draft = None
                 self._displayed_suite_id = None
-                self.comparison_picker.set_options([], [])
+                self._comparison_ids.clear()
                 self.detail.reset_series()
                 self.suite_combo.blockSignals(True)
                 self.suite_combo.clear()
@@ -1499,7 +1494,7 @@ class ModelLibraryWidget(QWidget):
                 combo.blockSignals(True)
                 combo.clear()
                 combo.blockSignals(False)
-            self.comparison_picker.set_options([], [])
+            self._comparison_ids.clear()
             self.detail.reset_series()
             self.metrics_model.set_groups([], -1, "eos")
             self.model.set_scorecard(None)
@@ -1585,7 +1580,7 @@ class ModelLibraryWidget(QWidget):
         self.tolerance_label.setVisible(bool(self.tolerance_label.text()) and baseline is not None)
         current_id = self._scorecard_current_id(model_id, comparison_ids)
         if comparison_ids is None:
-            comparison_ids = (self.comparison_picker.selected_ids() if self._displayed_suite_id == suite_id
+            comparison_ids = (self._comparison_ids if self._displayed_suite_id == suite_id
                               else [suite.get("baseline_model_id")])
         if model_id is not None and current_id is None and baseline and model_id == baseline["model_id"]:
             comparison_ids = [*comparison_ids, model_id]
@@ -1601,7 +1596,7 @@ class ModelLibraryWidget(QWidget):
         self.model_combo.setToolTip(self._model_combo_hint())
         self.model_combo.setCurrentIndex(self.model_combo.findData(current_id))
         self.model_combo.blockSignals(False)
-        self._update_comparison_options(comparison_ids)
+        self._update_comparison_ids(comparison_ids)
         self._load_groups(update_detail=False)
         self._on_selection_changed(update_detail=update_detail)
         self.scorecardChanged.emit()
@@ -1704,39 +1699,33 @@ class ModelLibraryWidget(QWidget):
         except Exception:
             return 0  # A count is decoration; never break the page over it.
 
-    def _update_comparison_options(self, selected_ids=None):
-        if selected_ids is None:
-            selected_ids = self.comparison_picker.selected_ids()
-        options = []
-        for index, row in enumerate(self.model._rows):
-            if row["model_id"] == self.model_combo.currentData():
-                continue
-            cells = list(
-                {
-                    column["set_id"]: cell for column, cell in zip(self.model._columns, row.get("cells", []))
-                }.values()
-            )
-            ready = sum(cell["status"] == "succeeded" for cell in cells)
-            status = (
-                self.tr("Not run")
-                if not cells or all(cell["status"] == "missing" for cell in cells)
-                else self.tr("{ready}/{total} validations completed").format(ready=ready, total=len(cells))
-            )
-            label = self._model_label(index)
-            options.append((row["model_id"], label, status))
-        self.comparison_picker.set_options(options, selected_ids)
+    def comparison_ids(self) -> list[int]:
+        return self._comparison_ids.copy()
+
+    def _update_comparison_ids(self, ids=None):
+        ids = self._comparison_ids if ids is None else ids
+        eligible = {row["model_id"] for row in self.model._rows}
+        eligible.discard(self.model_combo.currentData())
+        self._comparison_ids = list(dict.fromkeys(key for key in ids if key in eligible))
+
+    def set_comparison_ids(self, ids):
+        previous = self._comparison_ids
+        self._update_comparison_ids(ids)
+        if self._comparison_ids != previous:
+            self._on_selection_changed()
+
+    def remove_comparison(self, model_id):
+        self.set_comparison_ids(key for key in self._comparison_ids if key != model_id)
 
     def selected_model_ids(self):
         current = self.current_model_row()
-        return list(
-            dict.fromkeys(([current["model_id"]] if current else []) + self.comparison_picker.selected_ids())
-        )
+        return ([current["model_id"]] if current else []) + self._comparison_ids
 
     def comparison_curve_ids(self):
         return self.selected_model_ids()
 
     def _on_model_changed(self, *_args):
-        self._update_comparison_options()
+        self._update_comparison_ids()
         self._load_groups(update_detail=False)
         self._on_selection_changed()
 
@@ -2266,7 +2255,6 @@ class ModelLibraryWidget(QWidget):
         self.scope_combo.setEnabled(idle)
         self.refresh_button.setEnabled(idle)
         self.model_combo.setEnabled(idle and bool(self.model._rows))
-        self.comparison_picker.setEnabled(idle)
         self.property_combo.setEnabled(idle)
         self.table.setEnabled(idle)
         self.retry_button.setVisible(
@@ -2373,7 +2361,7 @@ class ModelLibraryWidget(QWidget):
             self._draft = None
             jobs = [(record["id"] if model_id == 0 else model_id, set_id) for model_id, set_id in jobs]
             primary = self.model_combo.currentData()
-            comparisons = [record["id"] if key == 0 else key for key in self.comparison_picker.selected_ids()]
+            comparisons = [record["id"] if key == 0 else key for key in self._comparison_ids]
             self._load_scorecard(record["id"] if primary == 0 else primary, comparison_ids=comparisons)
         self._run_records = []
         self._run_names = {

@@ -170,7 +170,7 @@ def test_project_model_mutations_update_counts_and_validation_without_losing_sel
     tree.item_clicked(selected)
     previous_total = sum(tree._model.index(row, 2).data() for row in range(tree._model.rowCount()))
     current = library.model_combo.currentData()
-    comparisons = library.comparison_picker.selected_ids()
+    comparisons = library.comparison_ids()
     path = tmp_path / 'registered' / 'nep.txt'
     path.parent.mkdir()
     path.write_text(MODEL_HEADER + 'registered model')
@@ -192,7 +192,7 @@ def test_project_model_mutations_update_counts_and_validation_without_losing_sel
     assert tree._view.isExpanded(_project_index(tree, parent.id))
     assert library.model_combo.findData(model_id) >= 0
     assert library.model_combo.currentData() == current
-    assert library.comparison_picker.selected_ids() == comparisons
+    assert library.comparison_ids() == comparisons
     assert library.service().model_file(model_id).read_bytes() == path.read_bytes()
 
     models._view.setCurrentIndex(models._model.index(0, 0))

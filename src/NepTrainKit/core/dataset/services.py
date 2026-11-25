@@ -354,38 +354,14 @@ class ModelService:
         return result
 
     # --- Tag helpers ---
-    def _get_or_create_tags(self, names: Iterable[str]) -> list["Tag"]:
-        """Fetch existing tags or create new ones for the provided names."""
+    def _get_or_create_tags(self, names: Iterable[str], session) -> list["Tag"]:
+        """Return existing and new tags in the caller's transaction."""
         names = self._normalize_names(names)
         if not names:
             return []
-        with self.db.session() as session:
-
-            # Query existing rows; Tag.name uses a NOCASE unique constraint.
-            existing = session.query(Tag).where(Tag.name.in_(names)).all()
-            have_lower = {t.name.lower(): t for t in existing}
-
-            # Create any tags that do not already exist.
-            to_create = [Tag(name=n) for n in names if n.lower() not in have_lower]
-            if to_create:
-                session.add_all(to_create)
-
-                session.flush()
-
-
-        return list(have_lower.values())
-    def _get_or_create_tags_simple(self, names: Iterable[str], session) -> list["Tag"]:
-        """Simplified helper that ensures tags exist within the current session."""
-        names = self._normalize_names(names)
-        if not names:
-            return []
-        # Step 1: query all existing tags
-
-
         existing = session.query(Tag).where(Tag.name.in_(names)).all()
 
         have_lower = {t.name.lower(): t for t in existing}
-        # Step 2: create any missing tags within the same session
         to_create = [Tag(name=n) for n in names if n.lower() not in have_lower]
         if to_create:
             session.add_all(to_create)
@@ -487,7 +463,7 @@ class ModelService:
                     ) -> ModelVersion:
 
         with (self.db.session() if _session is None else nullcontext(_session)) as session:
-            tag_objs = self._get_or_create_tags_simple(tags or [],session)
+            tag_objs = self._get_or_create_tags(tags or [],session)
 
             project = session.get(Project, project_id)
             if project is None:
@@ -591,7 +567,7 @@ class ModelService:
             tags = kwargs.pop("tags", None)
             if tags is not None:
                 # This helper flushes rather than committing a partial model edit.
-                tag_objs = self._get_or_create_tags_simple(tags, session)
+                tag_objs = self._get_or_create_tags(tags, session)
                 mv.tags = set(tag_objs)
             for key, value in kwargs.items():
                 if key in ("energy", "force", "virial") and value != getattr(mv, key):
@@ -606,24 +582,3 @@ class ModelService:
             preserve_shared_model_runs(session, removed_ids)
             session.query(ModelVersion).filter_by(id=model_id).delete()
             session.commit()
-
-class LineageService:
-    """Query lineage chains for data and model versions."""
-
-    def __init__(self, db: Database):
-        self.db = db
-
-    def _trace(self, cls, start_id: int):
-        with self.db.session() as session:
-            node = session.get(cls, start_id)
-            chain = []
-            while node is not None:
-                chain.append(node)
-                if node.parent_id is None:
-                    break
-                node = session.get(cls, node.parent_id)
-            return chain
-
-
-    def model_lineage(self, model_version_id: int):
-        return self._trace(ModelVersion, model_version_id)

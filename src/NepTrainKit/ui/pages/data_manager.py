@@ -277,7 +277,7 @@ class DataManagerWidget(_ModelDropPage):
             rows, columns = card["rows"], card["columns"]
         view.baseline_id = next((r["model_id"] for r in rows if r["is_baseline"]), None)
         view.current_id = library.model_combo.currentData() if active else None
-        view.comparison_ids = set(library.comparison_picker.selected_ids()) if active else set()
+        view.comparison_ids = set(library.comparison_ids()) if active else set()
         view.set_suite_results(rows, [dict(c, display_label=library.model.metric_label(c)) for c in columns])
 
     def _active_scorecard_changed(self):

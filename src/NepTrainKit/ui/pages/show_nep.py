@@ -53,7 +53,7 @@ from NepTrainKit.core.validation.library import (
     VIEWER_MODEL_SECTION,
     sha256_file,
 )
-from NepTrainKit.core.types import Brushes, CanvasMode, SearchType
+from NepTrainKit.core.types import CanvasMode, SearchType
 from NepTrainKit.paths import get_bundled_nep89_path
 from NepTrainKit.ui.canvas.canvas_factory import (
     create_structure_plot,
@@ -232,10 +232,6 @@ class ShowNepWidget(QWidget):
         self._updating_nep_combo = False
         self._next_nep_file = None
         self._library_nep_models: dict[Path, str] = {}
-        self._search_job_id = 0
-        self._completer_job_id = 0
-        self._search_running = 0
-        self._index_running = 0
         self._worker_threads: list[QThread] = []
         self._arrow_vector_lookup_cache = {}
         self._structure_mask_version_seen: int | None = None
@@ -1135,43 +1131,6 @@ class ShowNepWidget(QWidget):
         except Exception:
             return 50000
 
-    def _update_search_status_label(self) -> None:
-        label = getattr(self, "search_status_label", None)
-        if label is None:
-            return
-        if getattr(self, "_search_running", 0) > 0:
-            label.setText(self.tr("Searching…"))
-            label.setVisible(True)
-            return
-        if getattr(self, "_index_running", 0) > 0:
-            label.setText(self.tr("Indexing…"))
-            label.setVisible(True)
-            return
-        label.setVisible(False)
-
-    def _set_search_status(self, *, searching: bool | None = None, indexing: bool | None = None) -> None:
-        if searching is not None:
-            self._search_running = 1 if bool(searching) else 0
-        if indexing is not None:
-            self._index_running = 1 if bool(indexing) else 0
-        self._update_search_status_label()
-
-    def _begin_search(self) -> None:
-        self._search_running = int(getattr(self, "_search_running", 0) or 0) + 1
-        self._update_search_status_label()
-
-    def _end_search(self) -> None:
-        self._search_running = max(0, int(getattr(self, "_search_running", 0) or 0) - 1)
-        self._update_search_status_label()
-
-    def _begin_index(self) -> None:
-        self._index_running = int(getattr(self, "_index_running", 0) or 0) + 1
-        self._update_search_status_label()
-
-    def _end_index(self) -> None:
-        self._index_running = max(0, int(getattr(self, "_index_running", 0) or 0) - 1)
-        self._update_search_status_label()
-
     def _track_worker_thread(self, thread: QThread) -> None:
         """Keep background threads alive until they finish."""
         self._worker_threads.append(thread)
@@ -1189,11 +1148,6 @@ class ShowNepWidget(QWidget):
     def _invalidate_background_jobs(self) -> None:
         """Invalidate in-flight background jobs and clear lightweight UI state."""
         self._pending_structure_filter_apply = None
-        self._search_job_id += 1
-        self._completer_job_id += 1
-        self._search_running = 0
-        self._index_running = 0
-        self._update_search_status_label()
         controller = getattr(self, "structure_filter_controller", None)
         if controller is not None:
             controller.invalidate_result()
@@ -1985,99 +1939,6 @@ class ShowNepWidget(QWidget):
             thread.quit()
         self._refresh_export_actions()
 
-    def _on_search_type_changed(self, search_type: SearchType) -> None:
-        """Apply a cached completer dictionary for the given search type without blocking UI."""
-        if not hasattr(self, "search_lineEdit"):
-            return
-        data = getattr(self, "nep_result_data", None)
-        if data is None:
-            return
-        max_items = self._get_completer_max_items()
-        try:
-            if hasattr(data, "has_completer_cache") and data.has_completer_cache(search_type, max_items=max_items):
-                cache = data.get_completer_cache(search_type, max_items=max_items)
-                self.search_lineEdit.setCompleterKeyWord(cache)
-                self._index_running = 0
-                self._update_search_status_label()
-                return
-        except Exception:
-            pass
-
-        # Cache not ready (e.g. legacy object). Build in a background thread.
-        self._completer_job_id += 1
-        job_id = self._completer_job_id
-        dataset_id = id(data)
-        self._begin_index()
-
-        def _build_cache() -> bool:
-            data.ensure_completer_cache(search_type, max_items=max_items)
-            return True
-
-        def _on_done(_result: object) -> None:
-            try:
-                if job_id != self._completer_job_id:
-                    return
-                current = getattr(self, "nep_result_data", None)
-                if current is None or id(current) != dataset_id:
-                    return
-                try:
-                    cache = current.get_completer_cache(self.search_lineEdit.search_type, max_items=max_items)
-                    self.search_lineEdit.setCompleterKeyWord(cache)
-                except Exception:
-                    pass
-            finally:
-                self._end_index()
-
-        def _on_err(msg: str) -> None:
-            try:
-                MessageManager.send_warning_message(
-                    self.tr("Failed to build search completer cache: {msg}").format(msg=translate_runtime_error(msg))
-                )
-            finally:
-                self._end_index()
-
-        thread = run_in_thread(self, _build_cache, on_finished=_on_done, on_error=_on_err)
-        self._track_worker_thread(thread)
-
-    def _run_async_search(self, config: str, search_type: SearchType, apply_result) -> None:
-        """Run a structure search in background; apply_result runs on UI thread."""
-        data = getattr(self, "nep_result_data", None)
-        if data is None:
-            return
-        config = str(config or "").strip()
-        if not config:
-            # Avoid expensive "match everything" scans from accidental empty input.
-            return
-        self._search_job_id += 1
-        job_id = self._search_job_id
-        dataset_id = id(data)
-        self._begin_search()
-
-        def _compute():
-            return data.search_config(config, search_type)
-
-        def _on_done(indexes: object) -> None:
-            try:
-                if job_id != self._search_job_id:
-                    return
-                current = getattr(self, "nep_result_data", None)
-                if current is None or id(current) != dataset_id:
-                    return
-                apply_result(list(indexes) if isinstance(indexes, (list, tuple, set)) else indexes)
-            finally:
-                self._end_search()
-
-        def _on_err(msg: str) -> None:
-            try:
-                MessageManager.send_warning_message(
-                    self.tr("Search failed: {msg}").format(msg=translate_runtime_error(msg))
-                )
-            finally:
-                self._end_search()
-
-        thread = run_in_thread(self, _compute, on_finished=_on_done, on_error=_on_err)
-        self._track_worker_thread(thread)
-
     def _navigation_indices(self):
         if not self._dataset_ready() or self._is_busy():
             return np.empty(0, dtype=np.int64)
@@ -2626,30 +2487,6 @@ class ShowNepWidget(QWidget):
             pass
         self.update_dataset_info()
 
-    def search_config_type(self,config:str,search_type:SearchType):
-        """Highlight structures matching the provided configuration query.
-
-        Parameters
-        ----------
-        config : str
-            Configuration pattern or tag to search.
-        search_type : SearchType
-            Search strategy to apply.
-
-        Returns
-        -------
-        None
-            Updates scatter colours to indicate matching structures.
-        """
-
-        if self.nep_result_data is None:
-            return
-        self._run_async_search(
-            config,
-            search_type,
-            lambda indexes: self.graph_widget.canvas.set_search_highlight(indexes),
-        )
-
     def _on_structure_filter_spec_changed(self, spec) -> None:
         """Invalidate the old preview whenever the typed query changes."""
         self._pending_structure_filter_apply = None
@@ -2730,111 +2567,6 @@ class ShowNepWidget(QWidget):
         """Open the composite filter editor (Ctrl+F)."""
         self.structure_filter_bar.open_editor(None, add_if_empty=True)
 
-    def _on_clear_all_selections(self):
-        """Clear all structure selections."""
-        data = getattr(self, "nep_result_data", None)
-        if data is None:
-            return
-        try:
-            all_indices = data.structure.group_array.now_data.tolist()
-            if all_indices:
-                self.graph_widget.canvas.select_index(all_indices, True)
-        except Exception:
-            pass
-
-    def _on_tag_filter_search(self, filter_spec: dict, search_type: SearchType):
-        """Highlight structures matching the tag filter spec."""
-        if self.nep_result_data is None:
-            return
-        self._run_async_tags_search(
-            filter_spec,
-            search_type,
-            lambda indexes: self.graph_widget.canvas.update_scatter_color(
-                list(indexes) if isinstance(indexes, (list, tuple, set)) else [], Brushes.Show
-            ),
-        )
-
-    def _on_tag_filter_check(self, filter_spec: dict, search_type: SearchType):
-        """Select structures matching the tag filter spec."""
-        if self.nep_result_data is None:
-            return
-        self._run_async_tags_search(
-            filter_spec,
-            search_type,
-            lambda indexes: self.graph_widget.canvas.select_index(indexes, False),
-        )
-
-    def _on_tag_filter_uncheck(self, filter_spec: dict, search_type: SearchType):
-        """Deselect structures matching the tag filter spec."""
-        if self.nep_result_data is None:
-            return
-        self._run_async_tags_search(
-            filter_spec,
-            search_type,
-            lambda indexes: self.graph_widget.canvas.select_index(indexes, True),
-        )
-
-    def _run_async_tags_search(self, filter_spec: dict, search_type: SearchType, apply_result) -> None:
-        """Run a tag filter search in background; apply_result runs on UI thread."""
-        data = getattr(self, "nep_result_data", None)
-        if data is None:
-            return
-        self._search_job_id += 1
-        job_id = self._search_job_id
-        dataset_id = id(data)
-        self._begin_search()
-
-        def _compute():
-            return data.search_config_tags(filter_spec, search_type)
-
-        def _on_done(indexes: object) -> None:
-            try:
-                if job_id != self._search_job_id:
-                    return
-                current = getattr(self, "nep_result_data", None)
-                if current is None or id(current) != dataset_id:
-                    return
-                apply_result(list(indexes) if isinstance(indexes, (list, tuple, set)) else indexes)
-            finally:
-                self._end_search()
-
-        def _on_err(msg: str) -> None:
-            try:
-                MessageManager.send_warning_message(
-                    self.tr("Search failed: {msg}").format(msg=translate_runtime_error(msg))
-                )
-            finally:
-                self._end_search()
-
-        thread = run_in_thread(self, _compute, on_finished=_on_done, on_error=_on_err)
-        self._track_worker_thread(thread)
-
-    def checked_config_type(self, config:str,search_type:SearchType):
-        """Select structures matching the given configuration criteria.
-
-        Parameters
-        ----------
-        config : str
-            Configuration pattern or tag to search.
-        search_type : SearchType
-            Search strategy to apply.
-
-        Returns
-        -------
-        None
-            Marks matching indices as selected.
-        """
-        if self.nep_result_data is None:
-            return
-        if not str(config or "").strip():
-            MessageManager.send_info_message(self.tr("Please enter a search query."))
-            return
-        self._run_async_search(
-            config,
-            search_type,
-            lambda indexes: self.graph_widget.canvas.select_index(indexes, False),
-        )
-
     def open_training_set_audit(self):
         """Open Training Set Audit for the currently loaded dataset."""
         if self.nep_result_data is None or not getattr(self.nep_result_data, "load_flag", False):
@@ -2896,32 +2628,6 @@ class ShowNepWidget(QWidget):
         if clean:
             self.graph_widget.canvas.select_index(clean, False)
         self._refresh_export_actions()
-
-    def uncheck_config_type(self, config:str,search_type:SearchType):
-        """Deselect structures matching the given configuration criteria.
-
-        Parameters
-        ----------
-        config : str
-            Configuration pattern or tag to search.
-        search_type : SearchType
-            Search strategy to apply.
-
-        Returns
-        -------
-        None
-            Clears selection for the matching indices.
-        """
-        if self.nep_result_data is None:
-            return
-        if not str(config or "").strip():
-            MessageManager.send_info_message(self.tr("Please enter a search query."))
-            return
-        self._run_async_search(
-            config,
-            search_type,
-            lambda indexes: self.graph_widget.canvas.select_index(indexes, True),
-        )
 
     def update_dataset_info(self ):
         """Update the dataset status label with current selection metrics.

@@ -279,13 +279,23 @@ class NepData:
         self.data.revoke()
         self.group_array.revoke()
     def get_rmse(self) -> float:
-        """Return the RMSE between NEP and reference columns."""
+        """Return the RMSE over finite NEP/reference pairs."""
         if not self.cols:
             return 0.0
-        return float(get_rmse(self.now_data[:, : self.cols], self.now_data[:, self.cols :]))
+        data = self.now_data
+        if not data.size:
+            return float("nan")
+        left, right = data[:, : self.cols], data[:, self.cols :]
+        rmse = get_rmse(left, right)
+        if np.isfinite(rmse):
+            return rmse
+        valid = np.isfinite(left) & np.isfinite(right)
+        return get_rmse(left[valid], right[valid]) if valid.any() else float("nan")
     def get_formart_rmse(self) -> str:  # noqa: D401 - keep legacy name
         """Return the formatted RMSE string with units inferred from ``title``."""
         rmse = self.get_rmse()
+        if not np.isfinite(rmse):
+            return "—"
         unit = ""
         scale = 1.0
         if self.title == "energy":
@@ -331,7 +341,7 @@ class NepData:
             else:
                 candidate_idx = np.argpartition(-error, k - 1)[:k]
                 sorted_idx = candidate_idx[np.argsort(-error[candidate_idx])]
-            structure_index = self.group_array.now_data[sorted_idx]
+            structure_index = self.group_array.now_data[sorted_idx[np.isfinite(error[sorted_idx])]]
             _, unique_indices = np.unique(structure_index, return_index=True)
             if unique_indices.size >= nmax or k >= total:
                 return structure_index[np.sort(unique_indices)][:nmax].tolist()
@@ -464,7 +474,7 @@ class StructureData(NepData):
         -----
         - Designed to run in a background thread (e.g. dataset load thread).
         - Results are stored as dict[SearchType, dict[str,int]] and can be fed
-          directly into ConfigTypeSearchLineEdit.setCompleterKeyWord(...).
+          directly into the structure filter's completion suggestions.
         """
         max_items = int(max_items or 0)
         with self._completer_cache_lock():
@@ -2307,9 +2317,10 @@ class ResultData(DistributionAnalysisMixin, QObject):
             return []
         x_low, x_high = sorted((float(x_min), float(x_max)))
         y_low, y_high = sorted((float(y_min), float(y_max)))
-        mask_x = (dataset.x >= x_low) & (dataset.x <= x_high)
-        mask_y = (dataset.y >= y_low) & (dataset.y <= y_high)
-        mask = mask_x & mask_y if use_and else mask_x | mask_y
+        x, y = dataset.x, dataset.y
+        mask_x = (x >= x_low) & (x <= x_high)
+        mask_y = (y >= y_low) & (y <= y_high)
+        mask = np.isfinite(x) & np.isfinite(y) & (mask_x & mask_y if use_and else mask_x | mask_y)
         if not np.any(mask):
             return []
         return np.unique(dataset.structure_index[mask]).astype(int).tolist()
@@ -3059,21 +3070,12 @@ class ResultData(DistributionAnalysisMixin, QObject):
         )
 
     def _cached_single_output_alignment_error(self, output_array, expected, output_path):
-        """Validate a paired output whose DFT values are exposed through ``x``."""
-        values = np.asarray(output_array)
-        expected_values = np.asarray(expected)
-        if values.ndim != 2 or values.shape[0] != len(self.atoms_num_list):
-            return f"{output_path.name} has shape {values.shape}, expected one row per structure"
-        try:
-            dft_values = self._result_plot_data_class()(values, title="cached").x
-        except Exception as error:
-            return f"{output_path.name} has invalid paired columns: {error}"
-        if np.asarray(dft_values).size != expected_values.size:
-            return (
-                f"{output_path.name} DFT x columns have size "
-                f"{np.asarray(dft_values).size}, expected {expected_values.size}"
-            )
-        if not self._reference_columns_match(dft_values, expected_values):
+        """Validate the shape and reference half of a cached NEP response."""
+        rows, width = expected.shape
+        if output_array.shape != (rows, 2 * width):
+            return f"{output_path.name} has shape {output_array.shape}, expected ({rows}, {2 * width})"
+        dft_values = output_array[:, width:]
+        if not self._reference_columns_match(dft_values, expected):
             return self.tr(
                 "the DFT x columns in {file} do not match parsed structures"
             ).format(file=output_path.name)

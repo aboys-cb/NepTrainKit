@@ -1013,11 +1013,16 @@ class NepResultPlotWidget(QWidget):
         dataset = self.canvas.get_axes_dataset(self.canvas.current_axes)
         if dataset is None or dataset.now_data.size == 0:
             return
+        x, y = dataset.x, dataset.y
+        visible = np.isfinite(x) & np.isfinite(y)
+        if not visible.any():
+            return
+        x, y = x[visible], y[visible]
         box = RangeSelectMessageBox(self._parent, "Select structures by range")
-        box.xMinSpin.setValue(float(np.min(dataset.x)))
-        box.xMaxSpin.setValue(float(np.max(dataset.x)))
-        box.yMinSpin.setValue(float(np.min(dataset.y)))
-        box.yMaxSpin.setValue(float(np.max(dataset.y)))
+        box.xMinSpin.setValue(float(np.min(x)))
+        box.xMaxSpin.setValue(float(np.max(x)))
+        box.yMinSpin.setValue(float(np.min(y)))
+        box.yMaxSpin.setValue(float(np.max(y)))
         if not box.exec():
             return
         x_min, x_max = box.xMinSpin.value(), box.xMaxSpin.value()

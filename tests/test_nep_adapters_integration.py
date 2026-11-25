@@ -1,8 +1,10 @@
 import json
 import shutil
 from pathlib import Path
+from types import SimpleNamespace
 
 import numpy as np
+import pytest
 from ase.io import read as ase_read
 
 from NepTrainKit.core import MessageManager
@@ -166,7 +168,7 @@ def test_polarizability_mismatch_activates_recalculation(tmp_path: Path, monkeyp
     np.savetxt(output_path, np.column_stack([np.zeros_like(references), references[::-1]]))
     monkeypatch.setattr(MessageManager, "send_warning_message", lambda _message: None)
 
-    result._prepare_polarizability_alignment()
+    assert result._read_cached_response() is None
 
     assert result._force_recalculate_outputs is True
     assert result._should_recalculate() is True
@@ -188,11 +190,65 @@ def test_dipole_mismatch_activates_recalculation(tmp_path: Path, monkeypatch):
     np.savetxt(output_path, np.column_stack([np.zeros_like(references), references[::-1]]))
     monkeypatch.setattr(MessageManager, "send_warning_message", lambda _message: None)
 
-    result._prepare_dipole_alignment()
+    assert result._read_cached_response() is None
 
     assert result._force_recalculate_outputs is True
     assert result._should_recalculate() is True
     assert result._cached_descriptors_are_usable() is False
+
+
+@pytest.mark.parametrize(
+    "loader, quantity, method, label, width, plots",
+    [
+        (NepDipoleResultData, "dipole", "dipoles", "dipole", 3, ("dipole",)),
+        (
+            NepPolarizabilityResultData, "polarizability", "polarizabilities", "pol", 6,
+            ("polarizability_diagonal", "polarizability_no_diagonal"),
+        ),
+    ],
+)
+@pytest.mark.parametrize("reference_rows", [0, 1, 2])
+def test_response_output_keeps_missing_references_separate(
+    tmp_path, loader, quantity, method, label, width, plots, reference_rows,
+):
+    structures = [_labeled_structure(0, [[0, 0, 0]] * natoms) for natoms in (2, 4)]
+    for structure in structures[:reference_rows]:
+        structure.additional_fields[label] = " ".join(["0"] * (3 if label == "dipole" else 9))
+    output = tmp_path / f"{quantity}_train.out"
+    np.savetxt(output, np.full((2, width * 2), 99.0))
+
+    def load(predict):
+        result = loader.from_path(tmp_path / "train.xyz", structures=structures)
+        result.set_cache_outputs_override(True)
+        result.load_structures()
+        result.nep_calc = SimpleNamespace(**{method: predict})
+        result._load_dataset()
+        return result
+
+    result = load(lambda _: np.repeat([[2.0], [4.0]], width, axis=1))
+    data = np.loadtxt(output, ndmin=2)
+    np.testing.assert_equal(data[:, :width], np.ones((2, width)))
+    np.testing.assert_equal(data[:reference_rows, width:], np.zeros((reference_rows, width)))
+    assert np.isnan(data[reference_rows:, width:]).all()
+
+    if reference_rows == len(structures):
+        reopened = load(lambda _: pytest.fail("The verified response cache should be reused"))
+    else:
+        reopened = load(lambda _: np.repeat([[6.0], [8.0]], width, axis=1))
+    for name in plots:
+        plot = getattr(result, name)
+        np.testing.assert_equal(plot.y, np.ones(6))
+        if reference_rows == len(structures):
+            np.testing.assert_equal(getattr(reopened, name).all_data, plot.all_data)
+        else:
+            np.testing.assert_equal(getattr(reopened, name).y, [3, 3, 3, 2, 2, 2])
+        if reference_rows:
+            assert plot.get_rmse() == 1.0
+            assert plot.get_max_error_index(2) == list(range(reference_rows))
+        else:
+            assert np.isnan(plot.get_rmse())
+            assert plot.get_formart_rmse() == "—"
+            assert plot.get_max_error_index(2) == []
 
 
 def test_prediction_manifest_detects_same_dataset_with_different_model(tmp_path: Path):

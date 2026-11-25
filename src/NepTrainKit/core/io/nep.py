@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import Any
 import numpy.typing as npt
 import numpy as np
+from PySide6.QtCore import QCoreApplication
 from NepTrainKit import module_path
 from NepTrainKit.core.adapter_api import (
     ChargePrediction,
@@ -24,6 +25,7 @@ from NepTrainKit.core.precision import get_storage_float_dtype
 from NepTrainKit.paths import as_path
 from NepTrainKit.paths import get_bundled_nep89_path
 from NepTrainKit.config import Config
+from .atomic import atomic_text_output
 from .base import (
     NepPlotData,
     ResultData,
@@ -947,360 +949,161 @@ class NepTrainResultData(ResultData):
         )
         self._pending_prediction = prediction
         return descriptors
-class NepPolarizabilityResultData(ResultData):
-    """Result loader for NEP polarizability evaluations."""
+class _NepResponseResultData(ResultData):
+    """Load paired per-atom predictions and reference labels for one NEP response."""
+
     FORCE_CPU_BACKEND = True
-    _polarizability_diagonal_dataset: NepPlotData
-    _polarizability_no_diagonal_dataset: NepPlotData
-    def __init__(self,
-                 nep_txt_path: Path|str,
-                 data_xyz_path: Path|str,
-                 polarizability_out_path: Path|str,
-                 descriptor_path: Path|str
-                 ):
-        """Initialise NEP polarizability result paths.
-        
-        Parameters
-        ----------
-        nep_txt_path : Path or str
-            Path to the NEP model file.
-        data_xyz_path : Path or str
-            Directory containing NEP dataset structures.
-        polarizability_out_path : Path or str
-            Output file storing polarizability comparisons.
-        descriptor_path : Path or str
-            Descriptor file produced alongside the dataset.
-        """
-        super().__init__(nep_txt_path,data_xyz_path,descriptor_path)
+
+    @property
+    def _response_path(self) -> Path:
+        return getattr(self, f"{self._quantity}_out_path")
+
+    @classmethod
+    def from_path(cls, path, *, structures: list[Structure] | None = None):
+        """Open a response dataset with the model and outputs next to its XYZ."""
+        source = as_path(path)
+        descriptor = "descriptor.out" if source.stem == "train" else f"descriptor_{source.stem}.out"
+        result = cls(
+            source.with_name("nep.txt"),
+            source,
+            source.with_name(f"{cls._quantity}_{source.stem}.out"),
+            source.with_name(descriptor),
+        )
+        if structures is not None:
+            result.set_structures(structures)
+        return result
+
+    def _response_references(self) -> np.ndarray:
+        references = np.full((len(self.atoms_num_list), self._width), np.nan)
+        for row, structure in zip(references, self.structure.now_data):
+            try:
+                values = getattr(structure, f"nep_{self._quantity}")
+            except (AttributeError, IndexError, TypeError, ValueError):
+                continue
+            if values.shape == row.shape and np.isfinite(values).all():
+                row[:] = values
+        return references
+
+    def _should_recalculate(self, nep_in: dict | None = None) -> bool:
+        return self._force_recalculate_outputs or not self._response_path.is_file()
+
+    def _read_cached_response(self) -> np.ndarray | None:
+        if self._should_recalculate():
+            return None
+        path = self._response_path
+        expected = self._response_references()
+        if np.isnan(expected).any():
+            # Unlabeled rows cannot verify the order of a cached prediction.
+            self._force_recalculate_outputs = True
+            return None
+        try:
+            array = read_nep_out_file(path, dtype=get_storage_float_dtype(), ndmin=2)
+            error = self._cached_single_output_alignment_error(array, expected, path)
+        except (OSError, ValueError) as exc:
+            error = str(exc)
+        if error is None:
+            return array
+        self._force_recalculate_outputs = True
+        MessageManager.send_warning_message(
+            QCoreApplication.translate(
+                "NepTrainResultData",
+                "Existing NEP outputs do not match the loaded structure order "
+                "({reason}). NepTrainKit will recalculate them.",
+            ).format(reason=error)
+        )
+        return None
+
+    def _load_descriptors(self) -> None:
+        self._read_cached_response()
+        super()._load_descriptors()
+
+    def _cached_descriptors_are_usable(self) -> bool:
+        return not self._force_recalculate_outputs
+
+    def _load_response(self) -> np.ndarray:
+        cached = self._read_cached_response()
+        if cached is not None:
+            return cached
+
+        references = self._response_references()
+        calculate = getattr(self.nep_calc, self._prediction_method)
+        predictions = np.asarray(calculate(self.structure.now_data.tolist()), dtype=np.float64)
+        if predictions.size == 0:
+            MessageManager.send_warning_message(self._empty_prediction_warning)
+            missing = np.full_like(references, np.nan)
+            return np.column_stack([missing, references]).astype(get_storage_float_dtype())
+
+        if predictions.shape != references.shape:
+            raise ValueError(QCoreApplication.translate(
+                "RuntimeMessage", "{filename} has shape {actual}; expected {expected}."
+            ).format(filename=self._response_path.name, actual=predictions.shape, expected=references.shape))
+        predictions = predictions / self.atoms_num_list[:, None]
+        response = np.column_stack([predictions, references]).astype(get_storage_float_dtype())
+        if self.cache_outputs_enabled():
+            with atomic_text_output(self._response_path) as file:
+                np.savetxt(file, response, fmt="%.17g")
+        self.write_prediction()
+        self._force_recalculate_outputs = False
+        return response
+
+
+class NepPolarizabilityResultData(_NepResponseResultData):
+    """Result loader for NEP polarizability evaluations."""
+
+    _quantity = "polarizability"
+    _prediction_method = "polarizabilities"
+    _width = 6
+    _empty_prediction_warning = (
+        "The nep calculator fails to calculate the polarizability, use the original polarizability instead."
+    )
+
+    def __init__(
+        self, nep_txt_path: Path | str, data_xyz_path: Path | str,
+        polarizability_out_path: Path | str, descriptor_path: Path | str,
+    ):
+        super().__init__(nep_txt_path, data_xyz_path, descriptor_path)
         self.polarizability_out_path = Path(polarizability_out_path)
+
     @property
     def datasets(self):
-        """Return the polarizability datasets in display order."""
-        return [self.polarizability_diagonal,self.polarizability_no_diagonal, self.descriptor]
+        return [self.polarizability_diagonal, self.polarizability_no_diagonal, self.descriptor]
+
     @property
     def polarizability_diagonal(self):
-        """Return the diagonal polarizability dataset."""
         return self._polarizability_diagonal_dataset
+
     @property
     def polarizability_no_diagonal(self):
-        """Return the off-diagonal polarizability dataset."""
         return self._polarizability_no_diagonal_dataset
-    @property
-    def descriptor(self):
-        """Return the descriptor dataset associated with the polarizability run."""
-        return self._descriptor_dataset
-    @classmethod
-    def from_path(cls, path, *, structures: list[Structure] | None = None ):
-        """Create a polarizability loader from a NEP dataset directory.
-        
-        Parameters
-        ----------
-        path : PathLike
-            Directory containing NEP outputs.
-        structures : list[Structure], optional
-            Pre-loaded structures to attach instead of reading from disk.
-        
-        Returns
-        -------
-        NepPolarizabilityResultData
-            Configured loader bound to the resolved directory.
-        """
-        dataset_path = as_path(path)
-        file_name = dataset_path.stem
-        nep_txt_path = dataset_path.with_name(f"nep.txt")
-        polarizability_out_path = dataset_path.with_name(f"polarizability_{file_name}.out")
-        if file_name == "train":
-            descriptor_path = dataset_path.with_name(f"descriptor.out")
-        else:
-            descriptor_path = dataset_path.with_name(f"descriptor_{file_name}.out")
-        inst = cls(nep_txt_path, dataset_path, polarizability_out_path, descriptor_path)
-        if structures is not None:
-            try:
-                inst.set_structures(structures)
-            except Exception:
-                pass
-        return inst
-    def _should_recalculate(self, nep_in: dict | None = None) -> bool:
-        """Return ``True`` when cached polarizability outputs are missing or stale.
-        
-        Parameters
-        ----------
-        nep_in : dict, optional
-            Retained for compatibility; prediction mode is not used to
-            validate cached polarizability outputs.
-        
-        Returns
-        -------
-        bool
-            ``True`` if NEP polarizability predictions must be regenerated.
-        """
-        if self._force_recalculate_outputs:
-            return True
-        output_files_exist = all([
-            self.polarizability_out_path.exists(),
-        ])
-        return not output_files_exist
-    def _recalculate_and_save(self ):
-        """Recompute polarizability predictions and persist them to disk.
-        
-        Returns
-        -------
-        numpy.ndarray
-            Combined NEP and reference polarizability values.
-        """
-        try:
-            # nep_polarizability_array = run_nep3_calculator_process(self.nep_txt_path.as_posix(),
-            #                                                        self.structure.now_data, "polarizability")
-            nep_polarizability_array = self.nep_calc.polarizabilities(self.structure.now_data.tolist())
-            # nep_polarizability_array=self.nep_calc_thread.func_result
-            if nep_polarizability_array.size == 0:
-                MessageManager.send_warning_message("The nep calculator fails to calculate the polarizability, use the original polarizability instead.")
-            nep_polarizability_array = self._save_polarizability_data(  nep_polarizability_array)
-            self.write_prediction()
-            self._force_recalculate_outputs = False
-        except Exception as e:
-            # logger.debug(traceback.format_exc())
-            MessageManager.send_error_message(f"An error occurred while running NEP calculator: {e}")
-            nep_polarizability_array = np.array([])
-        return nep_polarizability_array
-    def _save_polarizability_data(self, polarizability: npt.NDArray[np.float64]) -> npt.NDArray[Any]:
-        """Persist polarizability comparisons to disk.
-        
-        Parameters
-        ----------
-        polarizability : numpy.ndarray
-            Polarizability values predicted by the NEP calculator.
-        
-        Returns
-        -------
-        numpy.ndarray
-            Array containing predicted and reference polarizability components.
-        """
-        nep_polarizability_array = np.asarray(polarizability, dtype=np.float64) / np.asarray(self.atoms_num_list[:, np.newaxis], dtype=np.float64)
-        try:
-            ref_polarizability = np.vstack([s.nep_polarizability for s in self.structure.now_data], dtype=np.float64)
-            if polarizability.size == 0:
-                polarizability_array = np.column_stack([ref_polarizability, ref_polarizability])
-            else:
-                polarizability_array = np.column_stack([nep_polarizability_array,
-                                                        ref_polarizability
-                                                        ])
-        except Exception:
-            # logger.debug(traceback.format_exc())
-            polarizability_array = np.column_stack([polarizability, polarizability])
-        polarizability_array = np.asarray(polarizability_array, dtype=get_storage_float_dtype())
-        if polarizability_array.size != 0 and self.cache_outputs_enabled():
-            np.savetxt(self.polarizability_out_path, polarizability_array, fmt='%.17g')
-        return polarizability_array
+
     def _load_dataset(self) -> None:
-        """Populate polarizability datasets from cached outputs or by recalculating."""
-        self._prepare_polarizability_alignment()
-        if self._should_recalculate():
-            polarizability_array = self._recalculate_and_save( )
-        else:
-            polarizability_array = read_nep_out_file(self.polarizability_out_path, dtype=get_storage_float_dtype(), ndmin=2)
-            if polarizability_array.shape[0]!=self.atoms_num_list.shape[0]:
-                if self.cache_outputs_enabled():
-                    self.polarizability_out_path.unlink()
-                    return self._load_dataset()
-                polarizability_array = self._recalculate_and_save()
-        self._polarizability_diagonal_dataset = NepPlotData(polarizability_array[:, [0,1,2,6,7,8]], title="Polar Diag")
-        self._polarizability_no_diagonal_dataset = NepPlotData(polarizability_array[:, [3,4,5,9,10,11]], title="Polar NoDiag")
+        values = self._load_response()
+        self._polarizability_diagonal_dataset = NepPlotData(values[:, [0, 1, 2, 6, 7, 8]], title="Polar Diag")
+        self._polarizability_no_diagonal_dataset = NepPlotData(values[:, [3, 4, 5, 9, 10, 11]], title="Polar NoDiag")
 
-    def _prepare_polarizability_alignment(self) -> None:
-        if getattr(self, "_force_recalculate_outputs", False) or not self.polarizability_out_path.exists():
-            return
-        try:
-            array = read_nep_out_file(self.polarizability_out_path, dtype=get_storage_float_dtype(), ndmin=2)
-            expected = np.vstack([s.nep_polarizability for s in self.structure.now_data])
-            error = self._cached_single_output_alignment_error(array, expected, self.polarizability_out_path)
-        except (KeyError, AttributeError, ValueError, OSError) as exc:
-            error = f"unable to read or validate {self.polarizability_out_path.name}: {exc}"
-        if error is not None:
-            self._force_recalculate_outputs = True
-            MessageManager.send_warning_message(
-                self.tr("Existing polarizability outputs do not match the loaded structure order ({reason}). NepTrainKit will recalculate them.").format(reason=error)
-            )
-            return
 
-    def _load_descriptors(self) -> None:
-        self._prepare_polarizability_alignment()
-        super()._load_descriptors()
-
-    def _cached_descriptors_are_usable(self) -> bool:
-        return not getattr(self, "_force_recalculate_outputs", False)
-class NepDipoleResultData(ResultData):
+class NepDipoleResultData(_NepResponseResultData):
     """Result loader for NEP dipole predictions."""
-    FORCE_CPU_BACKEND = True
-    _dipole_dataset: NepPlotData
-    def __init__(self,
-                 nep_txt_path: Path|str,
-                 data_xyz_path: Path|str,
-                 dipole_out_path: Path|str,
-                 descriptor_path: Path|str
-                 ):
-        """Initialise NEP dipole result paths.
-        
-        Parameters
-        ----------
-        nep_txt_path : Path or str
-            Path to the NEP model file.
-        data_xyz_path : Path or str
-            Directory containing NEP dataset structures.
-        dipole_out_path : Path or str
-            Output file storing dipole comparisons.
-        descriptor_path : Path or str
-            Descriptor file produced alongside the dataset.
-        """
+
+    _quantity = "dipole"
+    _prediction_method = "dipoles"
+    _width = 3
+    _empty_prediction_warning = "The nep calculator fails to calculate the dipole, use the original dipole instead."
+
+    def __init__(
+        self, nep_txt_path: Path | str, data_xyz_path: Path | str,
+        dipole_out_path: Path | str, descriptor_path: Path | str,
+    ):
         super().__init__(nep_txt_path, data_xyz_path, descriptor_path)
         self.dipole_out_path = Path(dipole_out_path)
+
     @property
     def datasets(self):
-        """Return the dipole datasets in display order."""
-        return [self.dipole , self.descriptor]
+        return [self.dipole, self.descriptor]
+
     @property
     def dipole(self):
-        """Return the dipole dataset."""
         return self._dipole_dataset
-    @property
-    def descriptor(self):
-        """Return the descriptor dataset associated with the dipole run."""
-        return self._descriptor_dataset
-    @classmethod
-    def from_path(cls, path, *, structures: list[Structure] | None = None ):
-        """Create a dipole loader from a NEP dataset directory.
-        
-        Parameters
-        ----------
-        path : PathLike
-            Directory containing NEP outputs.
-        structures : list[Structure], optional
-            Pre-loaded structures to attach instead of reading from disk.
-        
-        Returns
-        -------
-        NepDipoleResultData
-            Configured loader bound to the resolved directory.
-        """
-        dataset_path = as_path(path)
-        file_name = dataset_path.stem
-        nep_txt_path = dataset_path.with_name(f"nep.txt")
-        polarizability_out_path = dataset_path.with_name(f"dipole_{file_name}.out")
-        if file_name == "train":
-            descriptor_path = dataset_path.with_name(f"descriptor.out")
-        else:
-            descriptor_path = dataset_path.with_name(f"descriptor_{file_name}.out")
-        inst = cls(nep_txt_path, dataset_path, polarizability_out_path, descriptor_path)
-        if structures is not None:
-            try:
-                inst.set_structures(structures)
-            except Exception:
-                pass
-        return inst
-    def _should_recalculate(self, nep_in: dict | None = None) -> bool:
-        """Return ``True`` when cached dipole outputs are missing or stale.
-        
-        Parameters
-        ----------
-        nep_in : dict, optional
-            Retained for compatibility; prediction mode is not used to
-            validate cached dipole outputs.
-        
-        Returns
-        -------
-        bool
-            ``True`` if NEP dipole predictions must be regenerated.
-        """
-        if self._force_recalculate_outputs:
-            return True
-        output_files_exist = all([
-            self.dipole_out_path.exists(),
-        ])
-        return not output_files_exist
-    def _recalculate_and_save(self ):
-        """Recompute dipole predictions and persist them to disk.
-        
-        Returns
-        -------
-        numpy.ndarray
-            Dipole array written to disk.
-        """
-        try:
-            # nep_dipole_array = run_nep3_calculator_process(self.nep_txt_path.as_posix(),
-            #                                                self.structure.now_data, "dipole")
-            nep_dipole_array = self.nep_calc.dipoles(self.structure.now_data.tolist())
-            # nep_dipole_array=self.nep_calc_thread.func_result
-            if nep_dipole_array.size == 0:
-                MessageManager.send_warning_message("The nep calculator fails to calculate the dipole, use the original dipole instead.")
-            nep_dipole_array = self._save_dipole_data(  nep_dipole_array)
-            self.write_prediction()
-            self._force_recalculate_outputs = False
-        except Exception as e:
-            # logger.debug(traceback.format_exc())
-            MessageManager.send_error_message(f"An error occurred while running NEP calculator: {e}")
-            nep_dipole_array = np.array([])
-        return nep_dipole_array
-    def _save_dipole_data(self, dipole: npt.NDArray[np.float64]) -> npt.NDArray[Any]:
-        """Persist dipole comparisons to disk.
-        
-        Parameters
-        ----------
-        dipole : numpy.ndarray
-            Dipole values predicted by the NEP calculator.
-        
-        Returns
-        -------
-        numpy.ndarray
-            Array containing predicted and reference dipole components.
-        """
-        nep_dipole_array = np.asarray(dipole, dtype=np.float64) / np.asarray(self.atoms_num_list[:, np.newaxis], dtype=np.float64)
-        try:
-            ref_dipole = np.vstack([s.nep_dipole for s in self.structure.now_data], dtype=np.float64)
-            if dipole.size == 0:
-                dipole_array = np.column_stack([ref_dipole, ref_dipole])
-            else:
-                dipole_array = np.column_stack([nep_dipole_array,
-                                            ref_dipole
-                                                    ])
-        except Exception:
-            # logger.debug(traceback.format_exc())
-            dipole_array = np.column_stack([nep_dipole_array, nep_dipole_array])
-        dipole_array = np.asarray(dipole_array, dtype=get_storage_float_dtype())
-        if dipole_array.size != 0 and self.cache_outputs_enabled():
-            np.savetxt(self.dipole_out_path, dipole_array, fmt='%.17g')
-        return dipole_array
+
     def _load_dataset(self) -> None:
-        """Populate dipole datasets from cached outputs or by recalculating."""
-        self._prepare_dipole_alignment()
-        if self._should_recalculate():
-            dipole_array = self._recalculate_and_save( )
-        else:
-            dipole_array = read_nep_out_file(self.dipole_out_path, dtype=get_storage_float_dtype(), ndmin=2)
-            if dipole_array.shape[0]!=self.atoms_num_list.shape[0]:
-                if self.cache_outputs_enabled():
-                    self.dipole_out_path.unlink()
-                    return self._load_dataset()
-                dipole_array = self._recalculate_and_save()
-        self._dipole_dataset = NepPlotData(dipole_array, title="dipole")
-
-    def _prepare_dipole_alignment(self) -> None:
-        if getattr(self, "_force_recalculate_outputs", False) or not self.dipole_out_path.exists():
-            return
-        try:
-            array = read_nep_out_file(self.dipole_out_path, dtype=get_storage_float_dtype(), ndmin=2)
-            expected = np.vstack([s.nep_dipole for s in self.structure.now_data])
-            error = self._cached_single_output_alignment_error(array, expected, self.dipole_out_path)
-        except (KeyError, AttributeError, ValueError, OSError) as exc:
-            error = f"unable to read or validate {self.dipole_out_path.name}: {exc}"
-        if error is not None:
-            self._force_recalculate_outputs = True
-            MessageManager.send_warning_message(
-                self.tr("Existing dipole outputs do not match the loaded structure order ({reason}). NepTrainKit will recalculate them.").format(reason=error)
-            )
-
-    def _load_descriptors(self) -> None:
-        self._prepare_dipole_alignment()
-        super()._load_descriptors()
-
-    def _cached_descriptors_are_usable(self) -> bool:
-        return not getattr(self, "_force_recalculate_outputs", False)
+        self._dipole_dataset = NepPlotData(self._load_response(), title="dipole")

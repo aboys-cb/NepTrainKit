@@ -76,6 +76,10 @@ python -c "import nep_adapters as n; print(n.backend_status('cpu')); print(n.bac
 
 第一次使用时，建议先阅读用户文档中的“快速开始”和“候选结构清洗后再进入 DFT”。如果已经知道需要补充哪类结构，可以直接查阅 Make Dataset 卡片手册。
 
+训练用 XYZ 使用 GPUMD 的 virial 约定，九分量按行排列
+（`xx xy xz yx yy yz zx zy zz`）。DeePMD NPY 和 Mixed NPY 的写入顺序相同，
+张量的两个指标相反。NepTrainKit 导入或导出这两种 DeePMD 数据时自动转置九分量 virial。
+
 ## 引用
 
 如果 NepTrainKit 对你的研究有所帮助，请引用：

@@ -461,6 +461,34 @@ H 0 0 0
 
         shutil.rmtree("./npy64")
 
+    def test_gpumd_xyz_and_deepmd_npy_use_transposed_virials(self):
+        gpumd = np.arange(1.0, 10.0)
+        expected = [[1, 4, 7, 2, 5, 8, 3, 6, 9]]
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            root = Path(tmp_dir)
+            xyz = root / "train.xyz"
+            xyz.write_text(
+                '1\nLattice="3 0 0 0 3 0 0 0 3" energy=-1 '
+                'virial="1    2 3 4 5 6 7 8 9" '
+                'Properties=species:S:1:pos:R:3:force:R:3\n'
+                'Fe 0 0 0 1 2 3\n'
+            )
+            structure = Structure.read_multiple(str(xyz))[0]
+            for layout in ("standard", "mixed"):
+                with self.subTest(layout=layout):
+                    dataset = root / layout
+                    save_npy_structure(dataset, [structure], format=layout)
+                    stored = np.load(next(dataset.glob("*/set.000/virial.npy")))
+                    np.testing.assert_array_equal(stored, expected)
+                    np.testing.assert_array_equal(structure.virial, gpumd)
+                    restored = load_npy_structure(dataset)[0]
+                    np.testing.assert_array_equal(restored.virial, gpumd)
+                    output = root / f"{layout}.xyz"
+                    write_structures_extxyz_atomic(output, [restored])
+                    np.testing.assert_array_equal(
+                        Structure.read_multiple(str(output))[0].virial, gpumd
+                    )
+
     @patch("NepTrainKit.core.structure.Config.getboolean", return_value=True)
     def test_deepmd_roundtrip_preserves_pbc_dtypes_metadata_and_alignment(
         self,

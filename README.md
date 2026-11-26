@@ -76,6 +76,11 @@ If you prefer not to compile NepTrainKit locally, download `NepTrainKit.windows-
 
 If this is your first time using NepTrainKit, begin with **Quickstart** and **Cleaning candidate structures before DFT** in the user documentation. If you already know which class of configurations you need, go directly to the Make Dataset card reference.
 
+Training XYZ uses GPUMD's virial convention and row order
+(`xx xy xz yx yy yz zx zy zz`). DeePMD NPY and Mixed NPY use the same
+row order with reversed tensor indices. NepTrainKit transposes the
+nine-component virial on import and export of both DeePMD layouts.
+
 ## Citation
 
 If NepTrainKit contributes to your research, please cite:

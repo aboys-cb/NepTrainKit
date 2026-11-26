@@ -986,7 +986,7 @@ class Structure:
                 if key in {"energy", "energy_original"} and isinstance(value, (float, int, np.number)):
                     value = float(np.float64(value))
                 if key =="virial" or key =="stress":
-                    value = np.array(str(value).split(" "), dtype=get_storage_float_dtype())   # pyright:ignore
+                    value = np.array(str(value).split(), dtype=get_storage_float_dtype())
                 additional_fields[key] = value
                 # print(additional_fields)
         return lattice, properties, additional_fields
@@ -2033,6 +2033,8 @@ def _load_npy_structure(folder: PathLike, base_root: Path | None = None, cancel_
                 continue
 
             prop = value[index]
+            if key == "virial" and prop.size == 9:
+                prop = _transpose_virial_9(prop)
             count = int(prop.shape[0])
             if key not in {"energy", "virial", "stress"} and count >= stored_atoms_num:
                 if count % stored_atoms_num:
@@ -2341,11 +2343,16 @@ def _deepmd_property_name(name: str) -> str:
     }.get(name, name)
 
 
+def _transpose_virial_9(values: np.ndarray) -> np.ndarray:
+    """Switch between GPUMD's position-first and DeePMD's force-first indices."""
+    return values.reshape(3, 3).T.ravel()
+
+
 def _deepmd_virial_9(values: Any) -> np.ndarray:
-    """Return a flattened 3x3 virial using the NEP six-component order."""
+    """Export a DeePMD virial, expanding symmetric NEP six-component inputs."""
     virial = np.asarray(values).reshape(-1)
     if virial.size == 9:
-        return virial
+        return _transpose_virial_9(virial)
     xx, yy, zz, xy, yz, zx = virial
     return np.asarray(
         [xx, xy, zx, xy, yy, yz, zx, yz, zz],
@@ -2707,7 +2714,7 @@ def save_npy_structure(
             if name not in [  "species", "pos"]:
                 dataset_dict[config_key][name].append(structure.atomic_properties[name][sort_index].flatten())
         if "virial" in structure.additional_fields:
-            virial = structure.additional_fields["virial"]
+            virial = _deepmd_virial_9(structure.additional_fields["virial"])
             dataset_dict[config_key]["virial"].append(virial)
         if "energy" in structure.additional_fields:
             dataset_dict[config_key]["energy"].append(structure.energy)

@@ -3,6 +3,7 @@ from __future__ import annotations
 import sys
 import threading
 
+import numpy as np
 import pytest
 
 
@@ -88,6 +89,42 @@ def test_parse_shifted_energy_keeps_original_energy_numeric(monkeypatch):
     assert additional_fields["energy"] == -10.25
     assert additional_fields["energy_original"] == -12.5
     assert isinstance(additional_fields["energy_original"], float)
+
+
+@pytest.mark.parametrize("dtype", [np.float32, np.float64])
+def test_fastxyz_magnetic_label_roundtrip(tmp_path, monkeypatch, dtype):
+    pytest.importorskip("NepTrainKit._native._io")
+    from NepTrainKit.core import structure
+
+    monkeypatch.setenv("NEPKIT_DISABLE_FASTXYZ", "0")
+    monkeypatch.setattr(structure, "get_storage_float_dtype", lambda: np.dtype(dtype))
+    monkeypatch.setattr(structure, "get_export_significant_digits", lambda: 10)
+
+    def fail_fallback(*args, **kwargs):
+        pytest.fail("expected the native XYZ reader")
+
+    monkeypatch.setattr(structure.Structure, "read_multiple", fail_fallback)
+    source = tmp_path / "input.xyz"
+    source.write_text(
+        '1\nLattice="3 0 0 0 3 0 0 0 3" pbc="T T T" '
+        'Properties=species:S:1:pos:R:3:spin:R:3:mforce:R:3:force_mag:R:3\n'
+        'Fe 0 0 0 0.350000013812345 -0.12345678901234567 1e-15 '
+        '-0.007276192312345 0.9876543210987654 -1e-16 '
+        '-0.007276192312345 0.9876543210987654 -1e-16\n',
+        encoding="utf8",
+    )
+    expected_spin = np.array([[0.350000013812345, -0.12345678901234567, 1e-15]], dtype=dtype)
+    expected_force = np.array([[-0.007276192312345, 0.9876543210987654, -1e-16]], dtype=dtype)
+    frames = structure.Structure.read_multiple_fast(str(source), max_workers=1)
+    output = tmp_path / "output.xyz"
+    structure.write_structures_extxyz_atomic(output, frames)
+    restored = structure.Structure.read_multiple_fast(str(output), max_workers=1)
+    for frame in (frames[0], restored[0]):
+        for name, expected in (("spin", expected_spin), ("mforce", expected_force),
+                               ("force_mag", expected_force)):
+            values = frame.atomic_properties[name]
+            assert values.dtype == dtype
+            np.testing.assert_array_equal(values, expected)
 
 
 def test_index_frames_yields_the_gil_during_large_scans():

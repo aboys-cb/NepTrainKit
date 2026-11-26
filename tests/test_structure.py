@@ -443,8 +443,10 @@ H 0 0 0
     def test_xyz2npy_uses_float64_when_enabled(self):
         Config.set("nep", "data_precision", DataPrecision.FLOAT64)
         structure = Structure(self.lattice, self.structure_info, self.properties, self.additional_fields)
+        structure.energy = -57.4834372943210923
         save_npy_structure("./npy64", [structure])
         read_structure = load_npy_structure("./npy64")[0]
+        self.assertEqual(read_structure.energy.hex(), structure.energy.hex())
         self.assertEqual(read_structure.lattice.dtype, np.float64)
         self.assertEqual(read_structure.positions.dtype, np.float64)
         self.assertEqual(read_structure.forces.dtype, np.float64)

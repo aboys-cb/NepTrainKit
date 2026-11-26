@@ -479,6 +479,7 @@ static SpeciesMode _species_mode() {
     return SpeciesMode::STR;
 }
 
+template <typename Real>
 static py::list parse_all_impl(py::buffer bbuf, int max_workers) {
     py::buffer_info info = bbuf.request();
     if (info.ndim != 1 || info.itemsize != 1) {
@@ -527,7 +528,7 @@ static py::list parse_all_impl(py::buffer bbuf, int max_workers) {
         std::vector<PropDesc> props;
         std::unordered_map<std::string, AddValue> add;
         // numeric buffers (zero-copy into NumPy via capsule)
-        std::unordered_map<std::string, std::unique_ptr<float[]>> rbuf;
+        std::unordered_map<std::string, std::unique_ptr<Real[]>> rbuf;
         std::unordered_map<std::string, std::unique_ptr<int32_t[]>> ibuf;
         std::unordered_map<std::string, std::unique_ptr<uint8_t[]>> lbuf;
         std::unordered_map<std::string, size_t> totals;
@@ -633,7 +634,7 @@ static py::list parse_all_impl(py::buffer bbuf, int max_workers) {
                            : 0u;
             p.totals[d.name] = total;
             switch (d.dtype) {
-                case 'R': p.rbuf[d.name] = std::unique_ptr<float[]>(new float[total]()); break;
+                case 'R': p.rbuf[d.name] = std::unique_ptr<Real[]>(new Real[total]()); break;
                 case 'I': p.ibuf[d.name] = std::unique_ptr<int32_t[]>(new int32_t[total]()); break;
                 case 'L': p.lbuf[d.name] = std::unique_ptr<uint8_t[]>(new uint8_t[total]()); break;
                 case 'S': default: p.sprops[d.name].assign(total, std::string()); break;
@@ -671,7 +672,7 @@ static py::list parse_all_impl(py::buffer bbuf, int max_workers) {
                             break;
                         }
                         size_t idx = static_cast<size_t>(actual_rows) * static_cast<size_t>(desc.count) + static_cast<size_t>(k);
-                        p.rbuf[desc.name][idx] = static_cast<float>(v);
+                        p.rbuf[desc.name][idx] = static_cast<Real>(v);
                     } else if (desc.dtype == 'I') {
                         int v = 0;
                         if (!parse_int_token(q, le, v)) {
@@ -784,12 +785,12 @@ static py::list parse_all_impl(py::buffer bbuf, int max_workers) {
 
         // atomic_properties
         py::dict ap;
-    for (auto& kv : p.rbuf) {
+        for (auto& kv : p.rbuf) {
             const std::string& name = kv.first;
-            float* raw = kv.second.release();
+            Real* raw = kv.second.release();
             size_t total = p.totals[name];
-            py::capsule c(raw, [](void* p){ delete[] static_cast<float*>(p); });
-            py::array_t<float> arr({ (py::ssize_t) total }, raw, c);
+            py::capsule c(raw, [](void* p){ delete[] static_cast<Real*>(p); });
+            py::array_t<Real> arr({ (py::ssize_t) total }, raw, c);
             // reshape if count > 1
             int count = 1;
             for (auto& d : p.props) if (d.name == name) { count = d.count; break; }
@@ -994,6 +995,9 @@ static py::list index_only_impl(py::buffer bbuf) {
 PYBIND11_MODULE(_io, m) {
     m.doc() = "Fast EXTXYZ parser for NepTrainKit (mmap buffer input)";
     m.def("index_frames", &index_only_impl, "Return frame offsets from a memory buffer");
-    m.def("parse_all", &parse_all_impl, py::arg("buffer"), py::arg("max_workers") = -1,
+    m.def("parse_all", [](py::buffer buffer, int max_workers, bool float64) {
+        return float64 ? parse_all_impl<double>(buffer, max_workers)
+                       : parse_all_impl<float>(buffer, max_workers);
+    }, py::arg("buffer"), py::arg("max_workers") = -1, py::arg("float64") = false,
           "Parse all frames from an mmap-backed bytes-like object. Set NEPKIT_FASTXYZ_DEBUG=1 to print timings.");
 }

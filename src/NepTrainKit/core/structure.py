@@ -1220,6 +1220,7 @@ class Structure:
             return []
         results = []
         workers = -1 if max_workers is None else int(max_workers)
+        float64 = get_storage_float_dtype() == np.float64
         # Prefer numeric species IDs to avoid constructing many Python strings up front.
         # Respect an existing env setting if the user configured it.
         reset_species_env = False
@@ -1229,7 +1230,7 @@ class Structure:
         with open(filename, "rb") as f:
             with _mmap.mmap(f.fileno(), 0, access=_mmap.ACCESS_READ) as mm:
                 try:
-                    frames = _fx.parse_all(mm, workers)
+                    frames = _fx.parse_all(mm, workers, float64=float64)
                 except Exception as e:
                     if "Malformed EXTXYZ" in str(e):
                         raise ValueError(str(e)) from e
@@ -1272,10 +1273,15 @@ class Structure:
             Open text stream supporting write().
         atomic_float_digits : int, optional
             Significant digits for per-atom floating-point fields.
+            Double-precision spin and magnetic force fields use 17 digits.
         """
 
         if atomic_float_digits is None:
             atomic_float_digits = get_export_significant_digits()
+        precise_magnetic_fields = {
+            key for key in ("spin", "mforce", "force_mag")
+            if key in self.atomic_properties and self.atomic_properties[key].dtype == np.float64
+        }
 
         # Write number of atoms
         file.write(f"{self.num_atoms}\n")
@@ -1336,7 +1342,8 @@ class Structure:
                 if ptype == 'S':
                     line += " ".join([f"{x}" for x in values]) + " "
                 elif ptype == 'R':
-                    line += _format_atomic_float_values(values, atomic_float_digits) + " "
+                    digits = 17 if pname in precise_magnetic_fields else atomic_float_digits
+                    line += _format_atomic_float_values(values, digits) + " "
                 else:
                     line += " ".join([f"{x}" for x in values]) + " "
             file.write(line.strip() + "\n")
